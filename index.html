@@ -9,111 +9,52 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{
- background:#080b14;color:#fff;
- font-family:Arial,sans-serif;
- min-height:100vh;padding-bottom:85px
-}
-header{
- padding:23px 20px;display:flex;
- justify-content:space-between;align-items:center
-}
+body{background:#080b14;color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding-bottom:85px}
+header{padding:23px 20px;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:27px;font-weight:900;color:#35d9ff}
 .logo span{color:#a78bfa}
 .status{color:#54e6a0;font-size:12px}
 main{padding:10px 18px}
 h2{font-size:24px;margin-bottom:8px}
 .sub{color:#9299ad;font-size:13px;margin-bottom:20px}
-.card{
- background:linear-gradient(145deg,#151e35,#101321);
- border:1px solid #27334d;border-radius:20px;
- padding:20px;margin-bottom:17px
-}
-input{
- width:100%;padding:14px;margin:8px 0;
- background:#080f20;border:1px solid #30415e;
- border-radius:11px;color:white;font-size:15px;
- outline:none
-}
-button{
- background:#162b43;color:#fff;border:1px solid #294968;
- padding:13px 17px;border-radius:12px;
- font-size:14px;cursor:pointer
-}
+.card{background:linear-gradient(145deg,#151e35,#101321);border:1px solid #27334d;border-radius:20px;padding:20px;margin-bottom:17px}
+input,textarea{width:100%;padding:14px;margin:8px 0;background:#080f20;border:1px solid #30415e;border-radius:11px;color:white;font-size:15px;outline:none;font-family:Arial}
+textarea{resize:vertical;min-height:90px}
+button{background:#162b43;color:#fff;border:1px solid #294968;padding:13px 17px;border-radius:12px;font-size:14px;cursor:pointer}
 button:disabled{opacity:.6}
-.primary{
- background:#087eae;border:0;width:100%;
- margin-top:12px
-}
-.auth-page{
- max-width:450px;margin:35px auto;padding:18px
-}
+.primary{background:#087eae;border:0;width:100%;margin-top:12px}
+.auth-page{max-width:450px;margin:35px auto;padding:18px}
 .auth-title{text-align:center;margin-bottom:25px}
 .auth-title h1{color:#35d9ff;font-size:32px}
 .auth-title p{color:#9299ad;margin-top:8px;font-size:13px}
-.auth-switch{
- text-align:center;margin-top:20px;color:#aebbd0;
- font-size:14px
-}
+.auth-switch{text-align:center;margin-top:20px;color:#aebbd0;font-size:14px}
 .auth-switch span{color:#35d9ff;cursor:pointer}
-#authMessage{
- color:#ff9b9b;font-size:13px;margin-top:12px;
- line-height:1.5
-}
+#authMessage{color:#ff9b9b;font-size:13px;margin-top:12px;line-height:1.5}
 #app{display:none}
-.radar{
- width:240px;height:240px;border-radius:50%;
- border:1px solid #245e83;
- margin:20px auto;position:relative;
- background:repeating-radial-gradient(
- circle,transparent 0 36px,#245e8360 37px 38px
- );
- display:grid;place-items:center
-}
-.radar:before{
- content:"";position:absolute;width:50%;height:50%;
- top:0;right:0;transform-origin:bottom left;
- background:linear-gradient(45deg,transparent,#35d9ff35);
- border-radius:0 100% 0 0
-}
-.center{
- width:12px;height:12px;border-radius:50%;
- background:#35d9ff;box-shadow:0 0 20px #35d9ff
-}
-.dot{
- position:absolute;width:9px;height:9px;
- background:#35d9ff;border-radius:50%;
- box-shadow:0 0 12px #35d9ff
-}
-.d1{top:42px;left:75px}
-.d2{top:105px;right:43px}
-.d3{bottom:54px;left:52px}
-.d4{bottom:30px;right:85px}
+.radar{width:240px;height:240px;border-radius:50%;border:1px solid #245e83;margin:20px auto;position:relative;background:repeating-radial-gradient(circle,transparent 0 36px,#245e8360 37px 38px);display:grid;place-items:center}
+.radar:before{content:"";position:absolute;width:50%;height:50%;top:0;right:0;transform-origin:bottom left;background:linear-gradient(45deg,transparent,#35d9ff35);border-radius:0 100% 0 0}
+.center{width:12px;height:12px;border-radius:50%;background:#35d9ff;box-shadow:0 0 20px #35d9ff}
+.dot{position:absolute;width:9px;height:9px;background:#35d9ff;border-radius:50%;box-shadow:0 0 12px #35d9ff}
+.d1{top:42px;left:75px}.d2{top:105px;right:43px}.d3{bottom:54px;left:52px}.d4{bottom:30px;right:85px}
 .section{margin-top:25px}
-nav{
- position:fixed;bottom:0;left:0;width:100%;
- background:#101625;border-top:1px solid #27334d;
- display:flex;justify-content:space-around;
- padding:13px 4px
-}
-nav button{
- border:0;background:none;padding:5px;
- color:#9299ad;font-size:11px
-}
+nav{position:fixed;bottom:0;left:0;width:100%;background:#101625;border-top:1px solid #27334d;display:flex;justify-content:space-around;padding:13px 4px}
+nav button{border:0;background:none;padding:5px;color:#9299ad;font-size:11px}
 nav button.active{color:#35d9ff}
 .page{display:none}
 .page.active{display:block}
 .user-name{color:#35d9ff}
 .logout{width:100%;margin-top:15px}
-.profile-info{
- color:#9299ad;font-size:12px;
- margin-top:12px;word-break:break-word
-}
+.avatar{width:85px;height:85px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#087eae,#7652bb);font-size:40px;margin-bottom:17px}
+.profile-row{padding:12px 0;border-bottom:1px solid #27334d}
+.profile-label{font-size:11px;color:#9299ad;margin-bottom:6px}
+.profile-value{font-size:15px;overflow-wrap:anywhere}
+.edit-title{font-size:18px;margin-bottom:12px}
+.form-label{display:block;color:#aebbd0;font-size:12px;margin-top:13px}
+#profileMessage{font-size:13px;margin-top:12px;line-height:1.5}
 </style>
 </head>
 
 <body>
-
 <header>
  <div class="logo">100m<span>.</span></div>
  <div class="status">● NETWORK</div>
@@ -124,37 +65,22 @@ nav button.active{color:#35d9ff}
   <h1>100m Network</h1>
   <p>Meet people. Share ideas. Build connections.</p>
  </div>
-
  <div class="card">
   <h2 id="authHeading">Create Account</h2>
   <p class="sub" id="authSub">Join the global community.</p>
-
   <div id="nameField">
-   <input id="displayName" type="text"
-    placeholder="Your username" maxlength="25">
+   <input id="displayName" type="text" placeholder="Your username" maxlength="25">
   </div>
-
-  <input id="email" type="email"
-   placeholder="Email address" autocomplete="email">
-
-  <input id="password" type="password"
-   placeholder="Password (minimum 6 characters)"
-   autocomplete="current-password">
-
-  <button class="primary" id="authButton"
-   onclick="handleAuth()">Create Account</button>
-
+  <input id="email" type="email" placeholder="Email address" autocomplete="email">
+  <input id="password" type="password" placeholder="Password (minimum 6 characters)" autocomplete="current-password">
+  <button class="primary" id="authButton" onclick="handleAuth()">Create Account</button>
   <p id="authMessage"></p>
-
   <p class="auth-switch">
    <span id="switchText">Already have an account?</span>
    <span onclick="toggleAuth()" id="switchButton">Login</span>
   </p>
  </div>
-
- <p class="sub" style="text-align:center">
-  Use a username instead of sharing your full name.
- </p>
+ <p class="sub" style="text-align:center">Use a username instead of sharing your full name.</p>
 </section>
 
 <div id="app">
@@ -163,30 +89,18 @@ nav button.active{color:#35d9ff}
 <section class="page active" id="home">
  <h2>Discover Nearby.</h2>
  <p class="sub">Your world starts around you.</p>
-
  <div class="card">
   <p style="color:#35d9ff">YOUR NETWORK</p>
   <div class="radar">
-   <div class="center"></div>
-   <i class="dot d1"></i>
-   <i class="dot d2"></i>
-   <i class="dot d3"></i>
-   <i class="dot d4"></i>
+   <div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i>
   </div>
   <h3 style="text-align:center">Explore your world</h3>
-  <p class="sub" style="text-align:center;margin-top:8px">
-   Nearby discovery is coming soon.
-  </p>
-  <button class="primary" onclick="go('radar')">
-   Explore Radar
-  </button>
+  <p class="sub" style="text-align:center;margin-top:8px">Nearby discovery is coming soon.</p>
+  <button class="primary" onclick="go('radar')">Explore Radar</button>
  </div>
-
  <div class="section">
   <h3>Welcome to 100m</h3>
-  <p class="sub" style="margin-top:10px">
-   Meet people. Share ideas. Build connections.
-  </p>
+  <p class="sub" style="margin-top:10px">Meet people. Share ideas. Build connections.</p>
  </div>
 </section>
 
@@ -195,15 +109,9 @@ nav button.active{color:#35d9ff}
  <p class="sub">Discover your surroundings.</p>
  <div class="card">
   <div class="radar">
-   <div class="center"></div>
-   <i class="dot d1"></i>
-   <i class="dot d2"></i>
-   <i class="dot d3"></i>
-   <i class="dot d4"></i>
+   <div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i>
   </div>
-  <p class="sub" style="text-align:center">
-   Demo radar – no real users detected.
-  </p>
+  <p class="sub" style="text-align:center">Demo radar – no real users detected.</p>
  </div>
 </section>
 
@@ -212,9 +120,7 @@ nav button.active{color:#35d9ff}
  <p class="sub">Your conversations will appear here.</p>
  <div class="card">
   <h3>💬 No conversations yet</h3>
-  <p class="sub" style="margin-top:10px">
-   Messaging feature is coming soon.
-  </p>
+  <p class="sub" style="margin-top:10px">Messaging feature is coming soon.</p>
  </div>
 </section>
 
@@ -239,13 +145,46 @@ nav button.active{color:#35d9ff}
  <h2>Your Profile</h2>
  <p class="sub">Your identity on 100m.</p>
  <div class="card">
-  <div style="font-size:35px">👤</div>
+  <div class="avatar">👤</div>
   <h3 class="user-name" id="profileName">Explorer</h3>
   <p class="sub" id="profileEmail"></p>
-  <p class="profile-info" id="profileStatus">
-   Loading profile...
-  </p>
+
+  <div class="profile-row">
+   <div class="profile-label">BIO</div>
+   <div class="profile-value" id="profileBio">No bio added yet.</div>
+  </div>
+  <div class="profile-row">
+   <div class="profile-label">COUNTRY</div>
+   <div class="profile-value" id="profileCountry">Not added</div>
+  </div>
+  <div class="profile-row">
+   <div class="profile-label">INTERESTS</div>
+   <div class="profile-value" id="profileInterests">Not added</div>
+  </div>
+
+  <button class="primary" onclick="openEditProfile()">✎ Edit Profile</button>
   <button class="logout" onclick="logout()">Logout</button>
+  <p id="profileMessage"></p>
+ </div>
+
+ <div class="card" id="editProfileCard" style="display:none">
+  <h3 class="edit-title">Edit Your Profile</h3>
+
+  <label class="form-label" for="editUsername">Username</label>
+  <input id="editUsername" maxlength="25" placeholder="Your username">
+
+  <label class="form-label" for="editBio">Bio</label>
+  <textarea id="editBio" maxlength="160" placeholder="Tell people a little about yourself"></textarea>
+
+  <label class="form-label" for="editCountry">Country</label>
+  <input id="editCountry" maxlength="60" placeholder="Your country">
+
+  <label class="form-label" for="editInterests">Interests</label>
+  <input id="editInterests" maxlength="150" placeholder="Music, Technology, Sports">
+
+  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button>
+  <button class="logout" onclick="closeEditProfile()">Cancel</button>
+  <p id="editMessage"></p>
  </div>
 </section>
 
@@ -275,33 +214,20 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
 const db = firebase.firestore();
 
 let isLogin = false;
+let currentUser = null;
 
 function toggleAuth(){
  isLogin = !isLogin;
-
- document.getElementById('authHeading').textContent =
-  isLogin ? 'Welcome Back' : 'Create Account';
-
- document.getElementById('authSub').textContent =
-  isLogin ? 'Login to your account.' : 'Join the global community.';
-
- document.getElementById('nameField').style.display =
-  isLogin ? 'none' : 'block';
-
- document.getElementById('authButton').textContent =
-  isLogin ? 'Login' : 'Create Account';
-
- document.getElementById('switchText').textContent =
-  isLogin ? "Don't have an account?" : 'Already have an account?';
-
- document.getElementById('switchButton').textContent =
-  isLogin ? 'Sign Up' : 'Login';
-
+ document.getElementById('authHeading').textContent = isLogin ? 'Welcome Back' : 'Create Account';
+ document.getElementById('authSub').textContent = isLogin ? 'Login to your account.' : 'Join the global community.';
+ document.getElementById('nameField').style.display = isLogin ? 'none' : 'block';
+ document.getElementById('authButton').textContent = isLogin ? 'Login' : 'Create Account';
+ document.getElementById('switchText').textContent = isLogin ? "Don't have an account?" : 'Already have an account?';
+ document.getElementById('switchButton').textContent = isLogin ? 'Sign Up' : 'Login';
  document.getElementById('authMessage').textContent = '';
 }
 
@@ -318,12 +244,10 @@ async function handleAuth(){
   showMessage('Please enter your email and password.');
   return;
  }
-
  if(password.length < 6){
   showMessage('Password must have at least 6 characters.');
   return;
  }
-
  if(!isLogin && !name){
   showMessage('Please enter a username.');
   return;
@@ -337,18 +261,16 @@ async function handleAuth(){
   if(isLogin){
    await auth.signInWithEmailAndPassword(email,password);
   }else{
-   const result = await auth.createUserWithEmailAndPassword(
-    email,password
-   );
-
-   await result.user.updateProfile({
-    displayName:name
-   });
+   const result = await auth.createUserWithEmailAndPassword(email,password);
+   await result.user.updateProfile({displayName:name});
 
    await db.collection('users').doc(result.user.uid).set({
     uid:result.user.uid,
     username:name,
     email:result.user.email,
+    bio:'',
+    country:'',
+    interests:'',
     createdAt:firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
    });
@@ -362,35 +284,111 @@ async function handleAuth(){
 }
 
 async function loadUserProfile(user){
- const nameElement = document.getElementById('profileName');
- const emailElement = document.getElementById('profileEmail');
- const statusElement = document.getElementById('profileStatus');
-
- nameElement.textContent = user.displayName || 'Explorer';
- emailElement.textContent = user.email || '';
- statusElement.textContent = 'Loading profile...';
+ currentUser = user;
+ document.getElementById('profileName').textContent = user.displayName || 'Explorer';
+ document.getElementById('profileEmail').textContent = user.email || '';
+ document.getElementById('profileMessage').textContent = 'Loading profile...';
 
  try{
-  const docRef = db.collection('users').doc(user.uid);
-  const doc = await docRef.get();
+  const ref = db.collection('users').doc(user.uid);
+  const doc = await ref.get();
+  let data;
 
   if(doc.exists){
-   const data = doc.data();
-   nameElement.textContent = data.username || user.displayName || 'Explorer';
-   statusElement.textContent = 'Profile saved in Firestore.';
+   data = doc.data();
   }else{
-   await docRef.set({
+   data = {
     uid:user.uid,
     username:user.displayName || 'Explorer',
     email:user.email || '',
+    bio:'',
+    country:'',
+    interests:''
+   };
+   await ref.set({
+    ...data,
     createdAt:firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
    });
-
-   statusElement.textContent = 'Profile created in Firestore.';
   }
+
+  displayProfile(data);
+  document.getElementById('profileMessage').textContent = 'Profile saved in Firestore.';
  }catch(error){
-  statusElement.textContent = 'Profile database error: ' + error.message;
+  document.getElementById('profileMessage').textContent = 'Database error: ' + error.message;
+ }
+}
+
+function displayProfile(data){
+ document.getElementById('profileName').textContent = data.username || 'Explorer';
+ document.getElementById('profileEmail').textContent = currentUser ? currentUser.email || '' : '';
+ document.getElementById('profileBio').textContent = data.bio || 'No bio added yet.';
+ document.getElementById('profileCountry').textContent = data.country || 'Not added';
+ document.getElementById('profileInterests').textContent = data.interests || 'Not added';
+}
+
+function openEditProfile(){
+ if(!currentUser) return;
+
+ document.getElementById('editUsername').value = document.getElementById('profileName').textContent;
+ document.getElementById('editBio').value =
+  document.getElementById('profileBio').textContent === 'No bio added yet.' ? '' : document.getElementById('profileBio').textContent;
+ document.getElementById('editCountry').value =
+  document.getElementById('profileCountry').textContent === 'Not added' ? '' : document.getElementById('profileCountry').textContent;
+ document.getElementById('editInterests').value =
+  document.getElementById('profileInterests').textContent === 'Not added' ? '' : document.getElementById('profileInterests').textContent;
+
+ document.getElementById('editMessage').textContent = '';
+ document.getElementById('editProfileCard').style.display = 'block';
+ document.getElementById('editProfileCard').scrollIntoView({behavior:'smooth'});
+}
+
+function closeEditProfile(){
+ document.getElementById('editProfileCard').style.display = 'none';
+}
+
+async function saveProfile(){
+ if(!currentUser) return;
+
+ const username = document.getElementById('editUsername').value.trim();
+ const bio = document.getElementById('editBio').value.trim();
+ const country = document.getElementById('editCountry').value.trim();
+ const interests = document.getElementById('editInterests').value.trim();
+
+ if(!username){
+  document.getElementById('editMessage').textContent = 'Please enter a username.';
+  return;
+ }
+
+ const button = document.getElementById('saveProfileButton');
+ button.disabled = true;
+ button.textContent = 'Saving...';
+
+ try{
+  await db.collection('users').doc(currentUser.uid).update({
+   username:username,
+   bio:bio,
+   country:country,
+   interests:interests,
+   updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  await currentUser.updateProfile({displayName:username});
+
+  displayProfile({
+   username:username,
+   bio:bio,
+   country:country,
+   interests:interests
+  });
+
+  document.getElementById('profileMessage').textContent = 'Profile updated successfully!';
+  closeEditProfile();
+ }catch(error){
+  document.getElementById('editMessage').textContent = 'Could not save: ' + error.message;
+ }finally{
+  button.disabled = false;
+  button.textContent = 'Save Changes';
  }
 }
 
@@ -400,25 +398,21 @@ function logout(){
 
 auth.onAuthStateChanged(user=>{
  if(user){
-  document.getElementById('authPage').style.display='none';
-  document.getElementById('app').style.display='block';
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
   loadUserProfile(user);
  }else{
-  document.getElementById('authPage').style.display='block';
-  document.getElementById('app').style.display='none';
+  currentUser = null;
+  document.getElementById('authPage').style.display = 'block';
+  document.getElementById('app').style.display = 'none';
  }
 });
 
 function go(id,btn){
- document.querySelectorAll('.page').forEach(p=>{
-  p.classList.remove('active');
- });
-
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
  document.getElementById(id).classList.add('active');
 
- document.querySelectorAll('nav button').forEach(b=>{
-  b.classList.remove('active');
- });
+ document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
 
  if(btn){
   btn.classList.add('active');
@@ -429,6 +423,5 @@ function go(id,btn){
  window.scrollTo(0,0);
 }
 </script>
-
 </body>
 </html>
