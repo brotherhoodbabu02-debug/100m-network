@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,6 +40,7 @@ button{
  padding:13px 17px;border-radius:12px;
  font-size:14px;cursor:pointer
 }
+button:disabled{opacity:.6}
 .primary{
  background:#087eae;border:0;width:100%;
  margin-top:12px
@@ -103,6 +105,10 @@ nav button.active{color:#35d9ff}
 .page.active{display:block}
 .user-name{color:#35d9ff}
 .logout{width:100%;margin-top:15px}
+.profile-info{
+ color:#9299ad;font-size:12px;
+ margin-top:12px;word-break:break-word
+}
 </style>
 </head>
 
@@ -113,7 +119,6 @@ nav button.active{color:#35d9ff}
  <div class="status">● NETWORK</div>
 </header>
 
-<!-- AUTHENTICATION -->
 <section id="authPage" class="auth-page">
  <div class="auth-title">
   <h1>100m Network</h1>
@@ -152,9 +157,7 @@ nav button.active{color:#35d9ff}
  </p>
 </section>
 
-<!-- MAIN APP -->
 <div id="app">
-
 <main>
 
 <section class="page active" id="home">
@@ -236,9 +239,12 @@ nav button.active{color:#35d9ff}
  <h2>Your Profile</h2>
  <p class="sub">Your identity on 100m.</p>
  <div class="card">
-  <div class="avatar" style="font-size:35px">👤</div>
+  <div style="font-size:35px">👤</div>
   <h3 class="user-name" id="profileName">Explorer</h3>
   <p class="sub" id="profileEmail"></p>
+  <p class="profile-info" id="profileStatus">
+   Loading profile...
+  </p>
   <button class="logout" onclick="logout()">Logout</button>
  </div>
 </section>
@@ -252,16 +258,13 @@ nav button.active{color:#35d9ff}
  <button onclick="go('groups',this)">♧<br>Groups</button>
  <button onclick="go('profile',this)">◉<br>Profile</button>
 </nav>
-
 </div>
 
-<!-- FIREBASE SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <script>
-
-// FIREBASE CONFIGURATION
 const firebaseConfig = {
  apiKey: "AIzaSyAca66zpezTWS_gNwt7MGj7GW6YESu1Hqg",
  authDomain: "m-network-54d1e.firebaseapp.com",
@@ -272,7 +275,9 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
+const db = firebase.firestore();
 
 let isLogin = false;
 
@@ -319,6 +324,11 @@ async function handleAuth(){
   return;
  }
 
+ if(!isLogin && !name){
+  showMessage('Please enter a username.');
+  return;
+ }
+
  const button = document.getElementById('authButton');
  button.disabled = true;
  button.textContent = 'Please wait...';
@@ -327,11 +337,6 @@ async function handleAuth(){
   if(isLogin){
    await auth.signInWithEmailAndPassword(email,password);
   }else{
-   if(!name){
-    showMessage('Please enter a username.');
-    return;
-   }
-
    const result = await auth.createUserWithEmailAndPassword(
     email,password
    );
@@ -339,12 +344,53 @@ async function handleAuth(){
    await result.user.updateProfile({
     displayName:name
    });
+
+   await db.collection('users').doc(result.user.uid).set({
+    uid:result.user.uid,
+    username:name,
+    email:result.user.email,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+   });
   }
  }catch(error){
   showMessage(error.message);
  }finally{
   button.disabled = false;
   button.textContent = isLogin ? 'Login' : 'Create Account';
+ }
+}
+
+async function loadUserProfile(user){
+ const nameElement = document.getElementById('profileName');
+ const emailElement = document.getElementById('profileEmail');
+ const statusElement = document.getElementById('profileStatus');
+
+ nameElement.textContent = user.displayName || 'Explorer';
+ emailElement.textContent = user.email || '';
+ statusElement.textContent = 'Loading profile...';
+
+ try{
+  const docRef = db.collection('users').doc(user.uid);
+  const doc = await docRef.get();
+
+  if(doc.exists){
+   const data = doc.data();
+   nameElement.textContent = data.username || user.displayName || 'Explorer';
+   statusElement.textContent = 'Profile saved in Firestore.';
+  }else{
+   await docRef.set({
+    uid:user.uid,
+    username:user.displayName || 'Explorer',
+    email:user.email || '',
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+   });
+
+   statusElement.textContent = 'Profile created in Firestore.';
+  }
+ }catch(error){
+  statusElement.textContent = 'Profile database error: ' + error.message;
  }
 }
 
@@ -356,13 +402,7 @@ auth.onAuthStateChanged(user=>{
  if(user){
   document.getElementById('authPage').style.display='none';
   document.getElementById('app').style.display='block';
-
-  document.getElementById('profileName').textContent =
-   user.displayName || 'Explorer';
-
-  document.getElementById('profileEmail').textContent =
-   user.email || '';
-
+  loadUserProfile(user);
  }else{
   document.getElementById('authPage').style.display='block';
   document.getElementById('app').style.display='none';
@@ -388,7 +428,7 @@ function go(id,btn){
 
  window.scrollTo(0,0);
 }
-
 </script>
+
 </body>
 </html>
