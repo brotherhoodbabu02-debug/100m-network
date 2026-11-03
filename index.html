@@ -1,1 +1,225 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b14">
+<title>100m Network</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+ background:#080b14;color:#fff;
+ font-family:Arial,sans-serif;
+ min-height:100vh;padding-bottom:85px
+}
+header{
+ padding:23px 20px;display:flex;
+ justify-content:space-between;align-items:center
+}
+.logo{font-size:27px;font-weight:900;color:#35d9ff}
+.logo span{color:#a78bfa}
+.status{color:#54e6a0;font-size:12px}
+main{padding:10px 18px}
+h2{font-size:24px;margin-bottom:8px}
+.sub{color:#9299ad;font-size:13px;margin-bottom:24px}
+.card{
+ background:linear-gradient(145deg,#151e35,#101321);
+ border:1px solid #27334d;border-radius:20px;
+ padding:20px;margin-bottom:17px
+}
+.radar{
+ width:240px;height:240px;border-radius:50%;
+ border:1px solid #245e83;
+ margin:20px auto;position:relative;
+ background:repeating-radial-gradient(
+ circle,transparent 0 36px,#245e8360 37px 38px
+ );
+ display:grid;place-items:center
+}
+.radar:before{
+ content:"";position:absolute;width:50%;height:50%;
+ top:0;right:0;transform-origin:bottom left;
+ background:linear-gradient(45deg,transparent,#35d9ff35);
+ border-radius:0 100% 0 0
+}
+.center{
+ width:12px;height:12px;border-radius:50%;
+ background:#35d9ff;box-shadow:0 0 20px #35d9ff
+}
+.dot{
+ position:absolute;width:9px;height:9px;
+ background:#35d9ff;border-radius:50%;
+ box-shadow:0 0 12px #35d9ff
+}
+.d1{top:42px;left:75px}
+.d2{top:105px;right:43px}
+.d3{bottom:54px;left:52px}
+.d4{bottom:30px;right:85px}
+button{
+ background:#162b43;color:#fff;border:1px solid #294968;
+ padding:13px 17px;border-radius:12px;
+ font-size:14px;cursor:pointer
+}
+.primary{background:#087eae;border:0;width:100%}
+.section{margin-top:25px}
+.user{
+ display:flex;align-items:center;gap:13px;
+ padding:13px 0;border-bottom:1px solid #283047
+}
+.avatar{
+ width:43px;height:43px;border-radius:50%;
+ display:grid;place-items:center;
+ background:#243b60;font-size:20px
+}
+.user p{font-size:14px}
+.user small{color:#9299ad}
+nav{
+ position:fixed;bottom:0;left:0;width:100%;
+ background:#101625;border-top:1px solid #27334d;
+ display:flex;justify-content:space-around;
+ padding:13px 4px
+}
+nav button{
+ border:0;background:none;padding:5px;
+ color:#9299ad;font-size:11px
+}
+nav button.active{color:#35d9ff}
+.page{display:none}
+.page.active{display:block}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">100m<span>.</span></div>
+ <div class="status">● NETWORK</div>
+</header>
+
+<main>
+<section class="page active" id="home">
+ <h2>Discover Nearby.</h2>
+ <p class="sub">Your world starts around you.</p>
+ <div class="card">
+  <p style="color:#35d9ff">YOUR NETWORK</p>
+  <div class="radar">
+   <div class="center"></div>
+   <i class="dot d1"></i>
+   <i class="dot d2"></i>
+   <i class="dot d3"></i>
+   <i class="dot d4"></i>
+  </div>
+  <h3 style="text-align:center">Explore your world</h3>
+  <p class="sub" style="text-align:center;margin-top:8px">
+   Nearby discovery is not connected yet.
+  </p>
+  <button class="primary" onclick="go('radar')">
+   Explore Radar
+  </button>
+ </div>
+ <div class="section">
+  <h3>Welcome to 100m</h3>
+  <p class="sub" style="margin-top:10px">
+   Meet people. Share ideas. Build connections.
+  </p>
+ </div>
+</section>
+
+<section class="page" id="radar">
+ <h2>Nearby Radar</h2>
+ <p class="sub">Discover your surroundings.</p>
+ <div class="card">
+  <div class="radar">
+   <div class="center"></div>
+   <i class="dot d1"></i>
+   <i class="dot d2"></i>
+   <i class="dot d3"></i>
+   <i class="dot d4"></i>
+  </div>
+  <p class="sub" style="text-align:center">
+   Radar preview – no real users detected.
+  </p>
+  <button class="primary" onclick="locationPermission()">
+   Enable Location
+  </button>
+  <p id="locationMsg" class="sub" style="margin-top:12px"></p>
+ </div>
+</section>
+
+<section class="page" id="chats">
+ <h2>Messages</h2>
+ <p class="sub">Your conversations will appear here.</p>
+ <div class="card">
+  <h3>💬 No conversations yet</h3>
+  <p class="sub" style="margin-top:10px">
+   Discover people and start connecting.
+  </p>
+ </div>
+</section>
+
+<section class="page" id="groups">
+ <h2>Communities</h2>
+ <p class="sub">Find people who share your interests.</p>
+ <div class="card">
+  <h3>🌎 Global Community</h3>
+  <p class="sub" style="margin-top:8px">A place for everyone.</p>
+ </div>
+ <div class="card">
+  <h3>💡 Ideas & Innovation</h3>
+  <p class="sub" style="margin-top:8px">Share your ideas.</p>
+ </div>
+ <div class="card">
+  <h3>🎵 Music Lovers</h3>
+  <p class="sub" style="margin-top:8px">Connect through music.</p>
+ </div>
+</section>
+
+<section class="page" id="profile">
+ <h2>Your Profile</h2>
+ <p class="sub">Your identity on 100m.</p>
+ <div class="card">
+  <div class="avatar" style="width:65px;height:65px">👤</div>
+  <h3 style="margin-top:15px">New Explorer</h3>
+  <p class="sub" style="margin-top:8px">Welcome to 100m Network</p>
+ </div>
+</section>
+</main>
+
+<nav>
+ <button class="active" onclick="go('home',this)">⌂<br>Home</button>
+ <button onclick="go('radar',this)">◎<br>Radar</button>
+ <button onclick="go('chats',this)">✉<br>Chats</button>
+ <button onclick="go('groups',this)">♧<br>Groups</button>
+ <button onclick="go('profile',this)">◉<br>Profile</button>
+</nav>
+
+<script>
+function go(id,btn){
+ document.querySelectorAll('.page').forEach(p=>{
+  p.classList.remove('active');
+ });
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('nav button').forEach(b=>{
+  b.classList.remove('active');
+ });
+ if(btn) btn.classList.add('active');
+ else {
+  document.querySelectorAll('nav button')[1].classList.add('active');
+ }
+ window.scrollTo(0,0);
+}
+function locationPermission(){
+ const msg=document.getElementById('locationMsg');
+ if(!navigator.geolocation){
+  msg.textContent='Location is not supported by this browser.';
+  return;
+ }
+ msg.textContent='Requesting location permission...';
+ navigator.geolocation.getCurrentPosition(
+  ()=>{msg.textContent='Location permission granted. Nearby discovery is not connected yet.';},
+  ()=>{msg.textContent='Location permission denied or unavailable.';}
+ );
+}
+</script>
+</body>
+  </html>
+  
