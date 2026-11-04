@@ -9,8 +9,8 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#080b14;--panel:#151e35;--line:#27334d;--cyan:#35d9ff;--muted:#9299ad;--violet:#a78bfa;--green:#54e6a0;--red:#ff8585}
-body{background:var(--bg);color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding-bottom:100px}
-header{padding:20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#080b14ed;z-index:5;backdrop-filter:blur(12px)}
+body{background:var(--bg);color:white;font-family:Arial,sans-serif;min-height:100vh;padding-bottom:100px}
+header{padding:20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#080b14ed;z-index:5}
 .logo{font-size:27px;font-weight:900;color:var(--cyan)}
 .logo span{color:var(--violet)}
 .status{color:var(--green);font-size:11px}
@@ -21,7 +21,7 @@ h3{font-size:17px}
 .card{background:linear-gradient(145deg,#151e35,#101321);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:15px}
 input,textarea,select{width:100%;padding:13px;margin:7px 0;background:#080f20;border:1px solid #30415e;border-radius:11px;color:white;font-size:15px;outline:none;font-family:Arial}
 textarea{resize:vertical;min-height:80px}
-button{background:#162b43;color:#fff;border:1px solid #294968;padding:12px 15px;border-radius:12px;font-size:14px;cursor:pointer}
+button{background:#162b43;color:white;border:1px solid #294968;padding:12px 15px;border-radius:12px;font-size:14px;cursor:pointer}
 button:disabled{opacity:.55;cursor:not-allowed}
 .primary{background:#087eae;border:0;width:100%;margin-top:10px}
 .secondary{background:#18213a}
@@ -39,16 +39,14 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .page{display:none}
 .page.active{display:block}
 .radar{width:min(72vw,250px);height:min(72vw,250px);border-radius:50%;border:1px solid #245e83;margin:18px auto;position:relative;background:repeating-radial-gradient(circle,transparent 0 36px,#245e8360 37px 38px);display:grid;place-items:center;overflow:hidden}
-.radar:before{content:"";position:absolute;width:50%;height:50%;top:0;right:0;transform-origin:bottom left;background:linear-gradient(45deg,transparent,#35d9ff35);border-radius:0 100% 0 0}
+.radar:before{content:"";position:absolute;width:50%;height:50%;top:0;right:0;background:linear-gradient(45deg,transparent,#35d9ff35);border-radius:0 100% 0 0}
 .center{width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 20px var(--cyan);z-index:1}
 .dot{position:absolute;width:9px;height:9px;background:var(--cyan);border-radius:50%;box-shadow:0 0 12px var(--cyan)}
 .d1{top:42px;left:75px}.d2{top:105px;right:43px}.d3{bottom:54px;left:52px}.d4{bottom:30px;right:85px}
-.section{margin-top:22px}
-.user-name{color:var(--cyan)}
 nav{position:fixed;bottom:0;left:0;width:100%;background:#101625;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding:9px 3px calc(9px + env(safe-area-inset-bottom));z-index:10}
 nav button{border:0;background:none;padding:6px 0;color:var(--muted);font-size:10px;min-width:0;flex:1;text-align:center;white-space:nowrap;border-radius:8px}
 nav button.active{color:var(--cyan);background:#35d9ff12}
-.avatar{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),#7652bb);border:3px solid #ffffff30;box-shadow:0 0 25px #35d9ff55;font-size:30px;font-weight:900;color:white;margin-bottom:14px}
+.avatar{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),#7652bb);border:3px solid #ffffff30;font-size:30px;font-weight:900;margin-bottom:14px}
 .profile-row{padding:11px 0;border-bottom:1px solid var(--line)}
 .profile-label{font-size:11px;color:var(--muted);margin-bottom:5px}
 .profile-value{font-size:14px;overflow-wrap:anywhere}
@@ -57,13 +55,9 @@ nav button.active{color:var(--cyan);background:#35d9ff12}
 .pill{display:inline-block;padding:6px 10px;border:1px solid #31516b;border-radius:30px;color:var(--cyan);font-size:11px;margin:3px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .row>*{flex:1}
-.row .fit{flex:0 0 auto}
 .tile{padding:13px;border:1px solid #293b59;background:#0d1628;border-radius:14px;margin-top:10px}
 .tile p{color:#b7c2d6;font-size:13px;line-height:1.5;margin-top:6px}
-.muted{color:var(--muted)}
-.good{color:var(--green)}
-.warning{color:#ffd27d}
-.error{color:var(--red)}
+.muted{color:var(--muted)}.good{color:var(--green)}.warning{color:#ffd27d}.error{color:var(--red)}
 .chat-list{max-height:300px;overflow:auto;margin:12px 0}
 .chat-msg{background:#0d1628;border:1px solid #263852;border-radius:13px;padding:10px;margin:8px 0;font-size:13px;overflow-wrap:anywhere}
 .chat-msg small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
@@ -94,7 +88,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="card">
   <h2 id="authHeading">Create Account</h2>
   <p class="sub" id="authSub">Join the global community.</p>
-  <div id="nameField"><input id="displayName" type="text" placeholder="Your username" maxlength="25"></div>
+  <div id="nameField"><input id="displayName" placeholder="Your username" maxlength="25"></div>
   <input id="email" type="email" placeholder="Email address" autocomplete="email">
   <input id="password" type="password" placeholder="Password (minimum 6 characters)" autocomplete="current-password">
   <button class="primary" id="authButton" onclick="handleAuth()">Create Account</button>
@@ -137,13 +131,26 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </section>
 
 <section class="page" id="radar">
- <h2>Nearby Radar</h2><p class="sub">Choose a demo discovery range.</p>
+ <h2>Nearby Radar</h2>
+ <p class="sub">Your privacy comes first. You control location access.</p>
  <div class="card">
-  <div class="row"><button onclick="setRange(100)">100m range</button><button onclick="setRange(200)">200m range</button></div>
+  <h3>Radar Visibility</h3>
+  <p class="sub" style="margin:8px 0">Turn on location permission to test Radar access. Your exact coordinates will not be uploaded or shared.</p>
+  <div class="row">
+   <button class="primary" id="radarOnButton" onclick="enableRadarPermission()">Turn ON Radar</button>
+   <button class="danger" id="radarOffButton" onclick="disableRadarPermission()">Turn OFF</button>
+  </div>
+  <div class="tile">
+   <strong id="radarStatus" class="warning">● Radar is OFF</strong>
+   <p id="locationStatus">Location permission has not been requested.</p>
+  </div>
   <div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
   <h3 id="rangeTitle" style="text-align:center;color:var(--cyan)">100m Demo Zone</h3>
-  <p class="sub" style="text-align:center;margin:8px 0">Decorative demo markers only. No GPS is accessed.</p>
-  <button class="primary" onclick="go('ghostchat')">Open Demo Ghost Room</button>
+  <p class="sub" style="text-align:center;margin:8px 0">Sample markers only. No real nearby users are detected yet.</p>
+  <div class="row">
+   <button onclick="setRange(100)">100m range</button>
+   <button onclick="setRange(200)">200m range</button>
+  </div>
  </div>
  <div class="card">
   <h3>Hot & Cold Finder</h3>
@@ -169,9 +176,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="card hidden" id="privateConversation">
   <button class="secondary small" onclick="backToChats()">← Back to conversations</button>
   <h3 id="conversationTitle" style="margin-top:14px">Private conversation</h3>
-  <div id="privateMessages" class="chat-list" style="max-height:360px">
-   <div class="empty">Loading messages...</div>
-  </div>
+  <div id="privateMessages" class="chat-list" style="max-height:360px"><div class="empty">Loading messages...</div></div>
   <textarea id="privateMessageInput" maxlength="2000" placeholder="Write a message..."></textarea>
   <button class="primary" id="sendPrivateButton" onclick="sendPrivateMessage()">Send message</button>
   <p id="privateMessageStatus" class="message muted">Messages are visible to chat members.</p>
@@ -185,19 +190,10 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  </div>
 </section>
 
-<section class="page" id="ghostchat">
- <h2>Ghost Room</h2><p class="sub">Temporary room preview.</p>
- <div class="card">
-  <span class="pill">Demo only</span>
-  <p class="sub" style="margin:12px 0">This room is not connected to a proximity system.</p>
-  <button class="primary" onclick="go('chats')">Enter local demo chat</button>
- </div>
-</section>
-
 <section class="page" id="vibes">
  <h2>Vibe Drops</h2><p class="sub">Post a poll, question, or positive thought in this local demo feed.</p>
  <div class="card">
-  <select id="vibeType"><option value="Question">Question</option><option value="Poll">Poll</option><option value="Confession">Positive confession</option></select>
+  <select id="vibeType"><option>Question</option><option>Poll</option><option>Positive confession</option></select>
   <textarea id="vibeText" maxlength="220" placeholder="Share something kind, fun or interesting..."></textarea>
   <input id="pollOption1" maxlength="60" placeholder="Poll option 1 (optional)">
   <input id="pollOption2" maxlength="60" placeholder="Poll option 2 (optional)">
@@ -241,7 +237,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="card"><h3>🎵 Music Lovers</h3><p class="sub" style="margin-top:8px">Connect through music.</p></div>
  <div class="card">
   <h3>🏅 Zone Mayor</h3><p class="sub" style="margin:8px 0">Demo community points. Local-only.</p>
-  <strong id="karmaPoints" class="user-name">0 Karma points</strong>
+  <strong id="karmaPoints" style="color:var(--cyan)">0 Karma points</strong>
   <button class="primary" onclick="earnKarma()">Add positive demo point</button>
  </div>
 </section>
@@ -250,7 +246,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <h2>Your Profile</h2><p class="sub">Your identity on 100m.</p>
  <div class="card">
   <div class="avatar" id="profileAvatar">U</div>
-  <h3 class="user-name" id="profileName">Explorer</h3>
+  <h3 id="profileName" style="color:var(--cyan)">Explorer</h3>
   <p class="sub" id="profileEmail"></p>
   <div class="profile-row"><div class="profile-label">BIO</div><div class="profile-value" id="profileBio">No bio added yet.</div></div>
   <div class="profile-row"><div class="profile-label">COUNTRY</div><div class="profile-value" id="profileCountry">Not added</div></div>
@@ -262,10 +258,10 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  </div>
  <div class="card hidden" id="editProfileCard">
   <h3>Edit Your Profile</h3>
-  <label class="form-label" for="editUsername">Username</label><input id="editUsername" maxlength="25" placeholder="Your username">
-  <label class="form-label" for="editBio">Bio</label><textarea id="editBio" maxlength="160" placeholder="Tell people a little about yourself"></textarea>
-  <label class="form-label" for="editCountry">Country</label><input id="editCountry" maxlength="60" placeholder="Your country">
-  <label class="form-label" for="editInterests">Interests</label><input id="editInterests" maxlength="150" placeholder="Music, Technology, Sports">
+  <label class="form-label">Username</label><input id="editUsername" maxlength="25">
+  <label class="form-label">Bio</label><textarea id="editBio" maxlength="160"></textarea>
+  <label class="form-label">Country</label><input id="editCountry" maxlength="60">
+  <label class="form-label">Interests</label><input id="editInterests" maxlength="150">
   <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button>
   <button class="logout" onclick="closeEditProfile()">Cancel</button>
   <p id="editMessage"></p>
@@ -273,7 +269,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </section>
 
 <footer class="note">
- Prototype notice: Radar, Vibe Drops, reports, identity reveal and Karma points are demo features. Radar does not use GPS. Private Chat uses Firebase and is currently intended only for testing with your own accounts.
+ Prototype notice: Radar permission is a local browser test only. It does not detect real nearby users. Location coordinates are not stored or uploaded. Vibe Drops, reports, identity reveal and Karma points are demo features. Private Chat uses Firebase and is intended for testing with your own accounts.
 </footer>
 </main>
 
@@ -291,7 +287,6 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-
 <script>
 const firebaseConfig={
  apiKey:"AIzaSyAca66zpezTWS_gNwt7MGj7GW6YESu1Hqg",
@@ -306,14 +301,58 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.firestore();
 
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
-let chatItems=[];
-let activeChatId=null;
-let unsubscribeChatList=null;
-let unsubscribeMessages=null;
+let chatItems=[],activeChatId=null;
+let unsubscribeChatList=null,unsubscribeMessages=null;
+let radarEnabled=false;
 
 const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
 function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90));}
 
+/* RADAR PERMISSION TEST */
+function enableRadarPermission(){
+ const status=document.getElementById("radarStatus");
+ const locationStatus=document.getElementById("locationStatus");
+
+ if(!navigator.geolocation){
+  status.textContent="● Location unavailable";
+  status.className="error";
+  locationStatus.textContent="This browser does not support location access.";
+  return;
+ }
+
+ status.textContent="● Requesting permission...";
+ status.className="warning";
+ locationStatus.textContent="Waiting for your permission...";
+
+ navigator.geolocation.getCurrentPosition(
+  function(position){
+   // Deliberately do not save or upload coordinates.
+   radarEnabled=true;
+   status.textContent="● Permission granted — demo only";
+   status.className="good";
+   locationStatus.textContent="Location permission works. Your coordinates were not stored or shared.";
+  },
+  function(error){
+   radarEnabled=false;
+   status.textContent="● Radar is OFF";
+   status.className="error";
+   if(error.code===1)locationStatus.textContent="Permission denied. You can enable it in browser settings.";
+   else if(error.code===2)locationStatus.textContent="Location is unavailable. Try again later.";
+   else if(error.code===3)locationStatus.textContent="Location request timed out. Please try again.";
+   else locationStatus.textContent="Could not access location.";
+  },
+  {enableHighAccuracy:false,timeout:15000,maximumAge:60000}
+ );
+}
+
+function disableRadarPermission(){
+ radarEnabled=false;
+ document.getElementById("radarStatus").textContent="● Radar is OFF";
+ document.getElementById("radarStatus").className="warning";
+ document.getElementById("locationStatus").textContent="Radar permission test stopped. No location is being shared.";
+}
+
+/* AUTHENTICATION */
 function stopPrivateChatListeners(){
  if(unsubscribeChatList){unsubscribeChatList();unsubscribeChatList=null;}
  if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
@@ -445,6 +484,7 @@ async function saveProfile(){
 
 function logout(){
  stopPrivateChatListeners();
+ radarEnabled=false;
  auth.signOut();
 }
 
@@ -462,6 +502,7 @@ auth.onAuthStateChanged(user=>{
  }
 });
 
+/* NAVIGATION */
 function go(id,btn){
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  const target=document.getElementById(id);if(target)target.classList.add("active");
@@ -469,20 +510,19 @@ function go(id,btn){
  navButtons.forEach(b=>b.classList.remove("active"));
  if(btn)btn.classList.add("active");
  else{
-  const navIndex={home:0,radar:1,chats:2,ghostchat:2,vibes:3,safety:4,groups:5,profile:6};
+  const navIndex={home:0,radar:1,chats:2,vibes:3,safety:4,groups:5,profile:6};
   const index=navIndex[id];
   if(index!==undefined&&navButtons[index])navButtons[index].classList.add("active");
  }
  window.scrollTo(0,0);
 }
-
 function setRange(m){document.getElementById("rangeTitle").textContent=m+"m Demo Zone";}
 function hotCold(){
  const vals=["Signal: Cool","Signal: Nearby (demo)","Signal: Warming up","Signal: Unknown"];
  document.getElementById("signalText").textContent=vals[Math.floor(Math.random()*vals.length)];
 }
 
-/* Local-only demo chat */
+/* LOCAL DEMO CHAT */
 function sendChat(){
  const input=document.getElementById("chatInput"),value=input.value.trim();
  if(!value)return;
@@ -505,31 +545,24 @@ function renderChats(){
 }
 setInterval(renderChats,30000);
 
-/* Firebase Private Chat */
+/* FIREBASE PRIVATE CHAT */
 function loadPrivateChats(){
  if(!currentUser||guestMode)return;
  if(unsubscribeChatList){unsubscribeChatList();unsubscribeChatList=null;}
  const box=document.getElementById("privateChatList");
  box.innerHTML='<div class="empty">Loading conversations...</div>';
-
  unsubscribeChatList=db.collection("chats")
   .where("participantsList","array-contains",currentUser.uid)
   .onSnapshot(snapshot=>{
    box.innerHTML="";
-   if(snapshot.empty){
-    box.innerHTML='<div class="empty">No private conversations yet. Start a test chat below.</div>';
-    return;
-   }
+   if(snapshot.empty){box.innerHTML='<div class="empty">No private conversations yet. Start a test chat below.</div>';return;}
    snapshot.forEach(doc=>{
     const data=doc.data();
     const members=Array.isArray(data.participantsList)?data.participantsList:[];
     const other=members.find(id=>id!==currentUser.uid)||"Unknown";
-    const button=document.createElement("button");
-    button.className="chat-item";
-    const title=document.createElement("strong");
-    title.textContent="Private chat • "+other.slice(0,10)+"…";
-    const detail=document.createElement("small");
-    detail.textContent="Open conversation";
+    const button=document.createElement("button");button.className="chat-item";
+    const title=document.createElement("strong");title.textContent="Private chat • "+other.slice(0,10)+"…";
+    const detail=document.createElement("small");detail.textContent="Open conversation";
     button.append(title,detail);
     button.onclick=()=>openPrivateChat(doc.id,other);
     box.appendChild(button);
@@ -542,28 +575,21 @@ function loadPrivateChats(){
 }
 
 async function startPrivateChat(){
- if(!currentUser||guestMode){
-  document.getElementById("chatStatus").textContent="Please login first.";
-  return;
- }
+ if(!currentUser||guestMode){document.getElementById("chatStatus").textContent="Please login first.";return;}
  const otherId=document.getElementById("otherUserId").value.trim();
  const status=document.getElementById("chatStatus");
  if(!otherId){status.textContent="Enter your second test account UID.";return;}
  if(otherId===currentUser.uid){status.textContent="You cannot start a chat with your own account.";return;}
-
  const button=document.getElementById("startChatButton");
  button.disabled=true;button.textContent="Checking...";
  status.textContent="Checking existing conversations...";
  try{
-  const found=await db.collection("chats")
-   .where("participantsList","array-contains",currentUser.uid).get();
-
+  const found=await db.collection("chats").where("participantsList","array-contains",currentUser.uid).get();
   let existing=null;
   found.forEach(doc=>{
    const members=doc.data().participantsList||[];
    if(members.length===2&&members.includes(otherId))existing=doc;
   });
-
   if(existing){
    openPrivateChat(existing.id,otherId);
    status.textContent="Existing conversation opened.";
@@ -571,18 +597,12 @@ async function startPrivateChat(){
    const members=[currentUser.uid,otherId].sort();
    const chatId=members.join("_");
    const chatRef=db.collection("chats").doc(chatId);
-   await chatRef.set({
-    participantsList:members,
-    createdAt:firebase.firestore.FieldValue.serverTimestamp()
-   });
+   await chatRef.set({participantsList:members,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
    openPrivateChat(chatId,otherId);
    status.textContent="Test conversation created.";
   }
- }catch(e){
-  status.textContent="Could not open chat: "+e.message;
- }finally{
-  button.disabled=false;button.textContent="Open private chat";
- }
+ }catch(e){status.textContent="Could not open chat: "+e.message;}
+ finally{button.disabled=false;button.textContent="Open private chat";}
 }
 
 function openPrivateChat(chatId,otherId){
@@ -594,22 +614,17 @@ function openPrivateChat(chatId,otherId){
  document.getElementById("conversationTitle").textContent="Chat • "+otherId.slice(0,12)+"…";
  const box=document.getElementById("privateMessages");
  box.innerHTML='<div class="empty">Loading messages...</div>';
-
  unsubscribeMessages=db.collection("chats").doc(chatId).collection("messages")
   .orderBy("createdAt","asc")
   .onSnapshot(snapshot=>{
    box.innerHTML="";
-   if(snapshot.empty){
-    box.innerHTML='<div class="empty">No messages yet. Say hello!</div>';return;
-   }
+   if(snapshot.empty){box.innerHTML='<div class="empty">No messages yet. Say hello!</div>';return;}
    snapshot.forEach(doc=>{
     const data=doc.data();
     const item=document.createElement("div");
     item.className="message-bubble"+(data.senderId===currentUser.uid?" mine":"");
-    const body=document.createElement("div");
-    body.textContent=data.text||"";
-    const small=document.createElement("small");
-    small.textContent=data.senderId===currentUser.uid?"You":"Other account";
+    const body=document.createElement("div");body.textContent=data.text||"";
+    const small=document.createElement("small");small.textContent=data.senderId===currentUser.uid?"You":"Other account";
     item.append(body,small);box.appendChild(item);
    });
    box.scrollTop=box.scrollHeight;
@@ -637,17 +652,15 @@ async function sendPrivateMessage(){
  button.disabled=true;status.textContent="Sending...";
  try{
   await db.collection("chats").doc(activeChatId).collection("messages").add({
-   senderId:currentUser.uid,
-   text:textValue,
+   senderId:currentUser.uid,text:textValue,
    createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
-  input.value="";
-  status.textContent="Message sent.";
- }catch(e){
-  status.textContent="Could not send: "+e.message;
- }finally{button.disabled=false;}
+  input.value="";status.textContent="Message sent.";
+ }catch(e){status.textContent="Could not send: "+e.message;}
+ finally{button.disabled=false;}
 }
 
+/* VIBE DROPS */
 function postVibe(){
  const type=document.getElementById("vibeType").value;
  const textValue=document.getElementById("vibeText").value.trim();
@@ -681,6 +694,7 @@ function requestReveal(){
  status.className="message good";
 }
 
+/* SAFETY DEMO */
 function submitReport(){
  const reason=document.getElementById("reportReason").value;
  const details=document.getElementById("reportDetails").value.trim();
@@ -692,14 +706,12 @@ function submitReport(){
   document.getElementById("reportDetails").value="";
  }catch(e){document.getElementById("reportStatus").textContent="Could not save this local demo report.";}
 }
-
 function blockDemo(){
  try{
   localStorage.setItem("100m_demo_blocked","sample-account");
   document.getElementById("blockStatus").textContent="Sample account marked as blocked on this device only.";
  }catch(e){document.getElementById("blockStatus").textContent="Local storage unavailable.";}
 }
-
 function earnKarma(){karma++;document.getElementById("karmaPoints").textContent=karma+" Karma points";}
 </script>
 </body>
