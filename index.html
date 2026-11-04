@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,453 +5,336 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080b14">
 <title>100m Network</title>
-
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{
- background:#080b14;color:#fff;font-family:Arial,sans-serif;
- min-height:100vh;padding-bottom:85px
-}
-header{
- padding:23px 20px;display:flex;
- justify-content:space-between;align-items:center
-}
-.logo{font-size:27px;font-weight:900;color:#35d9ff}
-.logo span{color:#a78bfa}
-.status{color:#54e6a0;font-size:12px}
-main{padding:10px 18px}
-h2{font-size:24px;margin-bottom:8px}
-.sub{color:#9299ad;font-size:13px;margin-bottom:20px}
-.card{
- background:linear-gradient(145deg,#151e35,#101321);
- border:1px solid #27334d;border-radius:20px;
- padding:20px;margin-bottom:17px
-}
-input,textarea{
- width:100%;padding:14px;margin:8px 0;
- background:#080f20;border:1px solid #30415e;
- border-radius:11px;color:white;font-size:15px;
- outline:none;font-family:Arial
-}
-textarea{resize:vertical;min-height:90px}
-button{
- background:#162b43;color:#fff;border:1px solid #294968;
- padding:13px 17px;border-radius:12px;
- font-size:14px;cursor:pointer
-}
-button:disabled{opacity:.6}
-.primary{
- background:#087eae;border:0;width:100%;margin-top:12px
-}
-.auth-page{max-width:450px;margin:35px auto;padding:18px}
-.auth-title{text-align:center;margin-bottom:25px}
-.auth-title h1{color:#35d9ff;font-size:32px}
-.auth-title p{color:#9299ad;margin-top:8px;font-size:13px}
-.auth-switch{
- text-align:center;margin-top:20px;
- color:#aebbd0;font-size:14px
-}
-.auth-switch span{color:#35d9ff;cursor:pointer;margin-left:5px}
+:root{--bg:#080b14;--panel:#151e35;--panel2:#101625;--line:#27334d;--cyan:#35d9ff;--muted:#9299ad;--violet:#a78bfa;--green:#54e6a0;--red:#ff8585}
+body{background:var(--bg);color:#fff;font-family:Arial,sans-serif;min-height:100vh;padding-bottom:88px}
+header{padding:20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#080b14ed;z-index:5;backdrop-filter:blur(12px)}
+.logo{font-size:27px;font-weight:900;color:var(--cyan)}.logo span{color:var(--violet)}
+.status{color:var(--green);font-size:11px}
+main{padding:10px 16px;max-width:720px;margin:auto}
+h2{font-size:23px;margin-bottom:8px}h3{font-size:17px}
+.sub{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:16px}
+.card{background:linear-gradient(145deg,#151e35,#101321);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:15px}
+input,textarea,select{width:100%;padding:13px;margin:7px 0;background:#080f20;border:1px solid #30415e;border-radius:11px;color:white;font-size:15px;outline:none;font-family:Arial}
+textarea{resize:vertical;min-height:80px}select{color:#fff}
+button{background:#162b43;color:#fff;border:1px solid #294968;padding:12px 15px;border-radius:12px;font-size:14px;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
+.primary{background:#087eae;border:0;width:100%;margin-top:10px}
+.secondary{background:#18213a}.danger{background:#49212d;border-color:#713347}.small{padding:8px 11px;font-size:12px}
+.auth-page{max-width:450px;margin:25px auto;padding:16px}
+.auth-title{text-align:center;margin-bottom:24px}.auth-title h1{color:var(--cyan);font-size:32px}.auth-title p{color:var(--muted);margin-top:8px;font-size:13px}
+.auth-switch{text-align:center;margin-top:18px;color:#aebbd0;font-size:14px}.auth-switch span{color:var(--cyan);cursor:pointer;margin-left:5px}
 #authMessage{color:#ff9b9b;font-size:13px;margin-top:12px;line-height:1.5}
-#app{display:none}
-.radar{
- width:240px;height:240px;border-radius:50%;
- border:1px solid #245e83;margin:20px auto;
- position:relative;
- background:repeating-radial-gradient(
- circle,transparent 0 36px,#245e8360 37px 38px);
- display:grid;place-items:center
-}
-.radar:before{
- content:"";position:absolute;width:50%;height:50%;
- top:0;right:0;transform-origin:bottom left;
- background:linear-gradient(45deg,transparent,#35d9ff35);
- border-radius:0 100% 0 0
-}
-.center{
- width:12px;height:12px;border-radius:50%;
- background:#35d9ff;box-shadow:0 0 20px #35d9ff
-}
-.dot{
- position:absolute;width:9px;height:9px;
- background:#35d9ff;border-radius:50%;
- box-shadow:0 0 12px #35d9ff
-}
-.d1{top:42px;left:75px}
-.d2{top:105px;right:43px}
-.d3{bottom:54px;left:52px}
-.d4{bottom:30px;right:85px}
-.section{margin-top:25px}
-nav{
- position:fixed;bottom:0;left:0;width:100%;
- background:#101625;border-top:1px solid #27334d;
- display:flex;justify-content:space-around;padding:13px 4px;
- z-index:10
-}
-nav button{
- border:0;background:none;padding:5px;
- color:#9299ad;font-size:11px
-}
-nav button.active{color:#35d9ff}
-.page{display:none}
-.page.active{display:block}
-.user-name{color:#35d9ff}
-.logout{width:100%;margin-top:15px}
-.avatar{
- width:90px;height:90px;border-radius:50%;
- display:grid;place-items:center;
- background:linear-gradient(135deg,#35d9ff,#7652bb);
- border:3px solid #ffffff30;
- box-shadow:0 0 25px #35d9ff55;
- font-size:36px;font-weight:900;color:white;
- margin-bottom:17px
-}
-.profile-row{padding:12px 0;border-bottom:1px solid #27334d}
-.profile-label{font-size:11px;color:#9299ad;margin-bottom:6px}
-.profile-value{font-size:15px;overflow-wrap:anywhere}
-.edit-title{font-size:18px;margin-bottom:12px}
-.form-label{
- display:block;color:#aebbd0;font-size:12px;margin-top:13px
-}
-#profileMessage,#editMessage{
- font-size:13px;margin-top:12px;line-height:1.5
-}
+#app{display:none}.page{display:none}.page.active{display:block}
+.radar{width:min(72vw,250px);height:min(72vw,250px);border-radius:50%;border:1px solid #245e83;margin:18px auto;position:relative;background:repeating-radial-gradient(circle,transparent 0 36px,#245e8360 37px 38px);display:grid;place-items:center;overflow:hidden}
+.radar:before{content:"";position:absolute;width:50%;height:50%;top:0;right:0;transform-origin:bottom left;background:linear-gradient(45deg,transparent,#35d9ff35);border-radius:0 100% 0 0}
+.center{width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 20px var(--cyan);z-index:1}
+.dot{position:absolute;width:9px;height:9px;background:var(--cyan);border-radius:50%;box-shadow:0 0 12px var(--cyan)}
+.d1{top:42px;left:75px}.d2{top:105px;right:43px}.d3{bottom:54px;left:52px}.d4{bottom:30px;right:85px}
+.section{margin-top:22px}.user-name{color:var(--cyan)}
+nav{position:fixed;bottom:0;left:0;width:100%;background:#101625;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 2px calc(10px + env(safe-area-inset-bottom));z-index:10}
+nav button{border:0;background:none;padding:5px 3px;color:var(--muted);font-size:11px;min-width:16%}
+nav button.active{color:var(--cyan)}
+.avatar{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),#7652bb);border:3px solid #ffffff30;box-shadow:0 0 25px #35d9ff55;font-size:30px;font-weight:900;color:white;margin-bottom:14px}
+.profile-row{padding:11px 0;border-bottom:1px solid var(--line)}.profile-label{font-size:11px;color:var(--muted);margin-bottom:5px}.profile-value{font-size:14px;overflow-wrap:anywhere}
+.form-label{display:block;color:#aebbd0;font-size:12px;margin-top:12px}
+#profileMessage,#editMessage,.message{font-size:13px;margin-top:10px;line-height:1.5}
+.pill{display:inline-block;padding:6px 10px;border:1px solid #31516b;border-radius:30px;color:var(--cyan);font-size:11px;margin:3px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.row .fit{flex:0 0 auto}
+.tile{padding:13px;border:1px solid #293b59;background:#0d1628;border-radius:14px;margin-top:10px}
+.tile p{color:#b7c2d6;font-size:13px;line-height:1.5;margin-top:6px}
+.muted{color:var(--muted)}.good{color:var(--green)}.warning{color:#ffd27d}.error{color:var(--red)}
+.chat-list{max-height:300px;overflow:auto;margin:12px 0}
+.chat-msg{background:#0d1628;border:1px solid #263852;border-radius:13px;padding:10px;margin:8px 0;font-size:13px;overflow-wrap:anywhere}
+.chat-msg small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
+.empty{text-align:center;padding:20px;color:var(--muted);font-size:13px}
+.hidden{display:none!important}
+footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </style>
 </head>
-
 <body>
-
-<header>
- <div class="logo">100m<span>.</span></div>
- <div class="status">● NETWORK</div>
-</header>
+<header><div class="logo">100m<span>.</span></div><div class="status" id="topStatus">● NETWORK</div></header>
 
 <section id="authPage" class="auth-page">
- <div class="auth-title">
-  <h1>100m Network</h1>
-  <p>Meet people. Share ideas. Build connections.</p>
- </div>
-
+ <div class="auth-title"><h1>100m Network</h1><p>Meet people. Share ideas. Build connections.</p></div>
  <div class="card">
-  <h2 id="authHeading">Create Account</h2>
-  <p class="sub" id="authSub">Join the global community.</p>
-
-  <div id="nameField">
-   <input id="displayName" type="text"
-    placeholder="Your username" maxlength="25">
-  </div>
-
-  <input id="email" type="email"
-   placeholder="Email address" autocomplete="email">
-
-  <input id="password" type="password"
-   placeholder="Password (minimum 6 characters)"
-   autocomplete="current-password">
-
-  <button class="primary" id="authButton" onclick="handleAuth()">
-   Create Account
-  </button>
-
+  <h2 id="authHeading">Create Account</h2><p class="sub" id="authSub">Join the global community.</p>
+  <div id="nameField"><input id="displayName" type="text" placeholder="Your username" maxlength="25"></div>
+  <input id="email" type="email" placeholder="Email address" autocomplete="email">
+  <input id="password" type="password" placeholder="Password (minimum 6 characters)" autocomplete="current-password">
+  <button class="primary" id="authButton" onclick="handleAuth()">Create Account</button>
   <p id="authMessage"></p>
-
-  <p class="auth-switch">
-   <span id="switchText">Already have an account?</span>
-   <span onclick="toggleAuth()" id="switchButton">Login</span>
-  </p>
+  <p class="auth-switch"><span id="switchText">Already have an account?</span><span onclick="toggleAuth()" id="switchButton">Login</span></p>
  </div>
-
- <p class="sub" style="text-align:center">
-  Use a username instead of sharing your full name.
- </p>
+ <div class="card">
+  <h3>Try Ghost Mode</h3><p class="sub" style="margin:7px 0">Explore the demo without creating an account. A temporary nickname is created on this device.</p>
+  <button class="primary" onclick="enterGhostMode()">Continue as Guest</button>
+ </div>
+ <p class="sub" style="text-align:center">Use a username instead of sharing your full name.</p>
 </section>
 
-<div id="app">
-<main>
-
+<div id="app"><main>
 <section class="page active" id="home">
- <h2>Discover Nearby.</h2>
- <p class="sub">Your world starts around you.</p>
-
- <div class="card">
-  <p style="color:#35d9ff">YOUR NETWORK</p>
-
-  <div class="radar">
-   <div class="center"></div>
-   <i class="dot d1"></i>
-   <i class="dot d2"></i>
-   <i class="dot d3"></i>
-   <i class="dot d4"></i>
-  </div>
-
-  <h3 style="text-align:center">Explore your world</h3>
-  <p class="sub" style="text-align:center;margin-top:8px">
-   Nearby discovery is coming soon.
-  </p>
-
-  <button class="primary" onclick="go('radar')">
-   Explore Radar
-  </button>
+ <h2>Discover Nearby.</h2><p class="sub">Your world starts around you.</p>
+ <div class="card"><p style="color:var(--cyan)">YOUR NETWORK</p>
+  <div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
+  <h3 style="text-align:center">Explore your world</h3><p class="sub" style="text-align:center;margin-top:8px">Radar contacts shown here are sample demo markers, not real people.</p>
+  <button class="primary" onclick="go('radar')">Explore Radar</button>
  </div>
-
- <div class="section">
-  <h3>Welcome to 100m</h3>
-  <p class="sub" style="margin-top:10px">
-   Meet people. Share ideas. Build connections.
-  </p>
- </div>
+ <div class="card"><h3>Welcome to 100m</h3><p class="sub" style="margin:9px 0 0">Meet people. Share ideas. Build connections.</p><span class="pill">Ghost Mode</span><span class="pill">Vibe Drops</span><span class="pill">Community</span></div>
+ <div class="card"><h3>Community safety</h3><p class="sub" style="margin:8px 0 0">Keep personal details private. Never share your exact location or meet strangers based only on an online interaction.</p></div>
 </section>
 
 <section class="page" id="radar">
- <h2>Nearby Radar</h2>
- <p class="sub">Discover your surroundings.</p>
-
+ <h2>Nearby Radar</h2><p class="sub">Choose a demo discovery range.</p>
  <div class="card">
-  <div class="radar">
-   <div class="center"></div>
-   <i class="dot d1"></i>
-   <i class="dot d2"></i>
-   <i class="dot d3"></i>
-   <i class="dot d4"></i>
-  </div>
-
-  <p class="sub" style="text-align:center">
-   Demo radar – no real users detected.
-  </p>
+  <div class="row"><button class="rangeBtn" onclick="setRange(100)">100m range</button><button class="rangeBtn" onclick="setRange(200)">200m range</button></div>
+  <div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
+  <h3 id="rangeTitle" style="text-align:center;color:var(--cyan)">100m Demo Zone</h3>
+  <p class="sub" style="text-align:center;margin:8px 0">These dots are decorative demo markers. No GPS is accessed and no nearby users are detected.</p>
+  <button class="primary" onclick="go('ghostchat')">Open Demo Ghost Room</button>
+ </div>
+ <div class="card"><h3>Hot & Cold Finder</h3><p class="sub" style="margin:7px 0">A playful demo indicator only. It does not use your location or point toward anyone.</p>
+  <div class="row"><button onclick="hotCold()">Refresh demo signal</button><strong id="signalText" class="warning">Signal: Unknown</strong></div>
+ </div>
+</section>
+<section class="page" id="chats">
+ <h2>Messages</h2><p class="sub">Temporary local demo chat.</p>
+ <div class="card"><h3>💬 Ghost Room</h3><p class="sub" style="margin:7px 0">Messages entered here stay only in this browser session and expire after 30 minutes.</p>
+ <div id="chatMessages" class="chat-list"><div class="empty">No messages yet. Start the demo conversation.</div></div>
+ <textarea id="chatInput" maxlength="300" placeholder="Write a short message..."></textarea>
+ <button class="primary" onclick="sendChat()">Send message</button>
+ <p class="message muted">This is not connected to other users. Refreshing or closing the page may clear these messages.</p>
  </div>
 </section>
 
-<section class="page" id="chats">
- <h2>Messages</h2>
- <p class="sub">Your conversations will appear here.</p>
+<section class="page" id="ghostchat">
+ <h2>Ghost Room</h2><p class="sub">Temporary room preview.</p>
+ <div class="card"><span class="pill">30-minute message timer</span><span class="pill">Demo only</span>
+ <p class="sub" style="margin:12px 0">When you leave this demo page, the room is not actually connected to a proximity system. In a real version, room access would require consent and coarse proximity checks.</p>
+ <button class="primary" onclick="go('chats')">Enter local demo chat</button></div>
+</section>
 
- <div class="card">
-  <h3>💬 No conversations yet</h3>
-  <p class="sub" style="margin-top:10px">
-   Messaging feature is coming soon.
-  </p>
+<section class="page" id="vibes">
+ <h2>Vibe Drops</h2><p class="sub">Post a poll, question, or positive thought in this local demo feed.</p>
+ <div class="card"><select id="vibeType"><option value="Question">Question</option><option value="Poll">Poll</option><option value="Confession">Positive confession</option></select>
+ <textarea id="vibeText" maxlength="220" placeholder="Share something kind, fun or interesting..."></textarea>
+ <input id="pollOption1" maxlength="60" placeholder="Poll option 1 (optional)">
+ <input id="pollOption2" maxlength="60" placeholder="Poll option 2 (optional)">
+ <button class="primary" onclick="postVibe()">Drop it</button>
+ </div><div id="vibeFeed"></div>
+</section>
+
+<section class="page" id="reveal">
+ <h2>Mutual Identity Reveal</h2><p class="sub">Privacy-first preview.</p>
+ <div class="card"><h3>Two-way permission</h3><p class="sub" style="margin:8px 0">A real reveal should happen only after both people actively agree. This demo does not send requests to another person or reveal private details.</p>
+ <label class="form-label"><input id="myRevealConsent" type="checkbox" style="width:auto;margin-right:8px">I understand that identity sharing must be optional.</label>
+ <button class="primary" onclick="requestReveal()">Preview reveal request</button><p id="revealStatus" class="message muted">No request sent.</p></div>
+</section>
+
+<section class="page" id="safety">
+ <h2>Karma Shield</h2><p class="sub">Personal safety controls for this demo.</p>
+ <div class="card"><h3>Report a concern</h3><p class="sub" style="margin:7px 0">Reports are stored only on this device in this prototype. They are not sent to a moderation team.</p>
+ <select id="reportReason"><option>Spam</option><option>Harassment</option><option>Unsafe request</option><option>Other concern</option></select>
+ <textarea id="reportDetails" maxlength="180" placeholder="Optional details (do not include private information)"></textarea>
+ <button class="primary" onclick="submitReport()">Save demo report</button><p id="reportStatus" class="message muted"></p>
+ <div class="tile"><h3>Block demo account</h3><p>Blocking in this prototype records a local demo block. No real account is contacted.</p><button class="danger small" onclick="blockDemo()">Block sample account</button><p id="blockStatus" class="message muted"></p></div>
  </div>
 </section>
 
 <section class="page" id="groups">
- <h2>Communities</h2>
- <p class="sub">Find people who share your interests.</p>
-
- <div class="card">
-  <h3>🌎 Global Community</h3>
-  <p class="sub" style="margin-top:8px">A place for everyone.</p>
- </div>
-
- <div class="card">
-  <h3>💡 Ideas & Innovation</h3>
-  <p class="sub" style="margin-top:8px">Share your ideas.</p>
- </div>
-
- <div class="card">
-  <h3>🎵 Music Lovers</h3>
-  <p class="sub" style="margin-top:8px">Connect through music.</p>
- </div>
+ <h2>Communities</h2><p class="sub">Find people who share your interests.</p>
+ <div class="card"><h3>🌎 Global Community</h3><p class="sub" style="margin-top:8px">A place for everyone.</p></div>
+ <div class="card"><h3>💡 Ideas & Innovation</h3><p class="sub" style="margin-top:8px">Share your ideas.</p></div>
+ <div class="card"><h3>🎵 Music Lovers</h3><p class="sub" style="margin-top:8px">Connect through music.</p></div>
+ <div class="card"><h3>🏅 Zone Mayor</h3><p class="sub" style="margin:8px 0">Earn demo community points by contributing positively. This badge is local-only and does not rank real users.</p><strong id="karmaPoints" class="user-name">0 Karma points</strong><button class="primary" onclick="earnKarma()">Add positive demo point</button></div>
 </section>
 
 <section class="page" id="profile">
- <h2>Your Profile</h2>
- <p class="sub">Your identity on 100m.</p>
-
- <div class="card">
-
-  <div class="avatar" id="profileAvatar">U</div>
-
-  <h3 class="user-name" id="profileName">Explorer</h3>
-  <p class="sub" id="profileEmail"></p>
-
-  <div class="profile-row">
-   <div class="profile-label">BIO</div>
-   <div class="profile-value" id="profileBio">No bio added yet.</div>
-  </div>
-
-  <div class="profile-row">
-   <div class="profile-label">COUNTRY</div>
-   <div class="profile-value" id="profileCountry">Not added</div>
-  </div>
-
-  <div class="profile-row">
-   <div class="profile-label">INTERESTS</div>
-   <div class="profile-value" id="profileInterests">Not added</div>
-  </div>
-
-  <button class="primary" onclick="openEditProfile()">
-   ✎ Edit Profile
-  </button>
-
-  <button class="logout" onclick="logout()">Logout</button>
-  <p id="profileMessage"></p>
- </div>
-
- <div class="card" id="editProfileCard" style="display:none">
-  <h3 class="edit-title">Edit Your Profile</h3>
-
-  <label class="form-label" for="editUsername">Username</label>
-  <input id="editUsername" maxlength="25"
-   placeholder="Your username">
-
-  <label class="form-label" for="editBio">Bio</label>
-  <textarea id="editBio" maxlength="160"
-   placeholder="Tell people a little about yourself"></textarea>
-
-  <label class="form-label" for="editCountry">Country</label>
-  <input id="editCountry" maxlength="60"
-   placeholder="Your country">
-
-  <label class="form-label" for="editInterests">Interests</label>
-  <input id="editInterests" maxlength="150"
-   placeholder="Music, Technology, Sports">
-
-  <button class="primary" id="saveProfileButton"
-   onclick="saveProfile()">Save Changes</button>
-
-  <button class="logout" onclick="closeEditProfile()">Cancel</button>
-  <p id="editMessage"></p>
+ <h2>Your Profile</h2><p class="sub">Your identity on 100m.</p>
+ <div class="card"><div class="avatar" id="profileAvatar">U</div><h3 class="user-name" id="profileName">Explorer</h3><p class="sub" id="profileEmail"></p>
+ <div class="profile-row"><div class="profile-label">BIO</div><div class="profile-value" id="profileBio">No bio added yet.</div></div>
+ <div class="profile-row"><div class="profile-label">COUNTRY</div><div class="profile-value" id="profileCountry">Not added</div></div>
+ <div class="profile-row"><div class="profile-label">INTERESTS</div><div class="profile-value" id="profileInterests">Not added</div></div>
+ <button class="primary" id="editProfileButton" onclick="openEditProfile()">✎ Edit Profile</button>
+ <button class="logout" onclick="logout()">Logout</button><button class="secondary logout hidden" id="exitGuestButton" onclick="exitGuest()">Exit Guest Mode</button>
+ <p id="profileMessage"></p></div>
+ <div class="card hidden" id="editProfileCard"><h3>Edit Your Profile</h3>
+ <label class="form-label" for="editUsername">Username</label><input id="editUsername" maxlength="25" placeholder="Your username">
+ <label class="form-label" for="editBio">Bio</label><textarea id="editBio" maxlength="160" placeholder="Tell people a little about yourself"></textarea>
+ <label class="form-label" for="editCountry">Country</label><input id="editCountry" maxlength="60" placeholder="Your country">
+ <label class="form-label" for="editInterests">Interests</label><input id="editInterests" maxlength="150" placeholder="Music, Technology, Sports">
+ <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-
+<footer class="note">Prototype notice: Radar, chat, reports, identity reveal, Karma points and Vibe Drops are local demo features. No GPS is collected, no strangers are detected, and no content is sent to other users.</footer>
 </main>
-
 <nav>
  <button class="active" onclick="go('home',this)">⌂<br>Home</button>
  <button onclick="go('radar',this)">◎<br>Radar</button>
  <button onclick="go('chats',this)">✉<br>Chats</button>
+ <button onclick="go('vibes',this)">✦<br>Vibes</button>
  <button onclick="go('groups',this)">♧<br>Groups</button>
  <button onclick="go('profile',this)">◉<br>Profile</button>
-</nav>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+</nav></div>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <script>
-const firebaseConfig = {
- apiKey: "AIzaSyAca66zpezTWS_gNwt7MGj7GW6YESu1Hqg",
- authDomain: "m-network-54d1e.firebaseapp.com",
- projectId: "m-network-54d1e",
- storageBucket: "m-network-54d1e.firebasestorage.app",
- messagingSenderId: "892689705216",
- appId: "1:892689705216:web:94a8124cd496ccb6dbebe5"
+const firebaseConfig={
+ apiKey:"AIzaSyAca66zpezTWS_gNwt7MGj7GW6YESu1Hqg",
+ authDomain:"m-network-54d1e.firebaseapp.com",
+ projectId:"m-network-54d1e",
+ storageBucket:"m-network-54d1e.firebasestorage.app",
+ messagingSenderId:"892689705216",
+ appId:"1:892689705216:web:94a8124cd496ccb6dbebe5"
 };
 
 firebase.initializeApp(firebaseConfig);
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth=firebase.auth(),db=firebase.firestore();
 
-let isLogin = false;
-let currentUser = null;
+let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
+let chatItems=[];
 
-function toggleAuth(){
- isLogin = !isLogin;
+const namesA=[
+ "SpicySamosa","NightOwl","PixelPanda","CosmicChai",
+ "NeonTiger","CloudNinja","HappyComet"
+];
 
- document.getElementById('authHeading').textContent =
-  isLogin ? 'Welcome Back' : 'Create Account';
-
- document.getElementById('authSub').textContent =
-  isLogin ? 'Login to your account.' : 'Join the global community.';
-
- document.getElementById('nameField').style.display =
-  isLogin ? 'none' : 'block';
-
- document.getElementById('authButton').textContent =
-  isLogin ? 'Login' : 'Create Account';
-
- document.getElementById('switchText').textContent =
-  isLogin ? "Don't have an account?" : 'Already have an account?';
-
- document.getElementById('switchButton').textContent =
-  isLogin ? 'Sign Up' : 'Login';
-
- document.getElementById('authMessage').textContent = '';
+function randomGuest(){
+ return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90));
 }
 
-function showMessage(message){
- document.getElementById('authMessage').textContent = message;
+function toggleAuth(){
+ isLogin=!isLogin;
+ document.getElementById("authHeading").textContent=isLogin?"Welcome Back":"Create Account";
+ document.getElementById("authSub").textContent=isLogin?"Login to your account.":"Join the global community.";
+ document.getElementById("nameField").style.display=isLogin?"none":"block";
+ document.getElementById("authButton").textContent=isLogin?"Login":"Create Account";
+ document.getElementById("switchText").textContent=isLogin?"Don't have an account?":"Already have an account?";
+ document.getElementById("switchButton").textContent=isLogin?"Sign Up":"Login";
+ document.getElementById("authMessage").textContent="";
+}
+
+function showMessage(m){
+ document.getElementById("authMessage").textContent=m;
 }
 
 async function handleAuth(){
- const email = document.getElementById('email').value.trim();
- const password = document.getElementById('password').value;
- const name = document.getElementById('displayName').value.trim();
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+ const name=document.getElementById("displayName").value.trim();
 
- if(!email || !password){
-  showMessage('Please enter your email and password.');
+ if(!email||!password){
+  showMessage("Please enter your email and password.");
   return;
  }
 
- if(password.length < 6){
-  showMessage('Password must have at least 6 characters.');
+ if(password.length<6){
+  showMessage("Password must have at least 6 characters.");
   return;
  }
 
- if(!isLogin && !name){
-  showMessage('Please enter a username.');
+ if(!isLogin&&!name){
+  showMessage("Please enter a username.");
   return;
  }
 
- const button = document.getElementById('authButton');
- button.disabled = true;
- button.textContent = 'Please wait...';
+ const b=document.getElementById("authButton");
+ b.disabled=true;
+ b.textContent="Please wait...";
 
  try{
   if(isLogin){
    await auth.signInWithEmailAndPassword(email,password);
   }else{
-   const result = await auth.createUserWithEmailAndPassword(email,password);
+   const result=await auth.createUserWithEmailAndPassword(email,password);
 
    await result.user.updateProfile({displayName:name});
 
-   await db.collection('users').doc(result.user.uid).set({
+   await db.collection("users").doc(result.user.uid).set({
     uid:result.user.uid,
     username:name,
     email:result.user.email,
-    bio:'',
-    country:'',
-    interests:'',
+    bio:"",
+    country:"",
+    interests:"",
     createdAt:firebase.firestore.FieldValue.serverTimestamp(),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
    });
   }
- }catch(error){
-  showMessage(error.message);
+ }catch(e){
+  showMessage(e.message);
  }finally{
-  button.disabled = false;
-  button.textContent = isLogin ? 'Login' : 'Create Account';
+  b.disabled=false;
+  b.textContent=isLogin?"Login":"Create Account";
  }
 }
 
+function enterGhostMode(){
+ guestMode=true;
+ guestName=randomGuest();
+ currentUser=null;
+
+ document.getElementById("authPage").style.display="none";
+ document.getElementById("app").style.display="block";
+ document.getElementById("topStatus").textContent="● GHOST DEMO";
+
+ displayProfile({
+  username:guestName,
+  bio:"Temporary guest profile",
+  country:"Not shared",
+  interests:"Exploring"
+ });
+
+ document.getElementById("profileEmail").textContent="Guest mode • no account";
+ document.getElementById("editProfileButton").classList.add("hidden");
+ document.getElementById("exitGuestButton").classList.remove("hidden");
+ document.getElementById("profileMessage").textContent="Temporary nickname for this demo session.";
+
+ go("home");
+}
+
+function exitGuest(){
+ guestMode=false;
+ guestName="";
+ chatItems=[];
+ renderChats();
+
+ document.getElementById("app").style.display="none";
+ document.getElementById("authPage").style.display="block";
+ document.getElementById("topStatus").textContent="● NETWORK";
+}
+
 async function loadUserProfile(user){
- currentUser = user;
+ currentUser=user;
+ guestMode=false;
 
- document.getElementById('profileName').textContent =
-  user.displayName || 'Explorer';
-
- document.getElementById('profileEmail').textContent =
-  user.email || '';
-
- document.getElementById('profileMessage').textContent =
-  'Loading profile...';
+ document.getElementById("topStatus").textContent="● NETWORK";
+ document.getElementById("profileName").textContent=user.displayName||"Explorer";
+ document.getElementById("profileEmail").textContent=user.email||"";
+ document.getElementById("profileMessage").textContent="Loading profile...";
+ document.getElementById("editProfileButton").classList.remove("hidden");
+ document.getElementById("exitGuestButton").classList.add("hidden");
 
  try{
-  const ref = db.collection('users').doc(user.uid);
-  const doc = await ref.get();
+  const ref=db.collection("users").doc(user.uid);
+  const doc=await ref.get();
   let data;
 
   if(doc.exists){
-   data = doc.data();
+   data=doc.data();
   }else{
-   data = {
+   data={
     uid:user.uid,
-    username:user.displayName || 'Explorer',
-    email:user.email || '',
-    bio:'',
-    country:'',
-    interests:''
+    username:user.displayName||"Explorer",
+    email:user.email||"",
+    bio:"",
+    country:"",
+    interests:""
    };
 
    await ref.set({
@@ -463,117 +345,89 @@ async function loadUserProfile(user){
   }
 
   displayProfile(data);
+  document.getElementById("profileMessage").textContent="Profile saved in Firestore.";
 
-  document.getElementById('profileMessage').textContent =
-   'Profile saved in Firestore.';
-
- }catch(error){
-  document.getElementById('profileMessage').textContent =
-   'Database error: ' + error.message;
+ }catch(e){
+  document.getElementById("profileMessage").textContent="Database error: "+e.message;
  }
 }
 
 function displayProfile(data){
- const username = data.username || 'Explorer';
+ const username=data.username||"Explorer";
 
- document.getElementById('profileName').textContent = username;
+ document.getElementById("profileName").textContent=username;
 
- document.getElementById('profileEmail').textContent =
-  currentUser ? currentUser.email || '' : '';
+ if(!guestMode){
+  document.getElementById("profileEmail").textContent=currentUser?currentUser.email||"":"";
+ }
 
- document.getElementById('profileBio').textContent =
-  data.bio || 'No bio added yet.';
-
- document.getElementById('profileCountry').textContent =
-  data.country || 'Not added';
-
- document.getElementById('profileInterests').textContent =
-  data.interests || 'Not added';
-
- document.getElementById('profileAvatar').textContent =
-  username.trim().charAt(0).toUpperCase() || 'U';
+ document.getElementById("profileBio").textContent=data.bio||"No bio added yet.";
+ document.getElementById("profileCountry").textContent=data.country||"Not added";
+ document.getElementById("profileInterests").textContent=data.interests||"Not added";
+ document.getElementById("profileAvatar").textContent=username.trim().charAt(0).toUpperCase()||"U";
 }
 
 function openEditProfile(){
- if(!currentUser) return;
+ if(!currentUser||guestMode)return;
 
- document.getElementById('editUsername').value =
-  document.getElementById('profileName').textContent;
+ document.getElementById("editUsername").value=document.getElementById("profileName").textContent;
 
- document.getElementById('editBio').value =
-  document.getElementById('profileBio').textContent === 'No bio added yet.'
-  ? ''
-  : document.getElementById('profileBio').textContent;
+ document.getElementById("editBio").value=
+  document.getElementById("profileBio").textContent==="No bio added yet."?"":document.getElementById("profileBio").textContent;
 
- document.getElementById('editCountry').value =
-  document.getElementById('profileCountry').textContent === 'Not added'
-  ? ''
-  : document.getElementById('profileCountry').textContent;
+ document.getElementById("editCountry").value=
+  document.getElementById("profileCountry").textContent==="Not added"?"":document.getElementById("profileCountry").textContent;
 
- document.getElementById('editInterests').value =
-  document.getElementById('profileInterests').textContent === 'Not added'
-  ? ''
-  : document.getElementById('profileInterests').textContent;
+ document.getElementById("editInterests").value=
+  document.getElementById("profileInterests").textContent==="Not added"?"":document.getElementById("profileInterests").textContent;
 
- document.getElementById('editMessage').textContent = '';
- document.getElementById('editProfileCard').style.display = 'block';
-
- document.getElementById('editProfileCard').scrollIntoView({
-  behavior:'smooth'
- });
+ document.getElementById("editMessage").textContent="";
+ document.getElementById("editProfileCard").style.display="block";
+ document.getElementById("editProfileCard").scrollIntoView({behavior:"smooth"});
 }
 
 function closeEditProfile(){
- document.getElementById('editProfileCard').style.display = 'none';
+ document.getElementById("editProfileCard").style.display="none";
 }
 
 async function saveProfile(){
- if(!currentUser) return;
+ if(!currentUser)return;
 
- const username = document.getElementById('editUsername').value.trim();
- const bio = document.getElementById('editBio').value.trim();
- const country = document.getElementById('editCountry').value.trim();
- const interests = document.getElementById('editInterests').value.trim();
+ const username=document.getElementById("editUsername").value.trim();
+ const bio=document.getElementById("editBio").value.trim();
+ const country=document.getElementById("editCountry").value.trim();
+ const interests=document.getElementById("editInterests").value.trim();
 
  if(!username){
-  document.getElementById('editMessage').textContent =
-   'Please enter a username.';
+  document.getElementById("editMessage").textContent="Please enter a username.";
   return;
  }
 
- const button = document.getElementById('saveProfileButton');
- button.disabled = true;
- button.textContent = 'Saving...';
+ const b=document.getElementById("saveProfileButton");
+ b.disabled=true;
+ b.textContent="Saving...";
 
  try{
-  await db.collection('users').doc(currentUser.uid).update({
-   username:username,
-   bio:bio,
-   country:country,
-   interests:interests,
+  await db.collection("users").doc(currentUser.uid).update({
+   username,
+   bio,
+   country,
+   interests,
    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   });
 
   await currentUser.updateProfile({displayName:username});
 
-  displayProfile({
-   username:username,
-   bio:bio,
-   country:country,
-   interests:interests
-  });
+  displayProfile({username,bio,country,interests});
 
-  document.getElementById('profileMessage').textContent =
-   'Profile updated successfully!';
-
+  document.getElementById("profileMessage").textContent="Profile updated successfully!";
   closeEditProfile();
 
- }catch(error){
-  document.getElementById('editMessage').textContent =
-   'Could not save: ' + error.message;
+ }catch(e){
+  document.getElementById("editMessage").textContent="Could not save: "+e.message;
  }finally{
-  button.disabled = false;
-  button.textContent = 'Save Changes';
+  b.disabled=false;
+  b.textContent="Save Changes";
  }
 }
 
@@ -583,34 +437,196 @@ function logout(){
 
 auth.onAuthStateChanged(user=>{
  if(user){
-  document.getElementById('authPage').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
+  guestMode=false;
+  document.getElementById("authPage").style.display="none";
+  document.getElementById("app").style.display="block";
   loadUserProfile(user);
- }else{
-  currentUser = null;
-  document.getElementById('authPage').style.display = 'block';
-  document.getElementById('app').style.display = 'none';
+ }else if(!guestMode){
+  currentUser=null;
+  document.getElementById("authPage").style.display="block";
+  document.getElementById("app").style.display="none";
  }
 });
 
 function go(id,btn){
- document.querySelectorAll('.page').forEach(p=>{
-  p.classList.remove('active');
- });
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 
- document.getElementById(id).classList.add('active');
+ const target=document.getElementById(id);
+ if(target)target.classList.add("active");
 
- document.querySelectorAll('nav button').forEach(b=>{
-  b.classList.remove('active');
- });
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
 
  if(btn){
-  btn.classList.add('active');
+  btn.classList.add("active");
  }else{
-  document.querySelectorAll('nav button')[0].classList.add('active');
+  document.querySelectorAll("nav button")[0].classList.add("active");
  }
 
  window.scrollTo(0,0);
+}
+
+function setRange(m){
+ document.getElementById("rangeTitle").textContent=m+"m Demo Zone";
+}
+
+function hotCold(){
+ const vals=[
+  "Signal: Cool",
+  "Signal: Nearby (demo)",
+  "Signal: Warming up",
+  "Signal: Unknown"
+ ];
+
+ document.getElementById("signalText").textContent=
+  vals[Math.floor(Math.random()*vals.length)];
+}
+
+function sendChat(){
+ const input=document.getElementById("chatInput");
+ const value=input.value.trim();
+
+ if(!value)return;
+
+ chatItems.push({
+  text:value,
+  at:Date.now(),
+  name:guestMode?guestName:(currentUser?.displayName||"You")
+ });
+
+ input.value="";
+ renderChats();
+}
+
+function renderChats(){
+ const box=document.getElementById("chatMessages");
+
+ chatItems=chatItems.filter(x=>Date.now()-x.at<30*60*1000);
+
+ if(!chatItems.length){
+  box.innerHTML='<div class="empty">No messages yet. Start the demo conversation.</div>';
+  return;
+ }
+
+ box.innerHTML="";
+
+ chatItems.forEach(x=>{
+  const el=document.createElement("div");
+  el.className="chat-msg";
+
+  const strong=document.createElement("strong");
+  strong.textContent=x.name+": ";
+
+  const span=document.createElement("span");
+  span.textContent=x.text;
+
+  const small=document.createElement("small");
+  small.textContent="Expires in "+Math.max(0,Math.ceil((30*60*1000-(Date.now()-x.at))/60000))+" min";
+
+  el.append(strong,span,small);
+  box.appendChild(el);
+ });
+}
+
+setInterval(renderChats,30000);
+
+function postVibe(){
+ const type=document.getElementById("vibeType").value;
+ const textValue=document.getElementById("vibeText").value.trim();
+
+ if(!textValue){
+  alert("Write something first.");
+  return;
+ }
+
+ const feed=document.getElementById("vibeFeed");
+ const card=document.createElement("div");
+ card.className="card";
+
+ const title=document.createElement("h3");
+ title.textContent=type+" • "+(guestMode?guestName:(currentUser?.displayName||"You"));
+
+ const body=document.createElement("p");
+ body.className="sub";
+ body.style.margin="8px 0";
+ body.textContent=textValue;
+
+ card.append(title,body);
+
+ if(type==="Poll"){
+  [
+   document.getElementById("pollOption1").value.trim(),
+   document.getElementById("pollOption2").value.trim()
+  ].filter(Boolean).forEach(option=>{
+   const button=document.createElement("button");
+   button.className="secondary";
+   button.style.width="100%";
+   button.style.marginTop="7px";
+   button.textContent="Vote: "+option;
+
+   button.onclick=()=>{
+    button.textContent="✓ Voted: "+option;
+    button.disabled=true;
+   };
+
+   card.appendChild(button);
+  });
+ }
+
+ feed.prepend(card);
+
+ document.getElementById("vibeText").value="";
+ document.getElementById("pollOption1").value="";
+ document.getElementById("pollOption2").value="";
+}
+
+function requestReveal(){
+ const status=document.getElementById("revealStatus");
+
+ if(!document.getElementById("myRevealConsent").checked){
+  status.textContent="Tick the consent box first.";
+  status.className="message warning";
+  return;
+ }
+
+ status.textContent="Demo preview only: no request was sent. A real reveal must also receive the other person's separate approval.";
+ status.className="message good";
+}
+
+function submitReport(){
+ const reason=document.getElementById("reportReason").value;
+ const details=document.getElementById("reportDetails").value.trim();
+
+ try{
+  const reports=JSON.parse(localStorage.getItem("100m_demo_reports")||"[]");
+
+  reports.push({
+   reason,
+   details,
+   createdAt:Date.now()
+  });
+
+  localStorage.setItem("100m_demo_reports",JSON.stringify(reports));
+
+  document.getElementById("reportStatus").textContent="Demo report saved on this device only. It was not sent to moderators.";
+  document.getElementById("reportDetails").value="";
+
+ }catch(e){
+  document.getElementById("reportStatus").textContent="Could not save this local demo report.";
+ }
+}
+
+function blockDemo(){
+ try{
+  localStorage.setItem("100m_demo_blocked","sample-account");
+  document.getElementById("blockStatus").textContent="Sample account marked as blocked on this device only.";
+ }catch(e){
+  document.getElementById("blockStatus").textContent="Local storage unavailable.";
+ }
+}
+
+function earnKarma(){
+ karma++;
+ document.getElementById("karmaPoints").textContent=karma+" Karma points";
 }
 </script>
 
