@@ -50,7 +50,7 @@ nav button.active{color:var(--cyan)}
 .chat-msg small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
 .empty{text-align:center;padding:20px;color:var(--muted);font-size:13px}
 .poll-choice{margin:12px 0}.poll-choice button{width:100%;text-align:left}.poll-result-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:8px 2px 6px}.poll-track{height:9px;background:#080f20;border:1px solid #30415e;border-radius:20px;overflow:hidden}.poll-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:20px;transition:width .25s ease}.poll-total{font-size:12px;color:var(--muted);margin-top:12px}
-.comment-area{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.comment-list{display:grid;gap:8px;margin:10px 0}.comment-item{background:#0b1426;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px}.comment-item strong{color:var(--cyan);display:block;margin-bottom:3px}.comment-form{display:flex;gap:8px;align-items:flex-end}.comment-form input{flex:1;min-width:0;margin:0}.comment-form button{white-space:nowrap}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}.reply-list{display:grid;gap:6px;margin:10px 0 8px 12px;padding-left:10px;border-left:2px solid var(--line)}.reply-item{background:#101c30;border-radius:9px;padding:7px 9px;font-size:12px}.reply-item strong{display:block;color:var(--cyan);margin-bottom:2px}
+.comment-area{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.comment-list{display:grid;gap:8px;margin:10px 0}.comment-item{background:#0b1426;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px}.comment-item strong{color:var(--cyan);display:block;margin-bottom:3px}.comment-form{display:flex;gap:8px;align-items:flex-end}.comment-form input{flex:1;min-width:0;margin:0}.comment-form button{white-space:nowrap}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}.reply-list{display:grid;gap:6px;margin:10px 0 8px 12px;padding-left:10px;border-left:2px solid var(--line)}.reply-item{background:#101c30;border-radius:9px;padding:7px 9px;font-size:12px}.reply-item strong{display:block;color:var(--cyan);margin-bottom:2px}.reaction-area{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px}.reaction-btn{border:1px solid var(--line);background:#101c30;color:var(--text);border-radius:20px;padding:7px 11px;font-size:13px;cursor:pointer}.reaction-btn.active{border-color:var(--cyan);background:#173044}.reaction-btn:disabled{opacity:.6}.reaction-note{font-size:12px;color:var(--muted);margin-top:5px}
 .hidden{display:none!important}
 footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </style>
@@ -212,7 +212,7 @@ const auth=firebase.auth(),db=firebase.firestore();
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
-let vibeVoteUnsubs={},vibeCommentUnsubs={},vibeReplyUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
+let vibeVoteUnsubs={},vibeCommentUnsubs={},vibeReplyUnsubs={},vibeReactionUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
 const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
 function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90))}
 function toggleAuth(){
@@ -416,7 +416,51 @@ function clearVibeVoteListeners(){
 function clearVibeCommentListeners(){
  Object.values(vibeCommentUnsubs).forEach(unsub=>{try{unsub()}catch(e){}});
  Object.values(vibeReplyUnsubs).forEach(unsub=>{try{unsub()}catch(e){}});
- vibeCommentUnsubs={};vibeReplyUnsubs={};
+ Object.values(vibeReactionUnsubs).forEach(unsub=>{try{unsub()}catch(e){}});
+ vibeCommentUnsubs={};vibeReplyUnsubs={};vibeReactionUnsubs={};
+}
+const VIBE_REACTIONS=[
+ {type:"like",label:"❤️ Like"},
+ {type:"fire",label:"🔥 Fire"},
+ {type:"funny",label:"😂 Funny"},
+ {type:"wow",label:"😮 Wow"}
+];
+function startVibeReactions(vibeId,area,note){
+ const ref=db.collection("vibes").doc(vibeId).collection("reactions");
+ if(vibeReactionUnsubs[vibeId]){try{vibeReactionUnsubs[vibeId]()}catch(e){}}
+ vibeReactionUnsubs[vibeId]=ref.onSnapshot(snapshot=>{
+  const counts={like:0,fire:0,funny:0,wow:0};let myReaction=null;
+  snapshot.forEach(reactionDoc=>{
+   const data=reactionDoc.data();
+   if(Object.prototype.hasOwnProperty.call(counts,data.type))counts[data.type]++;
+   if(currentUser&&reactionDoc.id===currentUser.uid)myReaction=data.type;
+  });
+  area.innerHTML="";
+  VIBE_REACTIONS.forEach(reaction=>{
+   const button=document.createElement("button");
+   button.type="button";button.className="reaction-btn"+(myReaction===reaction.type?" active":"");
+   button.textContent=reaction.label+" "+counts[reaction.type];
+   button.setAttribute("aria-pressed",myReaction===reaction.type?"true":"false");
+   button.addEventListener("click",()=>setVibeReaction(vibeId,reaction.type,button,note));
+   area.appendChild(button);
+  });
+  note.textContent=myReaction?"Your reaction: "+(VIBE_REACTIONS.find(x=>x.type===myReaction)?.label||myReaction)+". Tap another to change it.":"Choose one reaction. You can change it anytime.";
+ },error=>{note.textContent="Could not load reactions: "+error.message});
+}
+async function setVibeReaction(vibeId,type,button,note){
+ if(!currentUser||guestMode){note.textContent="Please sign in to react.";return}
+ if(!VIBE_REACTIONS.some(item=>item.type===type)){note.textContent="Invalid reaction.";return}
+ button.disabled=true;
+ try{
+  const username=(document.getElementById("profileName").textContent||currentUser.displayName||"Member").trim();
+  await db.collection("vibes").doc(vibeId).collection("reactions").doc(currentUser.uid).set({
+   uid:currentUser.uid,username,type,
+   updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  note.textContent="Reaction saved.";
+ }catch(e){
+  note.textContent="Reaction not saved: "+e.message;
+ }finally{button.disabled=false}
 }
 function startVibeComments(vibeId,list){
  if(vibeCommentUnsubs[vibeId]){try{vibeCommentUnsubs[vibeId]()}catch(e){}}
@@ -552,6 +596,9 @@ function renderVibeFeed(snapshot){
    const voteArea=document.createElement("div");voteArea.className="poll-votes";
    card.appendChild(voteArea);renderPollVotes(doc.id,data.options,voteArea);
   }
+  const reactionArea=document.createElement("div");reactionArea.className="reaction-area";
+  const reactionNote=document.createElement("p");reactionNote.className="reaction-note";reactionNote.textContent="Choose one reaction. You can change it anytime.";
+  card.append(reactionArea,reactionNote);startVibeReactions(doc.id,reactionArea,reactionNote);
   const commentArea=document.createElement("div");commentArea.className="comment-area";
   const commentHeading=document.createElement("strong");commentHeading.textContent="Comments";
   const commentList=document.createElement("div");commentList.className="comment-list";
