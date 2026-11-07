@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -210,6 +209,7 @@ const auth=firebase.auth(),db=firebase.firestore();
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
+let vibeVoteUnsubs={};
 const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
 function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90))}
 function toggleAuth(){
@@ -307,7 +307,6 @@ async function saveProfile(){
  }catch(e){document.getElementById("editMessage").textContent="Could not save: "+e.message}
  finally{b.disabled=false;b.textContent="Save Changes"}
 }
-
 function logout(){
  if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
@@ -405,9 +404,51 @@ function renderChats(){
  });
 }
 setInterval(renderChats,30000);
-
-/* FIREBASE VIBES FEED */
+function clearVibeVoteListeners(){
+ Object.values(vibeVoteUnsubs).forEach(unsub=>{try{unsub()}catch(e){}});
+ vibeVoteUnsubs={};
+}
+function renderPollVotes(vibeId,options,area){
+ const voteRef=db.collection("vibes").doc(vibeId).collection("votes");
+ const unsub=voteRef.onSnapshot(snapshot=>{
+  const counts=options.map(()=>0);let myVote=null;
+  snapshot.forEach(voteDoc=>{
+   const vote=voteDoc.data(),index=Number(vote.optionIndex);
+   if(Number.isInteger(index)&&index>=0&&index<counts.length)counts[index]++;
+   if(currentUser&&voteDoc.id===currentUser.uid)myVote=index;
+  });
+  area.innerHTML="";
+  options.forEach((option,index)=>{
+   const line=document.createElement("div");line.className="poll-choice";
+   const button=document.createElement("button");button.className="secondary small";
+   button.textContent=option+" — "+counts[index]+(counts[index]===1?" vote":" votes");
+   button.disabled=!!myVote||myVote===0||!currentUser||guestMode;
+   button.addEventListener("click",()=>voteForVibe(vibeId,index,button));
+   line.appendChild(button);area.appendChild(line);
+  });
+  if(myVote!==null&&options[myVote]){
+   const note=document.createElement("p");note.className="message muted";note.textContent="You voted for: "+options[myVote];area.appendChild(note);
+  }else if(!currentUser||guestMode){
+   const note=document.createElement("p");note.className="message muted";note.textContent="Sign in to vote.";area.appendChild(note);
+  }
+ },error=>{area.textContent="Could not load poll votes: "+error.message});
+ vibeVoteUnsubs[vibeId]=unsub;
+}
+async function voteForVibe(vibeId,optionIndex,button){
+ if(!currentUser||guestMode){document.getElementById("vibeStatus").textContent="Please sign in to vote.";return}
+ button.disabled=true;button.textContent="Saving vote...";
+ try{
+  await db.collection("vibes").doc(vibeId).collection("votes").doc(currentUser.uid).set({
+   uid:currentUser.uid,optionIndex,createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  document.getElementById("vibeStatus").textContent="Your vote was saved.";
+ }catch(e){
+  document.getElementById("vibeStatus").textContent=e.code==="permission-denied"?"You may have already voted in this poll, or voting rules are not published yet.":"Vote not saved: "+e.message;
+  button.disabled=false;
+ }
+}
 function renderVibeFeed(snapshot){
+ clearVibeVoteListeners();
  const feed=document.getElementById("vibeFeed");feed.innerHTML="";
  if(snapshot.empty){feed.innerHTML='<div class="empty">No Vibes yet. Be the first to share something positive.</div>';return}
  snapshot.forEach(doc=>{
@@ -415,15 +456,15 @@ function renderVibeFeed(snapshot){
   const title=document.createElement("h3");title.textContent=(data.type||"Vibe")+" • "+(data.username||"Member");
   const body=document.createElement("p");body.className="sub";body.style.margin="8px 0";body.textContent=data.text||"";
   card.append(title,body);
-  if(data.type==="Poll"&&Array.isArray(data.options)){
-   data.options.filter(Boolean).forEach(option=>{
-    const optionText=document.createElement("p");optionText.className="message muted";optionText.textContent="• "+option;card.appendChild(optionText);
-   });
+  if(data.type==="Poll"&&Array.isArray(data.options)&&data.options.length){
+   const voteArea=document.createElement("div");voteArea.className="poll-votes";
+   card.appendChild(voteArea);renderPollVotes(doc.id,data.options,voteArea);
   }
   feed.appendChild(card);
  });
 }
 function startVibeFeed(user){
+ clearVibeVoteListeners();
  if(vibesUnsubscribe){vibesUnsubscribe();vibesUnsubscribe=null}
  const status=document.getElementById("vibeStatus");
  if(!user){status.textContent="Sign in to view and share community Vibes.";document.getElementById("vibeFeed").innerHTML="";return}
