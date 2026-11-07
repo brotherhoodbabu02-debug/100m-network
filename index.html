@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -128,7 +129,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </section>
 
 <section class="page" id="vibes">
- <h2>Vibe Drops</h2><p class="sub">Post a poll, question, or positive thought in this local demo feed.</p>
+ <h2>Vibe Drops</h2><p class="sub">Share a question, poll, or positive thought with the 100m community.</p><p id="vibeStatus" class="message muted">Loading Vibes...</p>
  <div class="card"><select id="vibeType"><option value="Question">Question</option><option value="Poll">Poll</option><option value="Confession">Positive confession</option></select>
  <textarea id="vibeText" maxlength="220" placeholder="Share something kind, fun or interesting..."></textarea>
  <input id="pollOption1" maxlength="60" placeholder="Poll option 1 (optional)">
@@ -143,6 +144,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <label class="form-label"><input id="myRevealConsent" type="checkbox" style="width:auto;margin-right:8px">I understand that identity sharing must be optional.</label>
  <button class="primary" onclick="requestReveal()">Preview reveal request</button><p id="revealStatus" class="message muted">No request sent.</p></div>
 </section>
+
 <section class="page" id="safety">
  <h2>Karma Shield</h2><p class="sub">Personal safety controls for this demo.</p>
  <div class="card"><h3>Report a concern</h3><p class="sub" style="margin:7px 0">Reports are stored only on this device in this prototype. They are not sent to a moderation team.</p>
@@ -178,7 +180,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-<footer class="note">Prototype notice: Private one-to-one chats and profiles use Firebase. Ghost Room, Radar, reports, identity reveal, Karma points, Groups and Vibe Drops remain demo/local features in this version. Radar is disabled as a real people-finder; no GPS is collected or shared.</footer>
+<footer class="note">Prototype notice: Private one-to-one chats, profiles and Vibe Drops use Firebase. Ghost Room, Radar, reports, identity reveal, Karma points and Groups remain demo/local features in this version. Radar is disabled as a real people-finder; no GPS is collected or shared.</footer>
 </main>
 <nav>
  <button class="active" onclick="go('home',this)">⌂<br>Home</button>
@@ -207,7 +209,7 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.firestore();
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
-let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null;
+let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
 const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
 function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90))}
 function toggleAuth(){
@@ -249,6 +251,7 @@ function enterGhostMode(){
  go("home");
 }
 function exitGuest(){
+ if(vibesUnsubscribe){vibesUnsubscribe();vibesUnsubscribe=null}
  guestMode=false;guestName="";chatItems=[];renderChats();
  document.getElementById("app").style.display="none";document.getElementById("authPage").style.display="block";
  document.getElementById("topStatus").textContent="● NETWORK";
@@ -260,6 +263,7 @@ async function loadUserProfile(user){
  document.getElementById("profileEmail").textContent=user.email||"";
  document.getElementById("profileMessage").textContent="Loading profile...";
  loadConversations(user);
+ startVibeFeed(user);
  document.getElementById("editProfileButton").classList.remove("hidden");
  document.getElementById("exitGuestButton").classList.add("hidden");
  try{
@@ -303,9 +307,11 @@ async function saveProfile(){
  }catch(e){document.getElementById("editMessage").textContent="Could not save: "+e.message}
  finally{b.disabled=false;b.textContent="Save Changes"}
 }
- function logout(){
+
+function logout(){
  if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
+ if(vibesUnsubscribe){vibesUnsubscribe();vibesUnsubscribe=null}
  activeChatId=null;auth.signOut();
 }
 function chatDocumentId(uidA,uidB){return [uidA,uidB].sort().join("__")}
@@ -399,19 +405,56 @@ function renderChats(){
  });
 }
 setInterval(renderChats,30000);
-function postVibe(){
+
+/* FIREBASE VIBES FEED */
+function renderVibeFeed(snapshot){
+ const feed=document.getElementById("vibeFeed");feed.innerHTML="";
+ if(snapshot.empty){feed.innerHTML='<div class="empty">No Vibes yet. Be the first to share something positive.</div>';return}
+ snapshot.forEach(doc=>{
+  const data=doc.data(),card=document.createElement("div");card.className="card";
+  const title=document.createElement("h3");title.textContent=(data.type||"Vibe")+" • "+(data.username||"Member");
+  const body=document.createElement("p");body.className="sub";body.style.margin="8px 0";body.textContent=data.text||"";
+  card.append(title,body);
+  if(data.type==="Poll"&&Array.isArray(data.options)){
+   data.options.filter(Boolean).forEach(option=>{
+    const optionText=document.createElement("p");optionText.className="message muted";optionText.textContent="• "+option;card.appendChild(optionText);
+   });
+  }
+  feed.appendChild(card);
+ });
+}
+function startVibeFeed(user){
+ if(vibesUnsubscribe){vibesUnsubscribe();vibesUnsubscribe=null}
+ const status=document.getElementById("vibeStatus");
+ if(!user){status.textContent="Sign in to view and share community Vibes.";document.getElementById("vibeFeed").innerHTML="";return}
+ status.textContent="Connecting to community Vibes...";
+ vibesUnsubscribe=db.collection("vibes").orderBy("createdAt","desc").limit(50).onSnapshot(snapshot=>{
+  renderVibeFeed(snapshot);status.textContent="Live community feed • Latest 50 posts";
+ },error=>{
+  status.textContent="Could not load Vibes: "+error.message;
+ });
+}
+async function postVibe(){
+ const status=document.getElementById("vibeStatus");
+ if(!currentUser||guestMode){status.textContent="Please sign in with your account to post a Vibe.";return}
  const type=document.getElementById("vibeType").value,textValue=document.getElementById("vibeText").value.trim();
- if(!textValue){alert("Write something first.");return}
- const feed=document.getElementById("vibeFeed"),card=document.createElement("div");card.className="card";
- const title=document.createElement("h3");title.textContent=type+" • "+(guestMode?guestName:(currentUser?.displayName||"You"));
- const body=document.createElement("p");body.className="sub";body.style.margin="8px 0";body.textContent=textValue;
- card.append(title,body);
- if(type==="Poll"){
-  [document.getElementById("pollOption1").value.trim(),document.getElementById("pollOption2").value.trim()].filter(Boolean).forEach(option=>{
-   const button=document.createElement("button");button.className="secondary";button.style.width="100%";button.style.marginTop="7px";button.textContent="Vote: "+option;button.onclick=()=>{button.textContent="✓ Voted: "+option;button.disabled=true};card.appendChild(button);
+ if(!textValue){status.textContent="Write something first.";return}
+ const profileName=document.getElementById("profileName").textContent.trim();
+ const options=type==="Poll"?[document.getElementById("pollOption1").value.trim(),document.getElementById("pollOption2").value.trim()].filter(Boolean):[];
+ const button=document.querySelector('#vibes button.primary');button.disabled=true;button.textContent="Posting...";
+ try{
+  await db.collection("vibes").add({
+   uid:currentUser.uid,
+   username:profileName||currentUser.displayName||"Member",
+   type,
+   text:textValue,
+   options,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
- }
- feed.prepend(card);document.getElementById("vibeText").value="";document.getElementById("pollOption1").value="";document.getElementById("pollOption2").value="";
+  document.getElementById("vibeText").value="";document.getElementById("pollOption1").value="";document.getElementById("pollOption2").value="";
+  status.textContent="Your Vibe was posted to the community.";
+ }catch(e){status.textContent="Vibe not posted: "+e.message}
+ finally{button.disabled=false;button.textContent="Drop it"}
 }
 function requestReveal(){
  const status=document.getElementById("revealStatus");
