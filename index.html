@@ -50,6 +50,7 @@ nav button.active{color:var(--cyan)}
 .chat-msg small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
 .empty{text-align:center;padding:20px;color:var(--muted);font-size:13px}
 .poll-choice{margin:12px 0}.poll-choice button{width:100%;text-align:left}.poll-result-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:8px 2px 6px}.poll-track{height:9px;background:#080f20;border:1px solid #30415e;border-radius:20px;overflow:hidden}.poll-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:20px;transition:width .25s ease}.poll-total{font-size:12px;color:var(--muted);margin-top:12px}
+.comment-area{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.comment-list{display:grid;gap:8px;margin:10px 0}.comment-item{background:#0b1426;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px}.comment-item strong{color:var(--cyan);display:block;margin-bottom:3px}.comment-form{display:flex;gap:8px;align-items:flex-end}.comment-form input{flex:1;min-width:0;margin:0}.comment-form button{white-space:nowrap}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}
 .hidden{display:none!important}
 footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </style>
@@ -211,7 +212,7 @@ const auth=firebase.auth(),db=firebase.firestore();
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
-let vibeVoteUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
+let vibeVoteUnsubs={},vibeCommentUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
 const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
 function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90))}
 function toggleAuth(){
@@ -254,6 +255,7 @@ function enterGhostMode(){
 }
 function exitGuest(){
  if(vibesUnsubscribe){vibesUnsubscribe();vibesUnsubscribe=null}
+ clearVibeCommentListeners();clearVibeVoteListeners();
  guestMode=false;guestName="";chatItems=[];renderChats();
  document.getElementById("app").style.display="none";document.getElementById("authPage").style.display="block";
  document.getElementById("topStatus").textContent="● NETWORK";
@@ -313,6 +315,7 @@ function logout(){
  if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
  if(vibesUnsubscribe){vibesUnsubscribe();vibesUnsubscribe=null}
+ clearVibeCommentListeners();clearVibeVoteListeners();
  activeChatId=null;auth.signOut();
 }
 function chatDocumentId(uidA,uidB){return [uidA,uidB].sort().join("__")}
@@ -410,6 +413,40 @@ function clearVibeVoteListeners(){
  Object.values(vibeVoteUnsubs).forEach(unsub=>{try{unsub()}catch(e){}});
  vibeVoteUnsubs={};
 }
+function clearVibeCommentListeners(){
+ Object.values(vibeCommentUnsubs).forEach(unsub=>{try{unsub()}catch(e){}});
+ vibeCommentUnsubs={};
+}
+function startVibeComments(vibeId,list){
+ if(vibeCommentUnsubs[vibeId]){try{vibeCommentUnsubs[vibeId]()}catch(e){}}
+ vibeCommentUnsubs[vibeId]=db.collection("vibes").doc(vibeId).collection("comments")
+  .orderBy("createdAt","desc").limit(20).onSnapshot(snapshot=>{
+   list.innerHTML="";
+   if(snapshot.empty){const empty=document.createElement("p");empty.className="comment-note";empty.textContent="No comments yet. Start a friendly conversation.";list.appendChild(empty);return}
+   snapshot.forEach(commentDoc=>{
+    const data=commentDoc.data(),item=document.createElement("div");item.className="comment-item";
+    const name=document.createElement("strong");name.textContent=data.username||"Member";
+    const text=document.createElement("span");text.textContent=data.text||"";
+    item.append(name,text);list.appendChild(item);
+   });
+  },error=>{list.textContent="Could not load comments: "+error.message});
+}
+async function submitVibeComment(vibeId,input,button,note){
+ if(!currentUser||guestMode){note.textContent="Please sign in to comment.";return}
+ const textValue=input.value.trim();
+ if(!textValue){note.textContent="Write a comment first.";return}
+ if(textValue.length>500){note.textContent="Comments must be 500 characters or less.";return}
+ const username=(document.getElementById("profileName").textContent||currentUser.displayName||"Member").trim();
+ button.disabled=true;button.textContent="Posting...";
+ try{
+  await db.collection("vibes").doc(vibeId).collection("comments").add({
+   uid:currentUser.uid,username,text:textValue,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  input.value="";note.textContent="Comment posted.";
+ }catch(e){note.textContent="Comment not posted: "+e.message}
+ finally{button.disabled=false;button.textContent="Comment"}
+}
 function renderPollVotes(vibeId,options,area){
  const voteRef=db.collection("vibes").doc(vibeId).collection("votes");
  const unsub=voteRef.onSnapshot(snapshot=>{
@@ -460,7 +497,7 @@ async function voteForVibe(vibeId,optionIndex,button){
  }
 }
 function renderVibeFeed(snapshot){
- clearVibeVoteListeners();
+ clearVibeVoteListeners();clearVibeCommentListeners();
  const feed=document.getElementById("vibeFeed");feed.innerHTML="";
  if(snapshot.empty){feed.innerHTML='<div class="empty">No Vibes yet. Be the first to share something positive.</div>';return}
  snapshot.forEach(doc=>{
@@ -472,6 +509,17 @@ function renderVibeFeed(snapshot){
    const voteArea=document.createElement("div");voteArea.className="poll-votes";
    card.appendChild(voteArea);renderPollVotes(doc.id,data.options,voteArea);
   }
+  const commentArea=document.createElement("div");commentArea.className="comment-area";
+  const commentHeading=document.createElement("strong");commentHeading.textContent="Comments";
+  const commentList=document.createElement("div");commentList.className="comment-list";
+  const form=document.createElement("div");form.className="comment-form";
+  const input=document.createElement("input");input.type="text";input.maxLength=500;input.placeholder="Write a friendly comment...";
+  const button=document.createElement("button");button.className="secondary small";button.textContent="Comment";
+  const note=document.createElement("p");note.className="comment-note";note.textContent="Up to 500 characters.";
+  button.addEventListener("click",()=>submitVibeComment(doc.id,input,button,note));
+  input.addEventListener("keydown",event=>{if(event.key==="Enter")submitVibeComment(doc.id,input,button,note)});
+  form.append(input,button);commentArea.append(commentHeading,commentList,form,note);card.appendChild(commentArea);
+  startVibeComments(doc.id,commentList);
   feed.appendChild(card);
  });
 }
