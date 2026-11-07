@@ -50,7 +50,7 @@ nav button.active{color:var(--cyan)}
 .chat-msg small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
 .empty{text-align:center;padding:20px;color:var(--muted);font-size:13px}
 .poll-choice{margin:12px 0}.poll-choice button{width:100%;text-align:left}.poll-result-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:8px 2px 6px}.poll-track{height:9px;background:#080f20;border:1px solid #30415e;border-radius:20px;overflow:hidden}.poll-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:20px;transition:width .25s ease}.poll-total{font-size:12px;color:var(--muted);margin-top:12px}
-.comment-area{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.comment-list{display:grid;gap:8px;margin:10px 0}.comment-item{background:#0b1426;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px}.comment-item strong{color:var(--cyan);display:block;margin-bottom:3px}.comment-form{display:flex;gap:8px;align-items:flex-end}.comment-form input{flex:1;min-width:0;margin:0}.comment-form button{white-space:nowrap}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}
+.comment-area{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.comment-list{display:grid;gap:8px;margin:10px 0}.comment-item{background:#0b1426;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px}.comment-item strong{color:var(--cyan);display:block;margin-bottom:3px}.comment-form{display:flex;gap:8px;align-items:flex-end}.comment-form input{flex:1;min-width:0;margin:0}.comment-form button{white-space:nowrap}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}.reply-list{display:grid;gap:6px;margin:10px 0 8px 12px;padding-left:10px;border-left:2px solid var(--line)}.reply-item{background:#101c30;border-radius:9px;padding:7px 9px;font-size:12px}.reply-item strong{display:block;color:var(--cyan);margin-bottom:2px}
 .hidden{display:none!important}
 footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </style>
@@ -212,7 +212,7 @@ const auth=firebase.auth(),db=firebase.firestore();
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
-let vibeVoteUnsubs={},vibeCommentUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
+let vibeVoteUnsubs={},vibeCommentUnsubs={},vibeReplyUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
 const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
 function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90))}
 function toggleAuth(){
@@ -415,7 +415,8 @@ function clearVibeVoteListeners(){
 }
 function clearVibeCommentListeners(){
  Object.values(vibeCommentUnsubs).forEach(unsub=>{try{unsub()}catch(e){}});
- vibeCommentUnsubs={};
+ Object.values(vibeReplyUnsubs).forEach(unsub=>{try{unsub()}catch(e){}});
+ vibeCommentUnsubs={};vibeReplyUnsubs={};
 }
 function startVibeComments(vibeId,list){
  if(vibeCommentUnsubs[vibeId]){try{vibeCommentUnsubs[vibeId]()}catch(e){}}
@@ -427,9 +428,51 @@ function startVibeComments(vibeId,list){
     const data=commentDoc.data(),item=document.createElement("div");item.className="comment-item";
     const name=document.createElement("strong");name.textContent=data.username||"Member";
     const text=document.createElement("span");text.textContent=data.text||"";
-    item.append(name,text);list.appendChild(item);
+    const replyList=document.createElement("div");replyList.className="reply-list";
+    const replyForm=document.createElement("div");replyForm.className="comment-form";
+    const replyInput=document.createElement("input");replyInput.type="text";replyInput.maxLength=300;replyInput.placeholder="Write a reply...";
+    const replyButton=document.createElement("button");replyButton.className="secondary small";replyButton.textContent="Reply";
+    const replyNote=document.createElement("p");replyNote.className="comment-note";replyNote.textContent="Replies up to 300 characters.";
+    replyButton.addEventListener("click",()=>submitVibeReply(vibeId,commentDoc.id,replyInput,replyButton,replyNote));
+    replyInput.addEventListener("keydown",event=>{if(event.key==="Enter")submitVibeReply(vibeId,commentDoc.id,replyInput,replyButton,replyNote)});
+    item.append(name,text,replyList,replyForm,replyNote);
+    replyForm.append(replyInput,replyButton);
+    startVibeReplies(vibeId,commentDoc.id,replyList);
+    list.appendChild(item);
    });
   },error=>{list.textContent="Could not load comments: "+error.message});
+}
+function startVibeReplies(vibeId,commentId,list){
+ const key=vibeId+"_"+commentId;
+ if(vibeReplyUnsubs[key]){try{vibeReplyUnsubs[key]()}catch(e){}}
+ vibeReplyUnsubs[key]=db.collection("vibes").doc(vibeId).collection("comments").doc(commentId)
+  .collection("replies").orderBy("createdAt","asc").limit(30)
+  .onSnapshot(snapshot=>{
+   list.innerHTML="";
+   snapshot.forEach(replyDoc=>{
+    const data=replyDoc.data(),row=document.createElement("div");row.className="reply-item";
+    const author=document.createElement("strong");author.textContent=data.username||"Member";
+    const message=document.createElement("span");message.textContent=data.text||"";
+    row.append(author,message);list.appendChild(row);
+   });
+  },error=>{list.textContent="Could not load replies: "+error.message});
+}
+async function submitVibeReply(vibeId,commentId,input,button,note){
+ if(!currentUser||guestMode){note.textContent="Please sign in to reply.";return}
+ const textValue=input.value.trim();
+ if(!textValue){note.textContent="Write a reply first.";return}
+ if(textValue.length>300){note.textContent="Replies must be 300 characters or less.";return}
+ const username=(document.getElementById("profileName").textContent||currentUser.displayName||"Member").trim();
+ button.disabled=true;button.textContent="Sending...";
+ try{
+  await db.collection("vibes").doc(vibeId).collection("comments").doc(commentId)
+   .collection("replies").add({
+    uid:currentUser.uid,username,text:textValue,
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+   });
+  input.value="";note.textContent="Reply posted.";
+ }catch(e){note.textContent="Reply not posted: "+e.message}
+ finally{button.disabled=false;button.textContent="Reply"}
 }
 async function submitVibeComment(vibeId,input,button,note){
  if(!currentUser||guestMode){note.textContent="Please sign in to comment.";return}
