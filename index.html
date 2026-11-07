@@ -49,6 +49,7 @@ nav button.active{color:var(--cyan)}
 .chat-msg{background:#0d1628;border:1px solid #263852;border-radius:13px;padding:10px;margin:8px 0;font-size:13px;overflow-wrap:anywhere}
 .chat-msg small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
 .empty{text-align:center;padding:20px;color:var(--muted);font-size:13px}
+.poll-choice{margin:12px 0}.poll-choice button{width:100%;text-align:left}.poll-result-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:8px 2px 6px}.poll-track{height:9px;background:#080f20;border:1px solid #30415e;border-radius:20px;overflow:hidden}.poll-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:20px;transition:width .25s ease}.poll-total{font-size:12px;color:var(--muted);margin-top:12px}
 .hidden{display:none!important}
 footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </style>
@@ -417,19 +418,29 @@ function renderPollVotes(vibeId,options,area){
    if(Number.isInteger(index)&&index>=0&&index<counts.length)counts[index]++;
    if(currentUser&&voteDoc.id===currentUser.uid)myVote=index;
   });
+  const total=counts.reduce((sum,count)=>sum+count,0);
   area.innerHTML="";
   options.forEach((option,index)=>{
+   const percent=total?Math.round((counts[index]/total)*100):0;
    const line=document.createElement("div");line.className="poll-choice";
-   const button=document.createElement("button");button.className="secondary small";
-   button.textContent=option+" — "+counts[index]+(counts[index]===1?" vote":" votes");
-   button.disabled=!!myVote||myVote===0||!currentUser||guestMode;
-   button.addEventListener("click",()=>voteForVibe(vibeId,index,button));
-   line.appendChild(button);area.appendChild(line);
+   const top=document.createElement("div");top.className="poll-result-top";
+   const label=document.createElement("strong");label.textContent=option;
+   const value=document.createElement("span");value.textContent=percent+"% · "+counts[index]+(counts[index]===1?" vote":" votes");
+   top.append(label,value);
+   const track=document.createElement("div");track.className="poll-track";
+   const fill=document.createElement("div");fill.className="poll-fill";fill.style.width=percent+"%";
+   track.appendChild(fill);line.append(top,track);
+   if(myVote===null&&!guestMode&&currentUser){
+    const button=document.createElement("button");button.className="secondary small";button.style.marginTop="7px";button.textContent="Vote for "+option;
+    button.addEventListener("click",()=>voteForVibe(vibeId,index,button));line.appendChild(button);
+   }
+   area.appendChild(line);
   });
+  const totalNote=document.createElement("p");totalNote.className="poll-total";totalNote.textContent="Total votes: "+total;area.appendChild(totalNote);
   if(myVote!==null&&options[myVote]){
-   const note=document.createElement("p");note.className="message muted";note.textContent="You voted for: "+options[myVote];area.appendChild(note);
+   const note=document.createElement("p");note.className="message good";note.textContent="✓ You voted for: "+options[myVote];area.appendChild(note);
   }else if(!currentUser||guestMode){
-   const note=document.createElement("p");note.className="message muted";note.textContent="Sign in to vote.";area.appendChild(note);
+   const note=document.createElement("p");note.className="message muted";note.textContent="Sign in to vote. Results are live.";area.appendChild(note);
   }
  },error=>{area.textContent="Could not load poll votes: "+error.message});
  vibeVoteUnsubs[vibeId]=unsub;
