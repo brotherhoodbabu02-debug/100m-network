@@ -136,6 +136,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <input id="pollOption2" maxlength="60" placeholder="Poll option 2 (optional)">
  <button class="primary" onclick="postVibe()">Drop it</button>
  </div><div id="vibeFeed"></div>
+ <div class="section"><h2>My Poll Dashboard</h2><p class="sub">Track votes and results on polls you created.</p><p id="myPollStatus" class="message muted">Loading your polls...</p><div id="myPollDashboard"></div></div>
 </section>
 
 <section class="page" id="reveal">
@@ -210,7 +211,7 @@ const auth=firebase.auth(),db=firebase.firestore();
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
-let vibeVoteUnsubs={};
+let vibeVoteUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
 const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
 function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90))}
 function toggleAuth(){
@@ -474,14 +475,58 @@ function renderVibeFeed(snapshot){
   feed.appendChild(card);
  });
 }
+function clearMyPollListeners(){
+ Object.values(myPollVoteUnsubs).forEach(unsub=>{try{unsub()}catch(e){}});
+ myPollVoteUnsubs={};
+}
+function startMyPollDashboard(user){
+ if(myPollsUnsubscribe){myPollsUnsubscribe();myPollsUnsubscribe=null}
+ clearMyPollListeners();
+ const status=document.getElementById("myPollStatus"),box=document.getElementById("myPollDashboard");
+ if(!user||guestMode){status.textContent="Sign in to view polls you created.";box.innerHTML="";return}
+ status.textContent="Loading your polls...";
+ myPollsUnsubscribe=db.collection("vibes").where("uid","==",user.uid).onSnapshot(snapshot=>{
+  clearMyPollListeners();box.innerHTML="";
+  const polls=[];snapshot.forEach(doc=>{const data=doc.data();if(data.type==="Poll")polls.push({id:doc.id,data})});
+  if(!polls.length){status.textContent="You have not created any polls yet.";return}
+  status.textContent=polls.length+" poll"+(polls.length===1?"":"s")+" created by you";
+  polls.sort((a,b)=>{const ta=a.data.createdAt?.toMillis?.()||0,tb=b.data.createdAt?.toMillis?.()||0;return tb-ta});
+  polls.forEach(poll=>{
+   const card=document.createElement("div");card.className="card";
+   const heading=document.createElement("h3");heading.textContent=poll.data.text||"Your poll";
+   const meta=document.createElement("p");meta.className="sub";meta.style.margin="6px 0 12px";meta.textContent="Your poll results • Live updates";
+   const results=document.createElement("div");card.append(heading,meta,results);box.appendChild(card);
+   const unsub=db.collection("vibes").doc(poll.id).collection("votes").onSnapshot(voteSnapshot=>{
+    const options=Array.isArray(poll.data.options)?poll.data.options:[];
+    const counts=options.map(()=>0);
+    voteSnapshot.forEach(voteDoc=>{const idx=Number(voteDoc.data().optionIndex);if(Number.isInteger(idx)&&idx>=0&&idx<counts.length)counts[idx]++});
+    const total=counts.reduce((a,b)=>a+b,0);results.innerHTML="";
+    options.forEach((option,index)=>{
+     const percent=total?Math.round(counts[index]/total*100):0;
+     const line=document.createElement("div");line.className="poll-choice";
+     const top=document.createElement("div");top.className="poll-result-top";
+     const label=document.createElement("strong");label.textContent=option;
+     const value=document.createElement("span");value.textContent=counts[index]+" votes · "+percent+"%";
+     top.append(label,value);
+     const track=document.createElement("div");track.className="poll-track";
+     const fill=document.createElement("div");fill.className="poll-fill";fill.style.width=percent+"%";track.appendChild(fill);
+     line.append(top,track);results.appendChild(line);
+    });
+    const totalText=document.createElement("p");totalText.className="poll-total";totalText.textContent="Total votes: "+total;results.appendChild(totalText);
+   },error=>{results.textContent="Could not load results: "+error.message});
+   myPollVoteUnsubs[poll.id]=unsub;
+  });
+ },error=>{status.textContent="Could not load your polls: "+error.message});
+}
 function startVibeFeed(user){
  clearVibeVoteListeners();
  if(vibesUnsubscribe){vibesUnsubscribe();vibesUnsubscribe=null}
+ if(myPollsUnsubscribe){myPollsUnsubscribe();myPollsUnsubscribe=null}clearMyPollListeners();
  const status=document.getElementById("vibeStatus");
- if(!user){status.textContent="Sign in to view and share community Vibes.";document.getElementById("vibeFeed").innerHTML="";return}
+ if(!user){status.textContent="Sign in to view and share community Vibes.";document.getElementById("vibeFeed").innerHTML="";startMyPollDashboard(null);return}
  status.textContent="Connecting to community Vibes...";
  vibesUnsubscribe=db.collection("vibes").orderBy("createdAt","desc").limit(50).onSnapshot(snapshot=>{
-  renderVibeFeed(snapshot);status.textContent="Live community feed • Latest 50 posts";
+  renderVibeFeed(snapshot);startMyPollDashboard(user);status.textContent="Live community feed • Latest 50 posts";
  },error=>{
   status.textContent="Could not load Vibes: "+error.message;
  });
