@@ -31,6 +31,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .radar:before{content:"";position:absolute;width:50%;height:50%;top:0;right:0;transform-origin:bottom left;background:linear-gradient(45deg,transparent,#35d9ff35);border-radius:0 100% 0 0}
 .center{width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 20px var(--cyan);z-index:1}
 .dot{position:absolute;width:9px;height:9px;background:var(--cyan);border-radius:50%;box-shadow:0 0 12px var(--cyan)}
+.radar-room{position:absolute;display:grid;place-items:center;width:34px;height:34px;border:1px solid #35d9ff88;border-radius:50%;background:#0a2138;color:var(--cyan);font-size:9px;font-weight:700;box-shadow:0 0 15px #35d9ff35;cursor:pointer;z-index:2}.radar-room:focus{outline:2px solid white}.room-a{top:18%;left:22%}.room-b{top:30%;right:12%}.room-c{bottom:20%;left:17%}.room-d{bottom:13%;right:22%}.room-e{top:48%;left:8%}.room-f{top:55%;right:8%}.radar-legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin:8px 0}.signal-pill{display:inline-block;padding:6px 9px;border-radius:20px;background:#17243b;border:1px solid #344969;color:#d5eaff;font-size:11px;margin:3px}
 .d1{top:42px;left:75px}.d2{top:105px;right:43px}.d3{bottom:54px;left:52px}.d4{bottom:30px;right:85px}
 .section{margin-top:22px}.user-name{color:var(--cyan)}
 nav{position:fixed;bottom:0;left:0;width:100%;background:#101625;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 2px calc(10px + env(safe-area-inset-bottom));z-index:10}
@@ -81,7 +82,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <h2>Discover Nearby.</h2><p class="sub">Your world starts around you.</p>
  <div class="card"><p style="color:var(--cyan)">YOUR NETWORK</p>
   <div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
-  <h3 style="text-align:center">Explore your world</h3><p class="sub" style="text-align:center;margin-top:8px">Radar contacts shown here are sample demo markers, not real people.</p>
+  <h3 style="text-align:center">Explore your world</h3><p class="sub" style="text-align:center;margin-top:8px">Radar markers represent sample topic activity, not real people or physical locations.</p>
   <button class="primary" onclick="go('radar')">Explore Radar</button>
  </div>
  <div class="card"><h3>Welcome to 100m</h3><p class="sub" style="margin:9px 0 0">Meet people. Share ideas. Build connections.</p><span class="pill">Ghost Mode</span><span class="pill">Vibe Drops</span><span class="pill">Community</span></div>
@@ -111,8 +112,34 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
   <p class="sub" style="margin:7px 0">Suggestions are generated on this device from the interests in your own profile. They do not search for or identify nearby people.</p>
   <div id="interestRadarSuggestions"><div class="empty">Add interests in your profile to see suggestions.</div></div>
  </div>
- <div class="card"><h3>Hot & Cold Finder</h3><p class="sub" style="margin:7px 0">A playful demo indicator only. It does not use your location or point toward anyone.</p>
-  <div class="row"><button onclick="hotCold()">Refresh demo signal</button><strong id="signalText" class="warning">Signal: Unknown</strong></div>
+ <div class="card">
+  <h3>360° Live Topic Nodes</h3>
+  <p class="sub" style="margin:7px 0">Explore topic rooms instead of tracking people's physical locations. These sample nodes are not real users or live nearby detections.</p>
+  <div class="radar" aria-label="Topic room radar">
+   <div class="center"></div>
+   <button class="radar-room room-a" onclick="selectRadarRoom('Tech')">TECH</button>
+   <button class="radar-room room-b" onclick="selectRadarRoom('Music')">MUSIC</button>
+   <button class="radar-room room-c" onclick="selectRadarRoom('Study')">STUDY</button>
+   <button class="radar-room room-d" onclick="selectRadarRoom('Art')">ART</button>
+   <button class="radar-room room-e" onclick="selectRadarRoom('Ideas')">IDEAS</button>
+   <button class="radar-room room-f" onclick="selectRadarRoom('Nature')">NATURE</button>
+  </div>
+  <div class="radar-legend"><span>● Topic rooms</span><span>◎ You</span></div>
+  <p id="radarRoomStatus" class="message muted" aria-live="polite">Tap a node to preview its topic room. No GPS is used.</p>
+  <button class="primary" onclick="go('communities')">Explore Communities</button>
+ </div>
+ <div class="card">
+  <h3>Hot & Cold Activity</h3>
+  <p class="sub" style="margin:7px 0">Shows topic-room activity only, not a person's distance or direction.</p>
+  <div class="row"><button onclick="hotCold()">Refresh activity</button><strong id="signalText" class="warning">Activity: Unknown</strong></div>
+  <div><span class="signal-pill">Cool · Quiet room</span><span class="signal-pill">Warm · Active discussion</span><span class="signal-pill">Hot · Busy topic</span></div>
+ </div>
+ <div class="card">
+  <h3>Community Contributors</h3>
+  <p class="sub" style="margin:7px 0">Sample layout only. A real cross-user live leaderboard needs a secure voting backend.</p>
+  <div class="tile"><strong>1. Community Helper</strong><p class="sub" style="margin:5px 0 0">▲ 24 demo votes</p></div>
+  <div class="tile"><strong>2. Idea Starter</strong><p class="sub" style="margin:5px 0 0">▲ 18 demo votes</p></div>
+  <div class="tile"><strong>3. Kind Contributor</strong><p class="sub" style="margin:5px 0 0">▲ 12 demo votes</p></div>
  </div>
 </section>
 
@@ -472,8 +499,12 @@ function go(id,btn){
  window.scrollTo(0,0);
 }
 function setRange(m){document.getElementById("rangeTitle").textContent=m+"m Demo Zone"}
+function selectRadarRoom(room){
+ const el=document.getElementById("radarRoomStatus");
+ if(el)el.textContent=room+" topic room selected. This is a topic-based space, not a physical nearby-person match.";
+}
 function hotCold(){
- const vals=["Signal: Cool","Signal: Nearby (demo)","Signal: Warming up","Signal: Unknown"];
+ const vals=["Activity: Cool · Quiet room","Activity: Warm · Discussion active","Activity: Hot · Busy topic","Activity: Quiet right now"];
  document.getElementById("signalText").textContent=vals[Math.floor(Math.random()*vals.length)];
 }
 function sendChat(){
