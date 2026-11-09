@@ -92,15 +92,15 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 <section class="page" id="radar">
  <h2>Nearby Radar</h2><p class="sub">Discover your community while keeping your identity private.</p>
  <div class="card"><div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
- <h3 style="text-align:center;color:var(--cyan)">People Around You</h3><p class="sub" style="text-align:center;margin:8px 0">Select a search range for your Radar.</p>
+ <h3 style="text-align:center;color:var(--cyan)">People Around You</h3><p class="sub" style="text-align:center;margin:8px 0">Turn Radar ON to appear in the anonymous LIVE members list. No GPS location is collected.</p>
  <div class="row"><button class="primary small" id="range100" onclick="setRadarRange(100)">100m</button><button class="secondary small" id="range200" onclick="setRadarRange(200)">200m</button></div>
  <p id="rangeTitle" class="message muted" style="text-align:center">Selected range: 100m</p></div>
  <div class="card"><h3>My Anonymous Identity</h3><div class="row" style="align-items:center;margin-top:14px"><div class="avatar" style="margin:0">👤</div><div><h3 id="radarAnonymousHandle" style="color:var(--cyan)">Explorer</h3><p class="sub" style="margin:5px 0">Anonymous Radar profile</p></div></div></div>
  <div class="card"><h3>My Radar Privacy</h3><p class="sub" style="margin:7px 0">Radar starts OFF. Your private opt-in status is saved when you turn it ON. Your exact GPS location, email and real name are not displayed.</p>
  <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
- <div class="card"><h3>Nearby People</h3><p class="sub" style="margin:7px 0">Nearby matching will appear here after a secure proximity service is connected.</p><div id="liveMembersList" class="chat-list"><div class="empty">Nearby matching is not connected yet.</div></div></div>
- <footer class="note">Privacy: Radar does not publish your exact location. The 100m/200m selection is currently a saved preference, not a verified distance search.</footer>
+ <div class="card"><h3>LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><p class="sub" style="margin:7px 0">Anonymous accounts that have chosen to turn Radar ON. This is a global online list, not GPS-based nearby matching.</p><div id="liveMembersList" class="chat-list"><div class="empty">Sign in and turn Radar ON to see live members.</div></div></div>
+ <footer class="note">Privacy: Radar shares only your generated anonymous handle and online status with signed-in users. No exact GPS is collected. 100m/200m are preference labels, not verified distance matching.</footer>
 </section>
 
 <section class="page" id="chats">
@@ -186,7 +186,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-<footer class="note">Prototype notice: Private chats, profiles, Vibe Drops and Communities use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar ON/OFF and range are private demo controls; nearby matching is not connected and no GPS is collected.</footer>
+<footer class="note">Prototype notice: Private chats, profiles, Vibe Drops and Communities use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar LIVE shares only a generated anonymous handle and online status with signed-in users. It does not collect or share GPS coordinates; 100m/200m are display preferences, not measured distances.</footer>
 </main>
 <nav>
  <button class="active" onclick="go('home',this)">⌂<br>Home</button>
@@ -217,6 +217,7 @@ const auth=firebase.auth(),db=firebase.firestore(),rtdb=firebase.database();
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
 let selectedRadarRange=100,radarIsOn=false;
+let radarPublicRef=null,radarPublicListener=null;
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
 let vibeVoteUnsubs={},vibeCommentUnsubs={},vibeReplyUnsubs={},vibeReactionUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
 let communityListUnsubscribe=null,activeGroupId=null,activeGroupUnsubscribe=null;
@@ -269,6 +270,7 @@ function exitGuest(){
 }
 async function loadUserProfile(user){
  currentUser=user;guestMode=false;
+ startRadarRoomListener();
  document.getElementById("topStatus").textContent="● NETWORK";
  document.getElementById("profileName").textContent=user.displayName||"Explorer";
  document.getElementById("profileEmail").textContent=user.email||"";
@@ -388,33 +390,87 @@ function updateRadarStatusUI(isOnline,message){
  if(on)on.disabled=!!isOnline||!currentUser||guestMode;
  if(off)off.disabled=!isOnline||!currentUser||guestMode;
 }
-function stopRadarRoomListener(){}
+function stopRadarRoomListener(){
+ if(radarPublicRef&&radarPublicListener){
+  radarPublicRef.off("value",radarPublicListener);
+ }
+ radarPublicRef=null;radarPublicListener=null;
+}
+function startRadarRoomListener(){
+ if(!currentUser||guestMode)return;
+ stopRadarRoomListener();
+ const box=document.getElementById("liveMembersList");
+ const count=document.getElementById("liveMemberCount");
+ if(box)box.innerHTML='<div class="empty">Connecting to LIVE Radar...</div>';
+ radarPublicRef=rtdb.ref("radarPublic");
+ radarPublicListener=snapshot=>{
+  const members=[];
+  snapshot.forEach(child=>{
+   const data=child.val()||{};
+   if(child.key!==currentUser.uid&&data.online===true){
+    members.push({uid:child.key,handle:String(data.anonymousHandle||"Explorer"),avatar:String(data.avatar||"👤")});
+   }
+  });
+  if(count)count.textContent=members.length+" online";
+  if(!box)return;
+  box.innerHTML="";
+  if(!members.length){
+   box.innerHTML='<div class="empty">No other members are online yet. Ask another signed-in user to turn Radar ON.</div>';
+   return;
+  }
+  members.forEach(member=>{
+   const row=document.createElement("div");row.className="live-member";
+   const identity=document.createElement("span");
+   identity.textContent=member.avatar+"  "+member.handle;
+   const state=document.createElement("small");state.textContent="● LIVE";
+   state.className="live-count";
+   row.append(identity,state);box.appendChild(row);
+  });
+ };
+ radarPublicRef.on("value",radarPublicListener,error=>{
+  if(box)box.textContent="Radar list unavailable: "+error.message;
+  if(count)count.textContent="—";
+ });
+}
 async function setRadarStatus(isOnline){
  if(!currentUser||guestMode){updateRadarStatusUI(false,"Please sign in to use Radar.");return;}
  const on=document.getElementById("radarOnButton"),off=document.getElementById("radarOffButton");
  if(on)on.disabled=true;if(off)off.disabled=true;
+ const publicRef=rtdb.ref("radarPublic/"+currentUser.uid);
+ const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
  try{
-  const privateRef=rtdb.ref("presence/"+currentUser.uid),handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
   if(isOnline){
-   await privateRef.set({online:true,radarEnabled:true,rangeMeters:selectedRadarRange,anonymousHandle:handle,avatar:"👤",updatedAt:firebase.database.ServerValue.TIMESTAMP});
-   await privateRef.onDisconnect().set({online:false,radarEnabled:false,updatedAt:firebase.database.ServerValue.TIMESTAMP});
-   radarIsOn=true;const name=document.getElementById("radarAnonymousHandle");if(name)name.textContent=handle;
-   updateRadarStatusUI(true,"Radar is ON. Your private anonymous status is saved. Nearby matching is not active yet.");
+   await publicRef.onDisconnect().remove();
+   await publicRef.set({
+    online:true,
+    anonymousHandle:handle,
+    avatar:"👤",
+    updatedAt:firebase.database.ServerValue.TIMESTAMP
+   });
+   radarIsOn=true;
+   const name=document.getElementById("radarAnonymousHandle");
+   if(name)name.textContent=handle;
+   updateRadarStatusUI(true,"Radar is LIVE. Your anonymous handle and online status are visible to signed-in members.");
+   startRadarRoomListener();
   }else{
-   await privateRef.onDisconnect().cancel();await privateRef.set({online:false,radarEnabled:false,updatedAt:firebase.database.ServerValue.TIMESTAMP});
-   radarIsOn=false;updateRadarStatusUI(false,"Radar is OFF. Your private opt-in status is disabled.");
+   await publicRef.onDisconnect().cancel();
+   await publicRef.remove();
+   radarIsOn=false;
+   updateRadarStatusUI(false,"Radar is OFF. Your anonymous status has been removed.");
   }
- }catch(e){radarIsOn=false;updateRadarStatusUI(false,"Could not update Radar: "+e.message);}
+ }catch(e){
+  radarIsOn=false;
+  updateRadarStatusUI(false,"Could not update Radar: "+e.message);
+ }
 }
 function setRadarRange(m){
  selectedRadarRange=Number(m)===200?200:100;
  const title=document.getElementById("rangeTitle"),b100=document.getElementById("range100"),b200=document.getElementById("range200");
- if(title)title.textContent="Selected range: "+selectedRadarRange+"m";
+ if(title)title.textContent="Display preference: "+selectedRadarRange+"m (not GPS distance)";
  if(b100)b100.className=selectedRadarRange===100?"primary small":"secondary small";
  if(b200)b200.className=selectedRadarRange===200?"primary small":"secondary small";
- if(radarIsOn&&currentUser)rtdb.ref("presence/"+currentUser.uid+"/rangeMeters").set(selectedRadarRange).catch(e=>{const status=document.getElementById("radarStatusText");if(status)status.textContent="Could not update range: "+e.message;});
 }
- function renderInterestRadar(rawInterests){
+function renderInterestRadar(rawInterests){
  const box=document.getElementById("interestRadarSuggestions");
  if(!box)return;
  const interests=String(rawInterests||"").split(/[,;|]/).map(x=>x.trim().toLowerCase()).filter(Boolean);
