@@ -97,6 +97,20 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
   <p class="sub" style="text-align:center;margin:8px 0">These dots are decorative demo markers. No GPS is accessed and no nearby users are detected.</p>
   <button class="primary" onclick="go('ghostchat')">Open Demo Ghost Room</button>
  </div>
+ <div class="card">
+  <h3>My Private Radar Status</h3>
+  <p class="sub" style="margin:7px 0">This status is saved only under your own Firebase account. Other users cannot read it with the current private rules.</p>
+  <div class="row">
+   <button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON</button>
+   <button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button>
+  </div>
+  <p id="radarStatusText" class="message muted">Sign in to control your private status.</p>
+ </div>
+ <div class="card">
+  <h3>Interest Radar</h3>
+  <p class="sub" style="margin:7px 0">Suggestions are generated on this device from the interests in your own profile. They do not search for or identify nearby people.</p>
+  <div id="interestRadarSuggestions"><div class="empty">Add interests in your profile to see suggestions.</div></div>
+ </div>
  <div class="card"><h3>Hot & Cold Finder</h3><p class="sub" style="margin:7px 0">A playful demo indicator only. It does not use your location or point toward anyone.</p>
   <div class="row"><button onclick="hotCold()">Refresh demo signal</button><strong id="signalText" class="warning">Signal: Unknown</strong></div>
  </div>
@@ -200,6 +214,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script>
 const firebaseConfig={
  apiKey:"AIzaSyCcRVX32ArHPixi_AG8LT_Aw2Il11seFv4",
@@ -212,7 +227,7 @@ const firebaseConfig={
  measurementId:"G-M03JYRG2XD"
 };
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(),db=firebase.firestore();
+const auth=firebase.auth(),db=firebase.firestore(),rtdb=firebase.database();
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
@@ -251,7 +266,7 @@ function enterGhostMode(){
  guestMode=true;guestName=randomGuest();currentUser=null;
  document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";
  document.getElementById("topStatus").textContent="● GHOST DEMO";
- displayProfile({username:guestName,bio:"Temporary guest profile",country:"Not shared",interests:"Exploring"});
+ displayProfile({username:guestName,bio:"Temporary guest profile",country:"Not shared",interests:"Exploring"});renderInterestRadar("Exploring");updateRadarStatusUI(false,"Guest mode: private account status is unavailable.");
  document.getElementById("profileEmail").textContent="Guest mode • no account";
  document.getElementById("editProfileButton").classList.add("hidden");
  document.getElementById("exitGuestButton").classList.remove("hidden");
@@ -283,7 +298,7 @@ async function loadUserProfile(user){
    data={uid:user.uid,username:user.displayName||"Explorer",email:user.email||"",bio:"",country:"",interests:""};
    await ref.set({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
   }
-  displayProfile(data);document.getElementById("profileMessage").textContent="Profile saved in Firestore.";
+  displayProfile(data);renderInterestRadar(data.interests||"");updateRadarStatusUI(false,"Your private status is OFF. Turn it ON when you choose.");document.getElementById("profileMessage").textContent="Profile saved in Firestore.";
  }catch(e){document.getElementById("profileMessage").textContent="Database error: "+e.message}
 }
 function displayProfile(data){
@@ -312,12 +327,13 @@ async function saveProfile(){
  const b=document.getElementById("saveProfileButton");b.disabled=true;b.textContent="Saving...";
  try{
   await db.collection("users").doc(currentUser.uid).update({username,bio,country,interests,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await currentUser.updateProfile({displayName:username});displayProfile({username,bio,country,interests});
+  await currentUser.updateProfile({displayName:username});displayProfile({username,bio,country,interests});renderInterestRadar(interests);
   document.getElementById("profileMessage").textContent="Profile updated successfully!";closeEditProfile();
  }catch(e){document.getElementById("editMessage").textContent="Could not save: "+e.message}
  finally{b.disabled=false;b.textContent="Save Changes"}
 }
-function logout(){
+async function logout(){
+ if(currentUser){try{await setRadarStatus(false)}catch(e){}}
  if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
  if(vibesUnsubscribe){vibesUnsubscribe();vibesUnsubscribe=null}
@@ -378,11 +394,73 @@ async function sendPrivateMessage(){
  }catch(e){document.getElementById("privateChatStatus").textContent="Message not sent: "+e.message}
  finally{button.disabled=false}
 }
+
+function updateRadarStatusUI(isOnline,message){
+ const text=document.getElementById("radarStatusText");
+ const on=document.getElementById("radarOnButton");
+ const off=document.getElementById("radarOffButton");
+ if(text)text.textContent=message||(isOnline?"Your private status is ON.":"Your private status is OFF.");
+ if(text)text.className="message "+(isOnline?"good":"muted");
+ if(on)on.disabled=!!isOnline||!currentUser||guestMode;
+ if(off)off.disabled=!isOnline||!currentUser||guestMode;
+}
+async function setRadarStatus(isOnline){
+ if(!currentUser||guestMode){
+  updateRadarStatusUI(false,"Sign in with your account to use private status.");
+  return;
+ }
+ const on=document.getElementById("radarOnButton"),off=document.getElementById("radarOffButton");
+ if(on)on.disabled=true;if(off)off.disabled=true;
+ try{
+  const statusRef=rtdb.ref("presence/"+currentUser.uid);
+  if(isOnline){
+   await statusRef.set({online:true,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   await statusRef.onDisconnect().set({online:false,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   updateRadarStatusUI(true,"Your private status is ON. It is visible only to your own account under the current rules.");
+  }else{
+   await statusRef.onDisconnect().cancel();
+   await statusRef.set({online:false,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   updateRadarStatusUI(false,"Your private status is OFF.");
+  }
+ }catch(e){
+  updateRadarStatusUI(false,"Could not update status: "+e.message);
+ }
+}
+function renderInterestRadar(rawInterests){
+ const box=document.getElementById("interestRadarSuggestions");
+ if(!box)return;
+ const interests=String(rawInterests||"").split(/[,;|]/).map(x=>x.trim().toLowerCase()).filter(Boolean);
+ if(!interests.length){
+  box.innerHTML='<div class="empty">Add interests in Edit Profile to see suggestions.</div>';
+  return;
+ }
+ const categories=[
+  {name:"Technology",keys:["technology","tech","coding","programming","computer","ai","robotics"],ideas:["Beginner coding discussions","Build-a-project community"]},
+  {name:"Education",keys:["education","study","learning","science","math","english","books"],ideas:["Study tips and learning circle","Share useful learning resources"]},
+  {name:"Music",keys:["music","singing","song","guitar","dance"],ideas:["Music discussion community","Share original creative ideas"]},
+  {name:"Art",keys:["art","drawing","design","painting","photography"],ideas:["Creative art community","Share artwork and feedback respectfully"]},
+  {name:"Environment",keys:["environment","nature","plants","farming","climate"],ideas:["Nature and environment ideas","Community improvement projects"]},
+  {name:"Sports",keys:["sports","football","cricket","basketball","fitness"],ideas:["Sports discussion community","Rules, teamwork and match chat"]},
+  {name:"General",keys:["general","ideas","friends","reading"],ideas:["Open discussion community","Positive ideas and questions"]}
+ ];
+ const matches=categories.filter(c=>interests.some(i=>c.keys.some(k=>i.includes(k)||k.includes(i))));
+ const chosen=matches.length?matches:categories.filter(c=>c.name==="General");
+ box.innerHTML="";
+ const intro=document.createElement("p");intro.className="message muted";intro.textContent="Based on your profile interests: "+interests.join(", ");box.appendChild(intro);
+ chosen.forEach(c=>{
+  const tile=document.createElement("div");tile.className="tile";
+  const heading=document.createElement("h3");heading.textContent=c.name+" Community";
+  const desc=document.createElement("p");desc.textContent=c.ideas.join(" • ");
+  tile.append(heading,desc);box.appendChild(tile);
+ });
+ const note=document.createElement("p");note.className="comment-note";note.textContent="These are topic ideas only, not live user or location matches.";box.appendChild(note);
+}
+
 auth.onAuthStateChanged(user=>{
  if(user){
   guestMode=false;document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);
  }else if(!guestMode){
-  currentUser=null;document.getElementById("authPage").style.display="block";document.getElementById("app").style.display="none";
+  currentUser=null;updateRadarStatusUI(false,"Sign in to control your private status.");document.getElementById("authPage").style.display="block";document.getElementById("app").style.display="none";
  }
 });
 function go(id,btn){
