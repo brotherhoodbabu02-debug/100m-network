@@ -99,7 +99,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="card"><h3>My Radar Privacy</h3><p class="sub" style="margin:7px 0">Radar starts OFF. Your private opt-in status is saved when you turn it ON. Your exact GPS location, email and real name are not displayed.</p>
  <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
- <div class="card"><h3>LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><p class="sub" style="margin:7px 0">Anonymous accounts that have chosen to turn Radar ON. This is a global online list, not GPS-based nearby matching.</p><div id="liveMembersList" class="chat-list"><div class="empty">Sign in and turn Radar ON to see live members.</div></div></div>
+ <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Anonymous accounts that have chosen to turn Radar ON. This is a global online list, not GPS-based nearby matching.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="chat-list"><div class="empty">Sign in and turn Radar ON to see live members.</div></div></div>
  <footer class="note">Privacy: Radar shares only your generated anonymous handle and online status with signed-in users. No exact GPS is collected. 100m/200m are preference labels, not verified distance matching.</footer>
 </section>
 
@@ -412,6 +412,8 @@ function startRadarRoomListener(){
    }
   });
   if(count)count.textContent=members.length+" online";
+  const refreshed=document.getElementById("radarRefreshTime");
+  if(refreshed)refreshed.textContent="Live list updated: "+new Date().toLocaleTimeString();
   if(!box)return;
   box.innerHTML="";
   if(!members.length){
@@ -432,6 +434,18 @@ function startRadarRoomListener(){
   if(count)count.textContent="—";
  });
 }
+function refreshRadarList(){
+ const button=document.getElementById("refreshRadarButton");
+ if(!currentUser||guestMode){
+  const box=document.getElementById("liveMembersList");
+  if(box)box.innerHTML='<div class="empty">Sign in to refresh the LIVE member list.</div>';
+  return;
+ }
+ if(button){button.disabled=true;button.textContent="Refreshing…";}
+ startRadarRoomListener();
+ window.setTimeout(()=>{if(button){button.disabled=false;button.textContent="Refresh";}},900);
+}
+
 async function setRadarStatus(isOnline){
  if(!currentUser||guestMode){updateRadarStatusUI(false,"Please sign in to use Radar.");return;}
  const on=document.getElementById("radarOnButton"),off=document.getElementById("radarOffButton");
