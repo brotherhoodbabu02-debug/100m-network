@@ -52,7 +52,7 @@ nav button.active{color:var(--cyan)}
 .empty{text-align:center;padding:20px;color:var(--muted);font-size:13px}
 .poll-choice{margin:12px 0}.poll-choice button{width:100%;text-align:left}.poll-result-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:8px 2px 6px}.poll-track{height:9px;background:#080f20;border:1px solid #30415e;border-radius:20px;overflow:hidden}.poll-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:20px;transition:width .25s ease}.poll-total{font-size:12px;color:var(--muted);margin-top:12px}
 .comment-area{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.comment-list{display:grid;gap:8px;margin:10px 0}.comment-item{background:#0b1426;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px}.comment-item strong{color:var(--cyan);display:block;margin-bottom:3px}.comment-form{display:flex;gap:8px;align-items:flex-end}.comment-form input{flex:1;min-width:0;margin:0}.comment-form button{white-space:nowrap}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}.reply-list{display:grid;gap:6px;margin:10px 0 8px 12px;padding-left:10px;border-left:2px solid var(--line)}.reply-item{background:#101c30;border-radius:9px;padding:7px 9px;font-size:12px}.reply-item strong{display:block;color:var(--cyan);margin-bottom:2px}.reaction-area{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px}.reaction-btn{border:1px solid var(--line);background:#101c30;color:var(--text);border-radius:20px;padding:7px 11px;font-size:13px;cursor:pointer}.reaction-btn.active{border-color:var(--cyan);background:#173044}.reaction-btn:disabled{opacity:.6}.reaction-note{font-size:12px;color:var(--muted);margin-top:5px}
-.live-node-layer{position:absolute;inset:0;pointer-events:none;z-index:1}.live-node{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.live-member{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;margin:7px 0;border:1px solid #293b59;background:#0d1628;border-radius:12px;font-size:13px}.live-member small{color:var(--muted)}.live-count{color:var(--green);font-weight:700}.hidden{display:none!important}
+.live-node-layer{position:absolute;inset:0;pointer-events:none;z-index:1}.live-node{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.live-member{display:flex;justify-content:center;gap:10px;align-items:center;padding:10px 12px;margin:7px 0;border:1px solid #293b59;background:#0d1628;border-radius:12px;font-size:13px}.radar-profile-button{width:58px;height:58px;border-radius:50%;padding:0;border:2px solid #35d9ff88;background:linear-gradient(135deg,#087eae,#7652bb);font-size:28px;display:grid;place-items:center}.radar-profile-button:focus{outline:2px solid white;outline-offset:3px}.live-count{color:var(--green);font-weight:700}.hidden{display:none!important}
 footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </style>
 </head>
@@ -99,8 +99,8 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="card"><h3>My Radar Privacy</h3><p class="sub" style="margin:7px 0">Radar starts OFF. Your private opt-in status is saved when you turn it ON. Your exact GPS location, email and real name are not displayed.</p>
  <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
- <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Anonymous accounts that have chosen to turn Radar ON. This is a global online list, not GPS-based nearby matching.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="chat-list"><div class="empty">Sign in and turn Radar ON to see live members.</div></div></div>
- <footer class="note">Privacy: Radar shares only your generated anonymous handle and online status with signed-in users. No exact GPS is collected. 100m/200m are preference labels, not verified distance matching.</footer>
+ <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s username. This is a global online list, not GPS-based nearby matching.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="chat-list"><div class="empty">Sign in and turn Radar ON to see live members.</div></div></div>
+ <footer class="note">Privacy: Radar shows only your profile icon. Your username appears only when another member taps it. No exact GPS is collected. 100m/200m are preference labels, not verified distance matching.</footer>
 </section>
 
 <section class="page" id="chats">
@@ -384,6 +384,16 @@ async function sendPrivateMessage(){
  finally{button.disabled=false}
 }
 
+function showRadarUsername(username){
+ const old=document.getElementById("radarUsernameModal");if(old)old.remove();
+ const overlay=document.createElement("div");overlay.id="radarUsernameModal";
+ overlay.style.cssText="position:fixed;inset:0;z-index:1000;background:#000b;display:grid;place-items:center;padding:22px";
+ const panel=document.createElement("div");panel.style.cssText="width:min(100%,340px);background:#151e35;border:1px solid #35d9ff88;border-radius:18px;padding:24px;text-align:center;box-shadow:0 18px 55px #0009";
+ const name=document.createElement("h3");name.textContent=username||"Member";name.style.cssText="color:#35d9ff;font-size:20px;overflow-wrap:anywhere";
+ const close=document.createElement("button");close.type="button";close.textContent="Close";close.className="secondary";close.style.cssText="margin-top:18px;width:100%";close.addEventListener("click",()=>overlay.remove());
+ panel.append(name,close);overlay.appendChild(panel);overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});document.body.appendChild(overlay);
+}
+
 function updateRadarStatusUI(isOnline,message){
  const text=document.getElementById("radarStatusText"),on=document.getElementById("radarOnButton"),off=document.getElementById("radarOffButton");
  if(text){text.textContent=message||(isOnline?"Radar is ON.":"Radar is OFF.");text.className="message "+(isOnline?"good":"muted");}
@@ -408,7 +418,7 @@ function startRadarRoomListener(){
   snapshot.forEach(child=>{
    const data=child.val()||{};
    if(child.key!==currentUser.uid&&data.online===true){
-    members.push({uid:child.key,handle:String(data.anonymousHandle||"Explorer"),avatar:String(data.avatar||"👤")});
+    members.push({uid:child.key,username:String(data.username||data.anonymousHandle||"Explorer"),avatar:String(data.avatar||"👤")});
    }
   });
   if(count)count.textContent=members.length+" online";
@@ -422,11 +432,11 @@ function startRadarRoomListener(){
   }
   members.forEach(member=>{
    const row=document.createElement("div");row.className="live-member";
-   const identity=document.createElement("span");
-   identity.textContent=member.avatar+"  "+member.handle;
-   const state=document.createElement("small");state.textContent="● LIVE";
-   state.className="live-count";
-   row.append(identity,state);box.appendChild(row);
+   const profile=document.createElement("button");
+   profile.type="button";profile.className="radar-profile-button";
+   profile.textContent="👤";profile.setAttribute("aria-label","Open member profile");
+   profile.addEventListener("click",()=>showRadarUsername(member.username));
+   row.appendChild(profile);box.appendChild(row);
   });
  };
  radarPublicRef.on("value",radarPublicListener,error=>{
@@ -458,13 +468,14 @@ async function setRadarStatus(isOnline){
    await publicRef.set({
     online:true,
     anonymousHandle:handle,
+    username:(document.getElementById("profileName")?.textContent||currentUser.displayName||handle).trim(),
     avatar:"👤",
     updatedAt:firebase.database.ServerValue.TIMESTAMP
    });
    radarIsOn=true;
    const name=document.getElementById("radarAnonymousHandle");
    if(name)name.textContent=handle;
-   updateRadarStatusUI(true,"Radar is LIVE. Your anonymous handle and online status are visible to signed-in members.");
+   updateRadarStatusUI(true,"Radar is LIVE. Other members see your profile icon; your username appears only when they tap it.");
    startRadarRoomListener();
   }else{
    await publicRef.onDisconnect().cancel();
