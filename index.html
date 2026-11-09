@@ -99,8 +99,9 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="card"><h3>My Radar Privacy</h3><p class="sub" style="margin:7px 0">Radar starts OFF. Your private opt-in status is saved when you turn it ON. Your exact GPS location, email and real name are not displayed.</p>
  <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
- <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s username. This is a global online list, not GPS-based nearby matching.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
- <footer class="note">Privacy: Radar shows only your profile icon. Your username appears only when another member taps it. No exact GPS is collected. 100m/200m are preference labels, not verified distance matching.</footer>
+ <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global online list, not GPS-based nearby matching.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
+ <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON, then create a private room code or enter a code shared with you. Only signed-in members who join that room can read and send messages.</p><button class="primary" id="createNearbyRoomButton" onclick="createNearbyRoom()" disabled>Create a room & get code</button><div class="row"><input id="nearbyRoomCodeInput" maxlength="8" placeholder="Enter 8-character room code" autocapitalize="characters" style="margin:7px 0"><button class="secondary small" onclick="joinNearbyRoom()" style="flex:0 0 auto">Join</button></div><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to create or join a room.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong>Room code: <span id="nearbyRoomCodeLabel" style="color:var(--cyan)"></span></strong><p id="nearbyRoomMemberCount">0 members</p><div id="nearbyRoomMembers" class="chat-list"></div></div><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet.</div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..."></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><button class="danger small" onclick="leaveNearbyRoom()">Leave room</button><p class="comment-note">Messages older than 24 hours are hidden in this app. On Firebase Spark, this does not guarantee immediate server-side deletion.</p></div></div>
+ <footer class="note">Privacy: Radar shows only your profile icon. Only your anonymous handle is stored in the public Radar list. No exact GPS is collected. 100m/200m are preference labels, not verified distance matching.</footer>
 </section>
 
 <section class="page" id="chats">
@@ -186,7 +187,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-<footer class="note">Prototype notice: Private chats, profiles, Vibe Drops and Communities use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar LIVE shares only a generated anonymous handle and online status with signed-in users. It does not collect or share GPS coordinates; 100m/200m are display preferences, not measured distances.</footer>
+<footer class="note">Prototype notice: Private chats, profiles, Vibe Drops and Communities use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar LIVE shares only a generated anonymous handle and online status with signed-in users. Nearby Group Chat uses an 8-character opt-in room code; it does not verify 100m distance. Exact GPS is not collected. Messages older than 24 hours are hidden client-side; Spark does not guarantee server deletion.</footer>
 </main>
 <nav>
  <button class="active" onclick="go('home',this)">⌂<br>Home</button>
@@ -218,6 +219,7 @@ let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
 let selectedRadarRange=100,radarIsOn=false;
 let radarPublicRef=null,radarPublicListener=null;
+let activeNearbyRoomCode=null,nearbyMembersRef=null,nearbyMembersListener=null,nearbyMessagesRef=null,nearbyMessagesListener=null;
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
 let vibeVoteUnsubs={},vibeCommentUnsubs={},vibeReplyUnsubs={},vibeReactionUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
 let communityListUnsubscribe=null,activeGroupId=null,activeGroupUnsubscribe=null;
@@ -418,7 +420,7 @@ function startRadarRoomListener(){
   snapshot.forEach(child=>{
    const data=child.val()||{};
    if(child.key!==currentUser.uid&&data.online===true){
-    members.push({uid:child.key,username:String(data.username||data.anonymousHandle||"Explorer"),avatar:String(data.avatar||"👤")});
+    members.push({uid:child.key,username:String(data.anonymousHandle||"Explorer"),avatar:String(data.avatar||"👤")});
    }
   });
   if(count)count.textContent=members.length+" online";
@@ -473,7 +475,6 @@ async function setRadarStatus(isOnline){
    await publicRef.set({
     online:true,
     anonymousHandle:handle,
-    username:(document.getElementById("profileName")?.textContent||currentUser.displayName||handle).trim(),
     avatar:"👤",
     updatedAt:firebase.database.ServerValue.TIMESTAMP
    });
@@ -482,17 +483,98 @@ async function setRadarStatus(isOnline){
    if(name)name.textContent=handle;
    updateRadarStatusUI(true,"Radar is LIVE. Other members see your profile icon; your username appears only when they tap it.");
    startRadarRoomListener();
+   const createButton=document.getElementById("createNearbyRoomButton");if(createButton)createButton.disabled=false;
+   const roomStatus=document.getElementById("nearbyRoomStatus");if(roomStatus)roomStatus.textContent="Radar is ON. Create a room or enter a code.";
   }else{
+   await leaveNearbyRoom(true);
    await publicRef.onDisconnect().cancel();
    await publicRef.remove();
    radarIsOn=false;
    updateRadarStatusUI(false,"Radar is OFF. Your anonymous status has been removed.");
+   const createButton=document.getElementById("createNearbyRoomButton");if(createButton)createButton.disabled=true;
+   const roomStatus=document.getElementById("nearbyRoomStatus");if(roomStatus)roomStatus.textContent="Radar is OFF. Turn it ON to use Nearby Group Chat.";
   }
  }catch(e){
   radarIsOn=false;
   updateRadarStatusUI(false,"Could not update Radar: "+e.message);
  }
 }
+function stopNearbyRoomListeners(){
+ if(nearbyMembersRef&&nearbyMembersListener)nearbyMembersRef.off("value",nearbyMembersListener);
+ if(nearbyMessagesRef&&nearbyMessagesListener)nearbyMessagesRef.off("value",nearbyMessagesListener);
+ nearbyMembersRef=null;nearbyMembersListener=null;nearbyMessagesRef=null;nearbyMessagesListener=null;
+}
+function makeRoomCode(){
+ const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let code="";
+ for(let i=0;i<8;i++)code+=chars[Math.floor(Math.random()*chars.length)];
+ return code;
+}
+function renderNearbyRoomMembers(snapshot){
+ const box=document.getElementById("nearbyRoomMembers"),count=document.getElementById("nearbyRoomMemberCount");
+ if(!box)return;box.innerHTML="";let total=0;
+ snapshot.forEach(child=>{const m=child.val()||{};if(m.active===true){total++;const item=document.createElement("div");item.className="live-member";item.textContent="👤  "+String(m.handle||"Explorer");box.appendChild(item)}});
+ if(count)count.textContent=total+" member"+(total===1?"":"s")+" in this room";
+ if(!total)box.innerHTML='<div class="empty">No active members.</div>';
+}
+function startNearbyRoomListeners(code){
+ stopNearbyRoomListeners();
+ nearbyMembersRef=rtdb.ref("nearbyRooms/"+code+"/members");
+ nearbyMembersListener=snapshot=>renderNearbyRoomMembers(snapshot);
+ nearbyMembersRef.on("value",nearbyMembersListener,error=>{document.getElementById("nearbyRoomStatus").textContent="Member list unavailable: "+error.message});
+ nearbyMessagesRef=rtdb.ref("nearbyRooms/"+code+"/messages").orderByChild("createdAt").startAt(Date.now()-24*60*60*1000).limitToLast(100);
+ nearbyMessagesListener=snapshot=>{
+  const box=document.getElementById("nearbyRoomMessages");if(!box)return;box.innerHTML="";
+  const messages=[];snapshot.forEach(child=>{const m=child.val()||{};if(Number(m.createdAt)>=Date.now()-24*60*60*1000)messages.push(m)});
+  if(!messages.length){box.innerHTML='<div class="empty">No messages in the last 24 hours. Start the conversation.</div>';return}
+  messages.sort((a,b)=>Number(a.createdAt)-Number(b.createdAt)).forEach(m=>{const item=document.createElement("div");item.className="chat-msg";const who=document.createElement("strong");who.textContent=String(m.handle||"Member")+": ";const body=document.createElement("span");body.textContent=String(m.text||"");const time=document.createElement("small");time.textContent=new Date(Number(m.createdAt)||Date.now()).toLocaleString();item.append(who,body,time);box.appendChild(item)});
+  box.scrollTop=box.scrollHeight;
+ };
+ nearbyMessagesRef.on("value",nearbyMessagesListener,error=>{document.getElementById("nearbyRoomStatus").textContent="Messages unavailable: "+error.message});
+}
+async function joinNearbyRoom(codeFromCreate){
+ if(!currentUser||guestMode){document.getElementById("nearbyRoomStatus").textContent="Sign in to use Nearby Group Chat.";return}
+ if(!radarIsOn){document.getElementById("nearbyRoomStatus").textContent="Turn Radar ON first.";return}
+ const code=String(codeFromCreate||document.getElementById("nearbyRoomCodeInput").value||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+ if(!/^[A-HJ-NP-Z2-9]{8}$/.test(code)){document.getElementById("nearbyRoomStatus").textContent="Enter a valid 8-character room code.";return}
+ try{
+  if(activeNearbyRoomCode&&activeNearbyRoomCode!==code)await leaveNearbyRoom(true);
+  const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
+  const memberRef=rtdb.ref("nearbyRooms/"+code+"/members/"+currentUser.uid);
+  await memberRef.onDisconnect().remove();
+  await memberRef.set({active:true,handle,joinedAt:firebase.database.ServerValue.TIMESTAMP});
+  activeNearbyRoomCode=code;
+  document.getElementById("nearbyRoomCodeLabel").textContent=code;
+  document.getElementById("nearbyRoomActive").classList.remove("hidden");
+  document.getElementById("nearbyRoomStatus").textContent="Joined room. Share the code only with people you choose.";
+  document.getElementById("nearbyRoomCodeInput").value=code;
+  startNearbyRoomListeners(code);
+ }catch(e){document.getElementById("nearbyRoomStatus").textContent="Could not join room: "+e.message}
+}
+async function createNearbyRoom(){
+ if(!currentUser||!radarIsOn){document.getElementById("nearbyRoomStatus").textContent="Sign in and turn Radar ON first.";return}
+ const button=document.getElementById("createNearbyRoomButton");button.disabled=true;
+ try{const code=makeRoomCode();document.getElementById("nearbyRoomCodeInput").value=code;await joinNearbyRoom(code)}
+ finally{button.disabled=!radarIsOn}
+}
+async function sendNearbyRoomMessage(){
+ const input=document.getElementById("nearbyRoomMessageInput"),textValue=input.value.trim();
+ if(!currentUser||!radarIsOn||!activeNearbyRoomCode){document.getElementById("nearbyRoomStatus").textContent="Join a room with Radar ON before sending.";return}
+ if(!textValue)return;
+ try{
+  const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
+  await rtdb.ref("nearbyRooms/"+activeNearbyRoomCode+"/messages").push({uid:currentUser.uid,handle,text:textValue,createdAt:firebase.database.ServerValue.TIMESTAMP});
+  input.value="";
+ }catch(e){document.getElementById("nearbyRoomStatus").textContent="Message not sent: "+e.message}
+}
+async function leaveNearbyRoom(silent){
+ const code=activeNearbyRoomCode;if(!code){stopNearbyRoomListeners();return}
+ stopNearbyRoomListeners();activeNearbyRoomCode=null;
+ try{if(currentUser)await rtdb.ref("nearbyRooms/"+code+"/members/"+currentUser.uid).onDisconnect().cancel();if(currentUser)await rtdb.ref("nearbyRooms/"+code+"/members/"+currentUser.uid).remove();}
+ catch(e){if(!silent)document.getElementById("nearbyRoomStatus").textContent="Could not leave room cleanly: "+e.message}
+ const active=document.getElementById("nearbyRoomActive");if(active)active.classList.add("hidden");
+ if(!silent){const status=document.getElementById("nearbyRoomStatus");if(status)status.textContent="You left the room."}
+}
+
 function setRadarRange(m){
  selectedRadarRange=Number(m)===200?200:100;
  const title=document.getElementById("rangeTitle"),b100=document.getElementById("range100"),b200=document.getElementById("range200");
