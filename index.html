@@ -52,7 +52,7 @@ nav button.active{color:var(--cyan)}
 .empty{text-align:center;padding:20px;color:var(--muted);font-size:13px}
 .poll-choice{margin:12px 0}.poll-choice button{width:100%;text-align:left}.poll-result-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:8px 2px 6px}.poll-track{height:9px;background:#080f20;border:1px solid #30415e;border-radius:20px;overflow:hidden}.poll-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:20px;transition:width .25s ease}.poll-total{font-size:12px;color:var(--muted);margin-top:12px}
 .comment-area{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.comment-list{display:grid;gap:8px;margin:10px 0}.comment-item{background:#0b1426;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px}.comment-item strong{color:var(--cyan);display:block;margin-bottom:3px}.comment-form{display:flex;gap:8px;align-items:flex-end}.comment-form input{flex:1;min-width:0;margin:0}.comment-form button{white-space:nowrap}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}.reply-list{display:grid;gap:6px;margin:10px 0 8px 12px;padding-left:10px;border-left:2px solid var(--line)}.reply-item{background:#101c30;border-radius:9px;padding:7px 9px;font-size:12px}.reply-item strong{display:block;color:var(--cyan);margin-bottom:2px}.reaction-area{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px}.reaction-btn{border:1px solid var(--line);background:#101c30;color:var(--text);border-radius:20px;padding:7px 11px;font-size:13px;cursor:pointer}.reaction-btn.active{border-color:var(--cyan);background:#173044}.reaction-btn:disabled{opacity:.6}.reaction-note{font-size:12px;color:var(--muted);margin-top:5px}
-.hidden{display:none!important}
+.live-node-layer{position:absolute;inset:0;pointer-events:none;z-index:1}.live-node{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.live-member{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;margin:7px 0;border:1px solid #293b59;background:#0d1628;border-radius:12px;font-size:13px}.live-member small{color:var(--muted)}.live-count{color:var(--green);font-weight:700}.hidden{display:none!important}
 footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </style>
 </head>
@@ -90,22 +90,21 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </section>
 
 <section class="page" id="radar">
- <h2>Nearby Radar</h2><p class="sub">Choose a demo discovery range.</p>
+ <h2>Live Topic Radar</h2><p class="sub">Join a live interest room and see other opted-in members in that same topic room. This is not a physical 100m location detector.</p>
  <div class="card">
-  <div class="row"><button class="rangeBtn" onclick="setRange(100)">100m range</button><button class="rangeBtn" onclick="setRange(200)">200m range</button></div>
   <div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
-  <h3 id="rangeTitle" style="text-align:center;color:var(--cyan)">100m Demo Zone</h3>
-  <p class="sub" style="text-align:center;margin:8px 0">These dots are decorative demo markers. No GPS is accessed and no nearby users are detected.</p>
-  <button class="primary" onclick="go('ghostchat')">Open Demo Ghost Room</button>
+  <h3 style="text-align:center;color:var(--cyan)">Live Interest Room</h3>
+  <p class="sub" style="text-align:center;margin:8px 0">Live members are shown only inside the topic they choose. No GPS or physical distance is collected.</p>
+  <div class="row"><button class="rangeBtn" onclick="selectRadarRoom('Tech')">Tech</button><button class="rangeBtn" onclick="selectRadarRoom('Music')">Music</button><button class="rangeBtn" onclick="selectRadarRoom('Study')">Study</button></div>
  </div>
  <div class="card">
   <h3>My Private Radar Status</h3>
-  <p class="sub" style="margin:7px 0">This status is saved only under your own Firebase account. Other users cannot read it with the current private rules.</p>
+  <p class="sub" style="margin:7px 0">When ON, your anonymous room presence is shared with signed-in members of the topic you select. Your exact location, email and real name are never shared here.</p>
   <div class="row">
    <button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON</button>
    <button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button>
   </div>
-  <p id="radarStatusText" class="message muted">Sign in to control your private status.</p>
+  <p id="radarStatusText" class="message muted">Sign in, choose a topic and turn Live Radar ON.</p>
  </div>
  <div class="card">
   <h3>Interest Radar</h3>
@@ -114,9 +113,9 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  </div>
  <div class="card">
   <h3>360° Live Topic Nodes</h3>
-  <p class="sub" style="margin:7px 0">Explore topic rooms instead of tracking people's physical locations. These sample nodes are not real users or live nearby detections.</p>
-  <div class="radar" aria-label="Topic room radar">
-   <div class="center"></div>
+  <p class="sub" style="margin:7px 0">Choose one topic room. Members who turn Live Radar ON will appear here in real time.</p>
+  <div class="radar" aria-label="Live topic members radar">
+   <div class="center"></div><div id="liveNodeLayer" class="live-node-layer"></div>
    <button class="radar-room room-a" onclick="selectRadarRoom('Tech')">TECH</button>
    <button class="radar-room room-b" onclick="selectRadarRoom('Music')">MUSIC</button>
    <button class="radar-room room-c" onclick="selectRadarRoom('Study')">STUDY</button>
@@ -125,18 +124,19 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
    <button class="radar-room room-f" onclick="selectRadarRoom('Nature')">NATURE</button>
   </div>
   <div class="radar-legend"><span>● Topic rooms</span><span>◎ You</span></div>
-  <p id="radarRoomStatus" class="message muted" aria-live="polite">Tap a node to preview its topic room. No GPS is used.</p>
+  <p id="radarRoomStatus" class="message muted" aria-live="polite">Selected room: Tech. Turn Live Radar ON to join.</p>
+  <div class="tile"><div class="row"><strong id="liveRoomTitle">TECH ROOM</strong><span id="liveMemberCount" class="live-count">0 online</span></div><div id="liveMembersList" class="chat-list"><div class="empty">No live members yet. Join this room to appear here.</div></div></div>
   <button class="primary" onclick="go('communities')">Explore Communities</button>
  </div>
  <div class="card">
   <h3>Hot & Cold Activity</h3>
-  <p class="sub" style="margin:7px 0">Shows topic-room activity only, not a person's distance or direction.</p>
+  <p class="sub" style="margin:7px 0">Activity is based on the number of opted-in members in the selected topic room, not physical distance.</p>
   <div class="row"><button onclick="hotCold()">Refresh activity</button><strong id="signalText" class="warning">Activity: Unknown</strong></div>
   <div><span class="signal-pill">Cool · Quiet room</span><span class="signal-pill">Warm · Active discussion</span><span class="signal-pill">Hot · Busy topic</span></div>
  </div>
  <div class="card">
   <h3>Community Contributors</h3>
-  <p class="sub" style="margin:7px 0">Sample layout only. A real cross-user live leaderboard needs a secure voting backend.</p>
+  <p class="sub" style="margin:7px 0">Leaderboard remains a demo until secure vote totals are connected.</p>
   <div class="tile"><strong>1. Community Helper</strong><p class="sub" style="margin:5px 0 0">▲ 24 demo votes</p></div>
   <div class="tile"><strong>2. Idea Starter</strong><p class="sub" style="margin:5px 0 0">▲ 18 demo votes</p></div>
   <div class="tile"><strong>3. Kind Contributor</strong><p class="sub" style="margin:5px 0 0">▲ 12 demo votes</p></div>
@@ -227,7 +227,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-<footer class="note">Prototype notice: Private chats, profiles, Vibe Drops and Communities use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar is disabled as a real people-finder; no GPS is collected or shared.</footer>
+<footer class="note">Prototype notice: Private chats, profiles, Vibe Drops and Communities use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Live Topic Radar shows anonymous opted-in members in the same topic room; it does not detect physical nearby people or collect GPS.</footer>
 </main>
 <nav>
  <button class="active" onclick="go('home',this)">⌂<br>Home</button>
@@ -257,6 +257,7 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.firestore(),rtdb=firebase.database();
 let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
 let chatItems=[];
+let selectedRadarRoom="Tech",radarRoomUnsubscribe=null,radarIsOn=false;
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
 let vibeVoteUnsubs={},vibeCommentUnsubs={},vibeReplyUnsubs={},vibeReactionUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
 let communityListUnsubscribe=null,activeGroupId=null,activeGroupUnsubscribe=null;
@@ -361,7 +362,7 @@ async function saveProfile(){
 }
 async function logout(){
  if(currentUser){try{await setRadarStatus(false)}catch(e){}}
- if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
+ stopRadarRoomListener();if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
  if(vibesUnsubscribe){vibesUnsubscribe();vibesUnsubscribe=null}
  clearVibeCommentListeners();clearVibeVoteListeners();
@@ -426,32 +427,61 @@ function updateRadarStatusUI(isOnline,message){
  const text=document.getElementById("radarStatusText");
  const on=document.getElementById("radarOnButton");
  const off=document.getElementById("radarOffButton");
- if(text)text.textContent=message||(isOnline?"Your private status is ON.":"Your private status is OFF.");
+ if(text)text.textContent=message||(isOnline?"Live Radar is ON in the selected topic room.":"Live Radar is OFF.");
  if(text)text.className="message "+(isOnline?"good":"muted");
  if(on)on.disabled=!!isOnline||!currentUser||guestMode;
  if(off)off.disabled=!isOnline||!currentUser||guestMode;
 }
+function stopRadarRoomListener(){
+ if(radarRoomUnsubscribe){try{radarRoomUnsubscribe()}catch(e){}radarRoomUnsubscribe=null;}
+}
+function safeTopicName(topic){return String(topic||"Tech").replace(/[^A-Za-z]/g,"").slice(0,16)||"Tech";}
+function listenToRadarRoom(topic){
+ stopRadarRoomListener();
+ const room=safeTopicName(topic),box=document.getElementById("liveMembersList"),count=document.getElementById("liveMemberCount"),title=document.getElementById("liveRoomTitle");
+ if(title)title.textContent=room.toUpperCase()+" ROOM";
+ if(!currentUser||guestMode){if(box)box.innerHTML='<div class="empty">Sign in to view live room members.</div>';if(count)count.textContent="0 online";return;}
+ const ref=rtdb.ref("topicPresence/"+room);
+ const handler=snapshot=>{
+  const members=[];snapshot.forEach(child=>{const v=child.val()||{};if(child.key!==currentUser.uid&&v.online===true)members.push({uid:child.key,handle:String(v.handle||"Explorer").slice(0,24),joinedAt:Number(v.joinedAt)||0});});
+  members.sort((a,b)=>b.joinedAt-a.joinedAt);
+  if(count)count.textContent=members.length+" online";
+  const nodeLayer=document.getElementById("liveNodeLayer");
+  if(nodeLayer){nodeLayer.innerHTML="";members.forEach((m,i)=>{let hash=0;for(let c=0;c<m.uid.length;c++)hash=(hash*31+m.uid.charCodeAt(c))>>>0;const angle=((hash%360)+i*37)*Math.PI/180;const radius=24+(hash%13);const node=document.createElement("span");node.className="live-node";node.style.left=(50+Math.cos(angle)*radius)+"%";node.style.top=(50+Math.sin(angle)*radius)+"%";node.title=m.handle;nodeLayer.appendChild(node);});}
+  if(!box)return;box.innerHTML="";
+  if(!members.length){box.innerHTML='<div class="empty">No other members online in this topic yet. Invite a friend to join the same room.</div>';return;}
+  members.forEach(m=>{const row=document.createElement("div");row.className="live-member";const name=document.createElement("strong");name.textContent=m.handle;const status=document.createElement("small");status.textContent="● Online in "+room;row.append(name,status);box.appendChild(row);});
+ };
+ ref.on("value",handler,error=>{if(box)box.textContent="Live room unavailable: "+error.message;});
+ radarRoomUnsubscribe=()=>ref.off("value",handler);
+}
+async function joinLiveTopic(topic){
+ if(!currentUser||guestMode)throw new Error("Please sign in to join Live Radar.");
+ const room=safeTopicName(topic),uid=currentUser.uid;
+ const ref=rtdb.ref("topicPresence/"+room+"/"+uid);
+ const handle="Explorer-"+uid.slice(0,4);
+ await ref.onDisconnect().remove();
+ await ref.set({handle,online:true,joinedAt:firebase.database.ServerValue.TIMESTAMP});
+ listenToRadarRoom(room);
+}
 async function setRadarStatus(isOnline){
- if(!currentUser||guestMode){
-  updateRadarStatusUI(false,"Sign in with your account to use private status.");
-  return;
- }
+ if(!currentUser||guestMode){updateRadarStatusUI(false,"Sign in with your account to use Live Radar.");return;}
  const on=document.getElementById("radarOnButton"),off=document.getElementById("radarOffButton");
  if(on)on.disabled=true;if(off)off.disabled=true;
  try{
-  const statusRef=rtdb.ref("presence/"+currentUser.uid);
+  const privateRef=rtdb.ref("presence/"+currentUser.uid);
   if(isOnline){
-   await statusRef.set({online:true,updatedAt:firebase.database.ServerValue.TIMESTAMP});
-   await statusRef.onDisconnect().set({online:false,updatedAt:firebase.database.ServerValue.TIMESTAMP});
-   updateRadarStatusUI(true,"Your private status is ON. It is visible only to your own account under the current rules.");
+   await privateRef.set({online:true,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   await privateRef.onDisconnect().set({online:false,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   await joinLiveTopic(selectedRadarRoom);radarIsOn=true;
+   updateRadarStatusUI(true,"Live Radar is ON. You are visible as an anonymous handle in the "+selectedRadarRoom+" topic room. No location is shared.");
   }else{
-   await statusRef.onDisconnect().cancel();
-   await statusRef.set({online:false,updatedAt:firebase.database.ServerValue.TIMESTAMP});
-   updateRadarStatusUI(false,"Your private status is OFF.");
+   const topicRef=rtdb.ref("topicPresence/"+safeTopicName(selectedRadarRoom)+"/"+currentUser.uid);
+   await topicRef.onDisconnect().cancel();await topicRef.remove();
+   await privateRef.onDisconnect().cancel();await privateRef.set({online:false,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   radarIsOn=false;updateRadarStatusUI(false,"Live Radar is OFF. You are no longer listed in the topic room.");
   }
- }catch(e){
-  updateRadarStatusUI(false,"Could not update status: "+e.message);
- }
+ }catch(e){updateRadarStatusUI(false,"Could not update Live Radar: "+e.message);}
 }
 function renderInterestRadar(rawInterests){
  const box=document.getElementById("interestRadarSuggestions");
@@ -485,7 +515,7 @@ function renderInterestRadar(rawInterests){
 
 auth.onAuthStateChanged(user=>{
  if(user){
-  guestMode=false;document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);
+  guestMode=false;document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);listenToRadarRoom(selectedRadarRoom);
  }else if(!guestMode){
   currentUser=null;updateRadarStatusUI(false,"Sign in to control your private status.");document.getElementById("authPage").style.display="block";document.getElementById("app").style.display="none";
  }
@@ -500,8 +530,13 @@ function go(id,btn){
 }
 function setRange(m){document.getElementById("rangeTitle").textContent=m+"m Demo Zone"}
 function selectRadarRoom(room){
+ const previous=selectedRadarRoom;selectedRadarRoom=safeTopicName(room);
  const el=document.getElementById("radarRoomStatus");
- if(el)el.textContent=room+" topic room selected. This is a topic-based space, not a physical nearby-person match.";
+ if(el)el.textContent="Selected room: "+selectedRadarRoom+". "+(radarIsOn?"Moving your live presence to this room.":"Turn Live Radar ON to join.");
+ if(radarIsOn&&currentUser){
+  rtdb.ref("topicPresence/"+safeTopicName(previous)+"/"+currentUser.uid).onDisconnect().cancel();
+  rtdb.ref("topicPresence/"+safeTopicName(previous)+"/"+currentUser.uid).remove().then(()=>joinLiveTopic(selectedRadarRoom)).catch(e=>{if(el)el.textContent="Could not change room: "+e.message;});
+ }else listenToRadarRoom(selectedRadarRoom);
 }
 function hotCold(){
  const vals=["Activity: Cool · Quiet room","Activity: Warm · Discussion active","Activity: Hot · Busy topic","Activity: Quiet right now"];
