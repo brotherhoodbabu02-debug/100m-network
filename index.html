@@ -100,7 +100,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
  <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global online list, not GPS-based nearby matching.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
- <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat. This version includes all opted-in Radar members; it does not verify a 100m distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..."></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are hidden in this app; Firebase Spark does not guarantee server-side deletion after 24 hours.</p></div></div>
+ <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat. This version includes all opted-in Radar members; it does not verify a 100m distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are hidden in this app; Firebase Spark does not guarantee server-side deletion after 24 hours.</p></div></div>
  <footer class="note">Privacy: Radar shows anonymous profile icons and handles. No exact GPS is collected. The shared chat includes all opted-in Radar members; 100m/200m are display preferences, not verified distance matching.</footer>
 </section>
 
@@ -220,6 +220,7 @@ let chatItems=[];
 let selectedRadarRange=100,radarIsOn=false;
 let radarPublicRef=null,radarPublicListener=null;
 let nearbyMembersRef=null,nearbyMembersListener=null,nearbyMessagesRef=null,nearbyMessagesListener=null,nearbyReactionsRef=null,nearbyReactionsListener=null,nearbyReplyTarget=null,nearbyMessageCache=[],nearbyReactionCache={};
+let nearbyTypingRef=null,nearbyTypingListener=null,nearbyTypingTimer=null,nearbyTypingActive=false;
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
 let vibeVoteUnsubs={},vibeCommentUnsubs={},vibeReplyUnsubs={},vibeReactionUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
 let communityListUnsubscribe=null,activeGroupId=null,activeGroupUnsubscribe=null;
@@ -505,6 +506,11 @@ function stopNearbyRoomListeners(){
  if(nearbyMessagesRef&&nearbyMessagesListener)nearbyMessagesRef.off("value",nearbyMessagesListener);
  if(nearbyReactionsRef&&nearbyReactionsListener)nearbyReactionsRef.off("value",nearbyReactionsListener);
  nearbyMembersRef=null;nearbyMembersListener=null;nearbyMessagesRef=null;nearbyMessagesListener=null;nearbyReactionsRef=null;nearbyReactionsListener=null;nearbyMessageCache=[];nearbyReactionCache={};
+ if(nearbyTypingRef&&nearbyTypingListener)nearbyTypingRef.off("value",nearbyTypingListener);
+ nearbyTypingRef=null;nearbyTypingListener=null;
+ if(nearbyTypingTimer)clearTimeout(nearbyTypingTimer);
+ nearbyTypingTimer=null;nearbyTypingActive=false;
+ const typingBox=document.getElementById("nearbyTypingStatus");if(typingBox)typingBox.textContent="";
 }
 function renderNearbyRoomMembers(snapshot){
  const box=document.getElementById("nearbyRoomMembers"),count=document.getElementById("nearbyRoomMemberCount");
@@ -535,8 +541,48 @@ function renderNearbyMessages(){
  });
  box.scrollTop=box.scrollHeight;
 }
+async function setNearbyTyping(isTyping){
+ if(!currentUser||!radarIsOn)return;
+ const ref=rtdb.ref("nearbyChat/typing/"+currentUser.uid);
+ try{
+  if(isTyping){
+   if(!nearbyTypingActive)await ref.onDisconnect().remove();
+   nearbyTypingActive=true;
+   await ref.set({typing:true,handle:"Explorer-"+currentUser.uid.slice(0,4).toLowerCase(),updatedAt:firebase.database.ServerValue.TIMESTAMP});
+  }else{
+   nearbyTypingActive=false;
+   if(nearbyTypingTimer)clearTimeout(nearbyTypingTimer);
+   nearbyTypingTimer=null;
+   await ref.onDisconnect().cancel();
+   await ref.remove();
+  }
+ }catch(e){console.log("Typing status:",e.message)}
+}
+function handleNearbyTyping(){
+ const input=document.getElementById("nearbyRoomMessageInput");
+ if(!input||!currentUser||!radarIsOn)return;
+ if(nearbyTypingTimer)clearTimeout(nearbyTypingTimer);
+ if(!input.value.trim()){setNearbyTyping(false);return;}
+ setNearbyTyping(true);
+ nearbyTypingTimer=setTimeout(()=>setNearbyTyping(false),2200);
+}
+function startNearbyTypingListener(){
+ if(nearbyTypingRef&&nearbyTypingListener)nearbyTypingRef.off("value",nearbyTypingListener);
+ nearbyTypingRef=rtdb.ref("nearbyChat/typing");
+ nearbyTypingListener=snapshot=>{
+  const box=document.getElementById("nearbyTypingStatus");if(!box)return;
+  const names=[],now=Date.now();
+  snapshot.forEach(child=>{
+   const data=child.val()||{};
+   if(child.key!==currentUser?.uid&&data.typing===true&&now-Number(data.updatedAt||0)<6000){names.push(String(data.handle||"Explorer"));}
+  });
+  box.textContent=names.length?(names.length===1?names[0]+" is typing...":names.slice(0,-1).join(", ")+" and "+names[names.length-1]+" are typing..."):"";
+ };
+ nearbyTypingRef.on("value",nearbyTypingListener,error=>console.log("Typing listener:",error.message));
+}
 function startNearbyRoomListeners(){
  stopNearbyRoomListeners();
+ startNearbyTypingListener();
  nearbyMembersRef=rtdb.ref("nearbyChat/members");
  nearbyMembersListener=snapshot=>renderNearbyRoomMembers(snapshot);
  nearbyMembersRef.on("value",nearbyMembersListener,error=>{const s=document.getElementById("nearbyRoomStatus");if(s)s.textContent="Member list unavailable: "+error.message});
@@ -573,7 +619,7 @@ async function sendNearbyRoomMessage(){
   const payload={uid:currentUser.uid,handle,text:textValue,createdAt:firebase.database.ServerValue.TIMESTAMP};
   if(nearbyReplyTarget){payload.replyTo=nearbyReplyTarget.id;payload.replyHandle=nearbyReplyTarget.handle;payload.replyText=nearbyReplyTarget.text.slice(0,120)}
   await rtdb.ref("nearbyChat/messages").push(payload);
-  input.value="";cancelNearbyReply();
+  input.value="";await setNearbyTyping(false);cancelNearbyReply();
  }catch(e){document.getElementById("nearbyRoomStatus").textContent="Message not sent: "+e.message}
 }
 function setNearbyReply(id,handle,text){
@@ -591,6 +637,7 @@ async function toggleNearbyReaction(messageId,emoji){
  catch(e){document.getElementById("nearbyRoomStatus").textContent="Reaction not saved: "+e.message}
 }
 async function leaveNearbyRoom(silent=false){
+ if(currentUser&&radarIsOn)await setNearbyTyping(false);
  stopNearbyRoomListeners();cancelNearbyReply();
  try{if(currentUser){const ref=rtdb.ref("nearbyChat/members/"+currentUser.uid);await ref.onDisconnect().cancel();await ref.remove()}}
  catch(e){if(!silent){const s=document.getElementById("nearbyRoomStatus");if(s)s.textContent="Could not leave chat cleanly: "+e.message}}
