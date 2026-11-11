@@ -716,7 +716,7 @@ async function startGlobalChat(){
  if(status)status.textContent="Connecting to shared messages…";
  // Attach the message listener FIRST. A denied online-presence write must not
  // prevent the shared message feed from loading.
- globalMessagesRef=rtdb.ref("globalChat/messages").limitToLast(100);
+ globalMessagesRef=rtdb.ref("globalChat/messages");
  globalMessagesListener=snap=>{
   globalMessageCache=[];
   snap.forEach(child=>globalMessageCache.push({id:child.key,...(child.val()||{})}));
