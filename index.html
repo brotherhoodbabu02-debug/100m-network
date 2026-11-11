@@ -719,7 +719,7 @@ async function startGlobalChat(){
  globalMessagesRef=rtdb.ref("globalChat/messages");
  globalMessagesListener=snap=>{
   globalMessageCache=[];
-  snap.forEach(child=>globalMessageCache.push({id:child.key,...(child.val()||{})}));
+  snap.forEach(child=>{globalMessageCache.push({id:child.key,...(child.val()||{})});});
   globalMessageCache.sort((a,b)=>Number(a.createdAt||0)-Number(b.createdAt||0));
   renderGlobalMessages();
   if(status)status.textContent="Live messages connected · snapshot "+snap.numChildren()+" · rendered "+globalMessageCache.length+" · "+snap.ref.toString();
