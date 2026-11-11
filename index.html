@@ -85,7 +85,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
   <h3 style="text-align:center">Explore your world</h3><p class="sub" style="text-align:center;margin-top:8px">Radar markers are visual decoration, not real people or physical locations.</p>
   <button class="primary" onclick="go('radar')">Explore Radar</button>
  </div>
- <div class="card"><h3>Welcome to 100m</h3><p class="sub" style="margin:9px 0 0">Meet people. Share ideas. Build connections.</p><span class="pill">Ghost Mode</span><span class="pill">Vibe Drops</span><span class="pill">Community</span></div>
+ <div class="card"><h3>Welcome to 100m</h3><p class="sub" style="margin:9px 0 0">Meet people. Share ideas. Build connections.</p><span class="pill">Ghost Mode</span><span class="pill">Vibe Drops</span></div>
  <div class="card"><h3>Community safety</h3><p class="sub" style="margin:8px 0 0">Keep personal details private. Never share your exact location or meet strangers based only on an online interaction.</p></div>
 </section>
 
@@ -171,17 +171,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  </div>
 </section>
 
-<section class="page" id="groups">
- <h2>Communities</h2><p class="sub">Create real communities, join groups and chat with members.</p>
- <div class="card"><h3>＋ Create a Community</h3>
-  <label class="form-label">Group name</label><input id="newGroupName" maxlength="40" placeholder="Example: Young Innovators">
-  <label class="form-label">About this group</label><textarea id="newGroupAbout" maxlength="180" placeholder="What is this community about?"></textarea>
-  <label class="form-label">Category</label><select id="newGroupCategory"><option>General</option><option>Technology</option><option>Education</option><option>Music</option><option>Art</option><option>Environment</option><option>Sports</option></select>
-  <button class="primary" onclick="createCommunity()">Create Group</button><p id="groupCreateStatus" class="message muted"></p>
- </div>
- <div class="card"><h3>🌐 Explore Communities</h3><p id="groupListStatus" class="sub">Loading communities...</p><div id="communityList"></div></div>
- <div class="card hidden" id="groupRoom"><h3 id="groupRoomTitle">Group chat</h3><p class="sub" id="groupRoomAbout"></p><div id="groupMemberInfo" class="message muted"></div><div id="groupMessages" style="max-height:300px;overflow-y:auto;margin:12px 0"></div><textarea id="groupMessageInput" maxlength="1000" placeholder="Write a message to group members..."></textarea><button class="primary" onclick="sendGroupMessage()">Send Message</button><button class="secondary" onclick="leaveCommunity()">Leave Group</button><p id="groupChatStatus" class="message muted"></p></div>
-</section>
+
 
 <section class="page" id="profile">
  <h2>Your Profile</h2><p class="sub">Your identity on 100m.</p>
@@ -200,7 +190,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-<footer class="note">Prototype notice: Global Chat, private chats, profiles, Vibe Drops and Communities use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar LIVE shares only a generated anonymous handle and online status with signed-in users. Nearby Group Chat uses an 8-character opt-in room code; it does not verify 100m distance. Exact GPS is not collected. Messages older than 24 hours are hidden client-side; Spark does not guarantee server deletion. Global Chat uses the separate globalChat RTDB path.</footer>
+<footer class="note">Prototype notice: Global Chat, private chats, profiles, Vibe Drops use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar LIVE shares only a generated anonymous handle and online status with signed-in users. Nearby Group Chat uses an 8-character opt-in room code; it does not verify 100m distance. Exact GPS is not collected. Messages older than 24 hours are hidden client-side; Spark does not guarantee server deletion. Global Chat uses the separate globalChat RTDB path.</footer>
 </main>
 <nav>
  <button class="active" onclick="go('home',this)">⌂<br>Home</button>
@@ -208,7 +198,6 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button onclick="go('globalchat',this)">🌐<br>Global</button>
  <button onclick="go('chats',this)">✉<br>Chats</button>
  <button onclick="go('vibes',this)">✦<br>Vibes</button>
- <button onclick="go('groups',this)">♧<br>Groups</button>
  <button onclick="go('profile',this)">◉<br>Profile</button>
 </nav></div>
 
@@ -238,7 +227,6 @@ let nearbyTypingRef=null,nearbyTypingListener=null,nearbyTypingTimer=null,nearby
 let globalMembersRef=null,globalMembersListener=null,globalMessagesRef=null,globalMessagesListener=null,globalTypingRef=null,globalTypingListener=null,globalTypingTimer=null,globalTypingActive=false,globalReactionRef=null,globalReactionListener=null,globalMessageCache=[],globalReactionCache={};
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
 let vibeVoteUnsubs={},vibeCommentUnsubs={},vibeReplyUnsubs={},vibeReactionUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
-let communityListUnsubscribe=null,activeGroupId=null,activeGroupUnsubscribe=null;
 const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
 function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90))}
 function toggleAuth(){
@@ -296,7 +284,6 @@ async function loadUserProfile(user){
  document.getElementById("profileMessage").textContent="Loading profile...";
  loadConversations(user);
  startVibeFeed(user);
- startCommunityList();
  document.getElementById("editProfileButton").classList.remove("hidden");
  document.getElementById("exitGuestButton").classList.add("hidden");
  try{
@@ -797,7 +784,6 @@ function go(id,btn){
  const target=document.getElementById(id);if(target)target.classList.add("active");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
  if(btn)btn.classList.add("active");else document.querySelectorAll("nav button")[0].classList.add("active");
- if(id==="groups")startCommunityList();
  window.scrollTo(0,0);
 }
 function setRange(m){document.getElementById("rangeTitle").textContent=m+"m Demo Zone"}
@@ -1105,77 +1091,6 @@ async function postVibe(){
   status.textContent="Your Vibe was posted to the community.";
  }catch(e){status.textContent="Vibe not posted: "+e.message}
  finally{button.disabled=false;button.textContent="Drop it"}
-}
-
-function stopGroupRoom(){if(activeGroupUnsubscribe){activeGroupUnsubscribe();activeGroupUnsubscribe=null}activeGroupId=null}
-function startCommunityList(){
- if(communityListUnsubscribe){communityListUnsubscribe();communityListUnsubscribe=null}
- const list=document.getElementById("communityList"),status=document.getElementById("groupListStatus");
- if(!currentUser||guestMode){status.textContent="Sign in with your account to explore and join communities.";list.innerHTML="";return}
- status.textContent="Loading communities...";
- communityListUnsubscribe=db.collection("groups").orderBy("createdAt","desc").limit(50).onSnapshot(snapshot=>{
-  list.innerHTML="";
-  if(snapshot.empty){status.textContent="No communities yet. Create the first one!";return}
-  status.textContent="Live communities · "+snapshot.size+" shown";
-  snapshot.forEach(doc=>{
-   const g=doc.data(),card=document.createElement("div");card.className="tile";
-   const title=document.createElement("h3");title.textContent=g.name||"Community";
-   const about=document.createElement("p");about.className="sub";about.style.margin="6px 0";about.textContent=(g.category||"General")+" · "+(g.description||"No description");
-   const owner=document.createElement("p");owner.className="message muted";owner.textContent="Created by "+(g.creatorName||"Member");
-   const actions=document.createElement("div");actions.style.display="flex";actions.style.gap="8px";actions.style.flexWrap="wrap";
-   const join=document.createElement("button");join.className="primary small";join.style.width="auto";join.textContent="Open / Join";join.onclick=()=>joinCommunity(doc.id,g);
-   actions.append(join);card.append(title,about,owner,actions);list.append(card);
-  });
- },error=>{status.textContent="Could not load groups: "+error.message});
-}
-async function createCommunity(){
- const status=document.getElementById("groupCreateStatus"),name=document.getElementById("newGroupName").value.trim(),description=document.getElementById("newGroupAbout").value.trim(),category=document.getElementById("newGroupCategory").value;
- if(!currentUser||guestMode){status.textContent="Please sign in first. Guest mode cannot create groups.";return}
- if(name.length<3){status.textContent="Group name must have at least 3 characters.";return}
- const btn=document.querySelector('#groups button[onclick="createCommunity()"]');btn.disabled=true;
- try{
-  const groupRef=db.collection("groups").doc(),batch=db.batch();
-  batch.set(groupRef,{name,description,category,creatorId:currentUser.uid,creatorName:document.getElementById("profileName").textContent.trim()||"Member",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  batch.set(groupRef.collection("members").doc(currentUser.uid),{uid:currentUser.uid,username:document.getElementById("profileName").textContent.trim()||"Member",joinedAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await batch.commit();document.getElementById("newGroupName").value="";document.getElementById("newGroupAbout").value="";status.textContent="Community created! You are the first member.";
-  await openCommunity(groupRef.id,{name,description,category});
- }catch(e){status.textContent="Could not create group: "+e.message}
- finally{btn.disabled=false}
-}
-async function joinCommunity(groupId,groupData){
- if(!currentUser||guestMode){document.getElementById("groupListStatus").textContent="Please sign in to join a community.";return}
- try{
-  const memberRef=db.collection("groups").doc(groupId).collection("members").doc(currentUser.uid),existing=await memberRef.get();
-  if(!existing.exists)await memberRef.set({uid:currentUser.uid,username:document.getElementById("profileName").textContent.trim()||"Member",joinedAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await openCommunity(groupId,groupData);
- }catch(e){document.getElementById("groupListStatus").textContent="Could not join group: "+e.message}
-}
-async function openCommunity(groupId,groupData){
- stopGroupRoom();activeGroupId=groupId;document.getElementById("groupRoom").classList.remove("hidden");
- document.getElementById("groupRoomTitle").textContent=groupData.name||"Community";document.getElementById("groupRoomAbout").textContent=(groupData.category||"General")+" · "+(groupData.description||"");
- document.getElementById("groupMessages").innerHTML="";document.getElementById("groupChatStatus").textContent="Connecting to group chat...";
- const membersRef=db.collection("groups").doc(groupId).collection("members");
- try{const members=await membersRef.get();document.getElementById("groupMemberInfo").textContent=members.size+" member(s) · Only members can read and send messages."}catch(e){document.getElementById("groupMemberInfo").textContent="Member information unavailable."}
- activeGroupUnsubscribe=db.collection("groups").doc(groupId).collection("messages").orderBy("createdAt","asc").limit(100).onSnapshot(snapshot=>{
-  const box=document.getElementById("groupMessages");box.innerHTML="";
-  if(snapshot.empty){document.getElementById("groupChatStatus").textContent="You are in. Start the conversation!";return}
-  snapshot.forEach(doc=>{const m=doc.data(),item=document.createElement("div");item.className="tile";item.style.marginBottom="7px";const who=document.createElement("strong");who.textContent=m.username||"Member";const body=document.createElement("p");body.style.marginTop="5px";body.style.whiteSpace="pre-wrap";body.textContent=m.text||"";item.append(who,body);box.append(item)});
-  box.scrollTop=box.scrollHeight;document.getElementById("groupChatStatus").textContent="Live group chat";
- },error=>{document.getElementById("groupChatStatus").textContent="Chat unavailable: "+error.message});
- document.getElementById("groupRoom").scrollIntoView({behavior:"smooth",block:"start"});
-}
-async function sendGroupMessage(){
- const input=document.getElementById("groupMessageInput"),textValue=input.value.trim(),status=document.getElementById("groupChatStatus");
- if(!activeGroupId||!currentUser||guestMode){status.textContent="Join a group with your account first.";return}
- if(!textValue)return;
- try{await db.collection("groups").doc(activeGroupId).collection("messages").add({senderId:currentUser.uid,username:document.getElementById("profileName").textContent.trim()||"Member",text:textValue,createdAt:firebase.firestore.FieldValue.serverTimestamp()});input.value=""}
- catch(e){status.textContent="Message not sent: "+e.message}
-}
-async function leaveCommunity(){
- if(!activeGroupId||!currentUser)return;
- const id=activeGroupId;stopGroupRoom();document.getElementById("groupRoom").classList.add("hidden");
- try{await db.collection("groups").doc(id).collection("members").doc(currentUser.uid).delete();document.getElementById("groupListStatus").textContent="You left the community."}
- catch(e){document.getElementById("groupListStatus").textContent="Could not leave group: "+e.message}
 }
 
 function requestReveal(){
