@@ -288,6 +288,7 @@ function exitGuest(){
 }
 async function loadUserProfile(user){
  currentUser=user;guestMode=false;
+ startGlobalChat();
  startRadarRoomListener();
  document.getElementById("topStatus").textContent="● NETWORK";
  document.getElementById("profileName").textContent=user.displayName||"Explorer";
