@@ -35,7 +35,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .d1{top:42px;left:75px}.d2{top:105px;right:43px}.d3{bottom:54px;left:52px}.d4{bottom:30px;right:85px}
 .section{margin-top:22px}.user-name{color:var(--cyan)}
 nav{position:fixed;bottom:0;left:0;width:100%;background:#101625;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 2px calc(10px + env(safe-area-inset-bottom));z-index:10}
-nav button{border:0;background:none;padding:5px 3px;color:var(--muted);font-size:11px;min-width:16%}
+nav button{border:0;background:none;padding:5px 3px;color:var(--muted);font-size:11px;min-width:14%}
 nav button.active{color:var(--cyan)}
 .avatar{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),#7652bb);border:3px solid #ffffff30;box-shadow:0 0 25px #35d9ff55;font-size:30px;font-weight:900;color:white;margin-bottom:14px}
 .profile-row{padding:11px 0;border-bottom:1px solid var(--line)}.profile-label{font-size:11px;color:var(--muted);margin-bottom:5px}.profile-value{font-size:14px;overflow-wrap:anywhere}
@@ -52,7 +52,7 @@ nav button.active{color:var(--cyan)}
 .empty{text-align:center;padding:20px;color:var(--muted);font-size:13px}
 .poll-choice{margin:12px 0}.poll-choice button{width:100%;text-align:left}.poll-result-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:8px 2px 6px}.poll-track{height:9px;background:#080f20;border:1px solid #30415e;border-radius:20px;overflow:hidden}.poll-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:20px;transition:width .25s ease}.poll-total{font-size:12px;color:var(--muted);margin-top:12px}
 .comment-area{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.comment-list{display:grid;gap:8px;margin:10px 0}.comment-item{background:#0b1426;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px}.comment-item strong{color:var(--cyan);display:block;margin-bottom:3px}.comment-form{display:flex;gap:8px;align-items:flex-end}.comment-form input{flex:1;min-width:0;margin:0}.comment-form button{white-space:nowrap}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}.reply-list{display:grid;gap:6px;margin:10px 0 8px 12px;padding-left:10px;border-left:2px solid var(--line)}.reply-item{background:#101c30;border-radius:9px;padding:7px 9px;font-size:12px}.reply-item strong{display:block;color:var(--cyan);margin-bottom:2px}.reaction-area{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px}.reaction-btn{border:1px solid var(--line);background:#101c30;color:var(--text);border-radius:20px;padding:7px 11px;font-size:13px;cursor:pointer}.reaction-btn.active{border-color:var(--cyan);background:#173044}.reaction-btn:disabled{opacity:.6}.reaction-note{font-size:12px;color:var(--muted);margin-top:5px}
-.live-node-layer{position:absolute;inset:0;pointer-events:none;z-index:1}.live-node{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.live-member{display:flex;justify-content:center;gap:10px;align-items:center;padding:10px 12px;margin:7px 0;border:1px solid #293b59;background:#0d1628;border-radius:12px;font-size:13px}.radar-profile-button{position:absolute;width:54px;height:54px;border-radius:50%;padding:0;border:2px solid #35d9ff;background:linear-gradient(135deg,#087eae,#7652bb);font-size:25px;display:grid;place-items:center;transform:translate(-50%,-50%);box-shadow:0 0 18px #35d9ff55;z-index:3}.radar-profile-button:focus{outline:2px solid white;outline-offset:3px}.radar-stage{position:relative;width:100%;max-width:360px;height:310px;margin:14px auto 4px;border-radius:18px;overflow:hidden;background:radial-gradient(circle at center,#102d43 0%,#0b1728 48%,#080d18 100%);border:1px solid #24425d}.radar-stage:before,.radar-stage:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid #35d9ff35;border-radius:50%;aspect-ratio:1}.radar-stage:before{width:76%}.radar-stage:after{width:48%}.radar-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#123a50;border:2px solid #35d9ff;box-shadow:0 0 24px #35d9ff66;color:#8beaff;font-size:11px;font-weight:800;z-index:2}.radar-sweep{position:absolute;left:50%;top:50%;width:76%;height:88%;transform:translate(-50%,-50%);transform-origin:center;background:conic-gradient(from 0deg,#35d9ff55,transparent 72deg);border-radius:50%;opacity:.55;pointer-events:none}.radar-stage.scanning .radar-sweep{animation:radarStageSpin 2.8s linear infinite}@keyframes radarSpin{to{transform:rotate(360deg)}}@keyframes radarStageSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}@media(prefers-reduced-motion:reduce){.radar.scanning:before,.radar-stage.scanning .radar-sweep{animation-duration:8s}}.radar-empty{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:90%;text-align:center;color:var(--muted);font-size:12px;z-index:4}.live-count{color:var(--green);font-weight:700}.hidden{display:none!important}
+.live-node-layer{position:absolute;inset:0;pointer-events:none;z-index:1}.live-node{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.live-member{display:flex;justify-content:center;gap:10px;align-items:center;padding:10px 12px;margin:7px 0;border:1px solid #293b59;background:#0d1628;border-radius:12px;font-size:13px}.radar-profile-button{position:absolute;width:54px;height:54px;border-radius:50%;padding:0;border:2px solid #35d9ff;background:linear-gradient(135deg,#087eae,#7652bb);font-size:25px;display:grid;place-items:center;transform:translate(-50%,-50%);box-shadow:0 0 18px #35d9ff55;z-index:3}.radar-profile-button:focus{outline:2px solid white;outline-offset:3px}.radar-stage{position:relative;width:100%;max-width:360px;height:310px;margin:14px auto 4px;border-radius:18px;overflow:hidden;background:radial-gradient(circle at center,#102d43 0%,#0b1728 48%,#080d18 100%);border:1px solid #24425d}.radar-stage:before,.radar-stage:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid #35d9ff35;border-radius:50%;aspect-ratio:1}.radar-stage:before{width:76%}.radar-stage:after{width:48%}.radar-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#123a50;border:2px solid #35d9ff;box-shadow:0 0 24px #35d9ff66;color:#8beaff;font-size:11px;font-weight:800;z-index:2}.radar-sweep{position:absolute;left:50%;top:50%;width:76%;height:88%;transform:translate(-50%,-50%);transform-origin:center;background:conic-gradient(from 0deg,#35d9ff55,transparent 72deg);border-radius:50%;opacity:.55;pointer-events:none}.radar-stage.scanning .radar-sweep{animation:radarStageSpin 2.8s linear infinite}@keyframes radarSpin{to{transform:rotate(360deg)}}@keyframes radarStageSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}@media(prefers-reduced-motion:reduce){.radar.scanning:before,.radar-stage.scanning .radar-sweep{animation-duration:8s}}.radar-empty{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:90%;text-align:center;color:var(--muted);font-size:12px;z-index:4}.live-count{color:var(--green);font-weight:700}.global-chat-layout{display:grid;gap:10px}.global-chat-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.global-chat-messages{height:min(48vh,440px);min-height:240px;overflow-y:auto;padding:8px;background:#091222;border:1px solid var(--line);border-radius:14px}.global-chat-input{display:flex;gap:8px;align-items:flex-end}.global-chat-input textarea{flex:1;min-width:0;margin:0;min-height:48px;max-height:120px}.global-chat-input button{flex:0 0 auto}.global-chat-msg{background:#111e33;border:1px solid #263852;border-radius:13px;padding:10px;margin:8px 0;overflow-wrap:anywhere}.global-chat-msg .author{color:var(--cyan);font-size:12px;font-weight:700}.global-chat-msg .body{font-size:14px;white-space:pre-wrap;margin-top:5px}.global-chat-msg .meta{color:var(--muted);font-size:10px;margin-top:5px}.global-online-list{display:flex;gap:6px;flex-wrap:wrap}.global-online-chip{padding:6px 9px;border:1px solid #31516b;border-radius:20px;background:#0d1b2e;color:#d5eaff;font-size:11px}.hidden{display:none!important}
 footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </style>
 </head>
@@ -102,6 +102,19 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global online list, not GPS-based nearby matching.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
  <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat. This version includes all opted-in Radar members; it does not verify a 100m distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are hidden in this app; Firebase Spark does not guarantee server-side deletion after 24 hours.</p></div></div>
  <footer class="note">Privacy: Radar shows anonymous profile icons and handles. No exact GPS is collected. The shared chat includes all opted-in Radar members; 100m/200m are display preferences, not verified distance matching.</footer>
+</section>
+
+<section class="page" id="globalchat">
+ <h2>🌐 100m Global Chat</h2><p class="sub">One shared live room for the 100m community. Only anonymous handles are shown.</p>
+ <div class="card global-chat-layout">
+  <div class="global-chat-header"><h3>● Global Room</h3><span id="globalOnlineCount" class="live-count">0 online</span></div>
+  <p id="globalChatStatus" class="message muted">Connecting to Global Chat...</p>
+  <div><p class="comment-note">Online members</p><div id="globalOnlineMembers" class="global-online-list"><span class="muted">Loading...</span></div></div>
+  <div id="globalTypingStatus" class="comment-note" aria-live="polite"></div>
+  <div id="globalChatMessages" class="global-chat-messages"><div class="empty">Loading messages...</div></div>
+  <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()">Send</button></div>
+  <p class="comment-note">Messages are shared with all signed-in members. Be respectful; never share personal or location details.</p>
+ </div>
 </section>
 
 <section class="page" id="chats">
@@ -187,11 +200,12 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-<footer class="note">Prototype notice: Private chats, profiles, Vibe Drops and Communities use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar LIVE shares only a generated anonymous handle and online status with signed-in users. Nearby Group Chat uses an 8-character opt-in room code; it does not verify 100m distance. Exact GPS is not collected. Messages older than 24 hours are hidden client-side; Spark does not guarantee server deletion.</footer>
+<footer class="note">Prototype notice: Global Chat, private chats, profiles, Vibe Drops and Communities use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar LIVE shares only a generated anonymous handle and online status with signed-in users. Nearby Group Chat uses an 8-character opt-in room code; it does not verify 100m distance. Exact GPS is not collected. Messages older than 24 hours are hidden client-side; Spark does not guarantee server deletion. Global Chat uses the separate globalChat RTDB path.</footer>
 </main>
 <nav>
  <button class="active" onclick="go('home',this)">⌂<br>Home</button>
  <button onclick="go('radar',this)">◎<br>Radar</button>
+ <button onclick="go('globalchat',this)">🌐<br>Global</button>
  <button onclick="go('chats',this)">✉<br>Chats</button>
  <button onclick="go('vibes',this)">✦<br>Vibes</button>
  <button onclick="go('groups',this)">♧<br>Groups</button>
@@ -221,6 +235,7 @@ let selectedRadarRange=100,radarIsOn=false;
 let radarPublicRef=null,radarPublicListener=null;
 let nearbyMembersRef=null,nearbyMembersListener=null,nearbyMessagesRef=null,nearbyMessagesListener=null,nearbyReactionsRef=null,nearbyReactionsListener=null,nearbyReplyTarget=null,nearbyMessageCache=[],nearbyReactionCache={};
 let nearbyTypingRef=null,nearbyTypingListener=null,nearbyTypingTimer=null,nearbyTypingActive=false;
+let globalMembersRef=null,globalMembersListener=null,globalMessagesRef=null,globalMessagesListener=null,globalTypingRef=null,globalTypingListener=null,globalTypingTimer=null,globalTypingActive=false,globalReactionRef=null,globalReactionListener=null,globalMessageCache=[],globalReactionCache={};
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,vibesUnsubscribe=null;
 let vibeVoteUnsubs={},vibeCommentUnsubs={},vibeReplyUnsubs={},vibeReactionUnsubs={},myPollsUnsubscribe=null,myPollVoteUnsubs={};
 let communityListUnsubscribe=null,activeGroupId=null,activeGroupUnsubscribe=null;
@@ -680,6 +695,76 @@ function renderInterestRadar(rawInterests){
   tile.append(heading,desc);box.appendChild(tile);
  });
  const note=document.createElement("p");note.className="comment-note";note.textContent="These are topic ideas only, not live user or location matches.";box.appendChild(note);
+}
+
+// GLOBAL CHAT: shared by every signed-in account; independent of Radar status.
+function globalHandle(){return "Explorer-"+(currentUser?.uid||"guest").slice(0,4).toLowerCase()}
+function stopGlobalChatListeners(){
+ if(globalMembersRef&&globalMembersListener)globalMembersRef.off("value",globalMembersListener);
+ if(globalMessagesRef&&globalMessagesListener)globalMessagesRef.off("value",globalMessagesListener);
+ if(globalTypingRef&&globalTypingListener)globalTypingRef.off("value",globalTypingListener);
+ if(globalReactionRef&&globalReactionListener)globalReactionRef.off("value",globalReactionListener);
+ globalMembersRef=globalMembersListener=globalMessagesRef=globalMessagesListener=globalTypingRef=globalTypingListener=globalReactionRef=globalReactionListener=null;
+ if(globalTypingTimer)clearTimeout(globalTypingTimer);globalTypingTimer=null;globalTypingActive=false;
+}
+async function startGlobalChat(){
+ if(!currentUser||guestMode)return;
+ stopGlobalChatListeners();
+ const uid=currentUser.uid,handle=globalHandle();
+ const memberRef=rtdb.ref("globalChat/members/"+uid);
+ try{
+  await memberRef.onDisconnect().remove();
+  await memberRef.set({online:true,handle,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+  globalMembersRef=rtdb.ref("globalChat/members");
+  globalMembersListener=snap=>{
+   const box=document.getElementById("globalOnlineMembers"),count=document.getElementById("globalOnlineCount");if(!box)return;
+   box.innerHTML="";let total=0;
+   snap.forEach(child=>{const d=child.val()||{};if(d.online===true){total++;const chip=document.createElement("span");chip.className="global-online-chip";chip.textContent=String(d.handle||"Explorer");box.appendChild(chip)}});
+   if(count)count.textContent=total+" online";if(!total)box.textContent="No members online yet.";
+  };
+  globalMembersRef.on("value",globalMembersListener);
+  globalMessagesRef=rtdb.ref("globalChat/messages").orderByChild("createdAt").limitToLast(100);
+  globalMessagesListener=snap=>{globalMessageCache=[];snap.forEach(child=>globalMessageCache.push({id:child.key,...(child.val()||{})}));renderGlobalMessages()};
+  globalMessagesRef.on("value",globalMessagesListener);
+  globalReactionRef=rtdb.ref("globalChat/reactions");
+  globalReactionListener=snap=>{globalReactionCache=snap.val()||{};renderGlobalMessages()};
+  globalReactionRef.on("value",globalReactionListener);
+  globalTypingRef=rtdb.ref("globalChat/typing");
+  globalTypingListener=snap=>{
+   const names=[],now=Date.now();snap.forEach(child=>{const d=child.val()||{};if(child.key!==uid&&d.typing===true&&now-Number(d.updatedAt||0)<7000)names.push(String(d.handle||"Explorer"))});
+   const box=document.getElementById("globalTypingStatus");if(box)box.textContent=names.length?(names.length===1?names[0]+" is typing...":names.slice(0,-1).join(", ")+" and "+names[names.length-1]+" are typing..."):"";
+  };
+  globalTypingRef.on("value",globalTypingListener);
+  const status=document.getElementById("globalChatStatus");if(status)status.textContent="Connected · Live global conversation";
+ }catch(e){const status=document.getElementById("globalChatStatus");if(status)status.textContent="Global Chat connection failed: "+e.message}
+}
+function renderGlobalMessages(){
+ const box=document.getElementById("globalChatMessages");if(!box)return;const wasBottom=box.scrollHeight-box.scrollTop-box.clientHeight<70;box.innerHTML="";
+ if(!globalMessageCache.length){box.innerHTML='<div class="empty">No messages yet. Start a friendly conversation.</div>';return}
+ globalMessageCache.forEach(m=>{
+  const item=document.createElement("div");item.className="global-chat-msg";
+  const author=document.createElement("div");author.className="author";author.textContent=String(m.handle||"Explorer");
+  const body=document.createElement("div");body.className="body";body.textContent=String(m.text||"");
+  const meta=document.createElement("div");meta.className="meta";meta.textContent=new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString();item.append(author,body,meta);
+  const actions=document.createElement("div");actions.className="reaction-area";
+  const mine=globalReactionCache[m.id]||{};
+  ["❤️","😂","👍","🔥"].forEach(emoji=>{let n=0;Object.values(mine).forEach(v=>{if(v===emoji)n++});const b=document.createElement("button");b.className="reaction-btn"+(mine[currentUser.uid]===emoji?" active":"");b.textContent=emoji+(n?" "+n:"");b.onclick=()=>toggleGlobalReaction(m.id,emoji);actions.appendChild(b)});
+  item.appendChild(actions);box.appendChild(item);
+ });if(wasBottom)box.scrollTop=box.scrollHeight;
+}
+async function setGlobalTyping(on){if(!currentUser)return;const ref=rtdb.ref("globalChat/typing/"+currentUser.uid);try{if(on){if(!globalTypingActive)await ref.onDisconnect().remove();globalTypingActive=true;await ref.set({typing:true,handle:globalHandle(),updatedAt:firebase.database.ServerValue.TIMESTAMP})}else{globalTypingActive=false;await ref.onDisconnect().cancel();await ref.remove()}}catch(e){console.log("Global typing:",e.message)}}
+function handleGlobalTyping(){const input=document.getElementById("globalMessageInput");if(!input||!currentUser)return;if(globalTypingTimer)clearTimeout(globalTypingTimer);if(!input.value.trim()){setGlobalTyping(false);return}setGlobalTyping(true);globalTypingTimer=setTimeout(()=>setGlobalTyping(false),2200)}
+async function sendGlobalMessage(){
+ const input=document.getElementById("globalMessageInput"),value=input.value.trim(),button=document.getElementById("globalSendButton"),status=document.getElementById("globalChatStatus");
+ if(!currentUser||guestMode){status.textContent="Please sign in to send a Global Chat message.";return}if(!value)return;
+ button.disabled=true;
+ try{await rtdb.ref("globalChat/messages").push({uid:currentUser.uid,handle:globalHandle(),text:value,createdAt:firebase.database.ServerValue.TIMESTAMP});input.value="";await setGlobalTyping(false)}
+ catch(e){status.textContent="Message not sent: "+e.message}finally{button.disabled=false}
+}
+async function toggleGlobalReaction(messageId,emoji){if(!currentUser)return;const ref=rtdb.ref("globalChat/reactions/"+messageId+"/"+currentUser.uid);try{const snap=await ref.once("value");if(snap.val()===emoji)await ref.remove();else await ref.set(emoji)}catch(e){document.getElementById("globalChatStatus").textContent="Reaction not saved: "+e.message}}
+async function stopGlobalChat(silent=false){
+ if(currentUser){try{await setGlobalTyping(false);const ref=rtdb.ref("globalChat/members/"+currentUser.uid);await ref.onDisconnect().cancel();await ref.remove()}catch(e){if(!silent)console.log(e)}}
+ stopGlobalChatListeners();
 }
 
 auth.onAuthStateChanged(user=>{
