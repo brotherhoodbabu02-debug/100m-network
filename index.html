@@ -297,10 +297,10 @@ function openEditProfile(){
  document.getElementById("editBio").value=document.getElementById("profileBio").textContent==="No bio added yet."?"":document.getElementById("profileBio").textContent;
  document.getElementById("editCountry").value=document.getElementById("profileCountry").textContent==="Not added"?"":document.getElementById("profileCountry").textContent;
  document.getElementById("editInterests").value=document.getElementById("profileInterests").textContent==="Not added"?"":document.getElementById("profileInterests").textContent;
- document.getElementById("editMessage").textContent="";document.getElementById("editProfileCard").style.display="block";
+ document.getElementById("editMessage").textContent="";document.getElementById("editProfileCard").classList.remove("hidden");document.getElementById("editProfileCard").style.display="block";
  document.getElementById("editProfileCard").scrollIntoView({behavior:"smooth"});
 }
-function closeEditProfile(){document.getElementById("editProfileCard").style.display="none"}
+function closeEditProfile(){document.getElementById("editProfileCard").classList.add("hidden");document.getElementById("editProfileCard").style.display="none"}
 async function saveProfile(){
  if(!currentUser)return;
  const username=document.getElementById("editUsername").value.trim(),bio=document.getElementById("editBio").value.trim(),country=document.getElementById("editCountry").value.trim(),interests=document.getElementById("editInterests").value.trim();
