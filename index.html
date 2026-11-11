@@ -712,6 +712,27 @@ async function startGlobalChat(){
  if(!currentUser||guestMode)return;
  stopGlobalChatListeners();
  const uid=currentUser.uid,handle=globalHandle();
+ const status=document.getElementById("globalChatStatus");
+ if(status)status.textContent="Connecting to shared messages…";
+ // Attach the message listener FIRST. A denied online-presence write must not
+ // prevent the shared message feed from loading.
+ globalMessagesRef=rtdb.ref("globalChat/messages").limitToLast(100);
+ globalMessagesListener=snap=>{
+  globalMessageCache=[];
+  snap.forEach(child=>globalMessageCache.push({id:child.key,...(child.val()||{})}));
+  globalMessageCache.sort((a,b)=>Number(a.createdAt||0)-Number(b.createdAt||0));
+  renderGlobalMessages();
+  if(status)status.textContent="Live messages connected · "+globalMessageCache.length+" loaded";
+ };
+ globalMessagesRef.on("value",globalMessagesListener,error=>{
+  if(status)status.textContent="Cannot read Global Chat messages: "+error.message+". Check Realtime Database Rules for globalChat/messages.";
+  const box=document.getElementById("globalChatMessages");if(box)box.innerHTML='<div class="empty error">Messages could not load. Database read permission is needed.</div>';
+ });
+ // Reactions are optional; their failure should not break message loading.
+ globalReactionRef=rtdb.ref("globalChat/reactions");
+ globalReactionListener=snap=>{globalReactionCache=snap.val()||{};renderGlobalMessages()};
+ globalReactionRef.on("value",globalReactionListener,()=>{});
+ // Online presence is independent from message reads.
  const memberRef=rtdb.ref("globalChat/members/"+uid);
  try{
   await memberRef.onDisconnect().remove();
@@ -723,22 +744,18 @@ async function startGlobalChat(){
    snap.forEach(child=>{const d=child.val()||{};if(d.online===true){total++;const chip=document.createElement("span");chip.className="global-online-chip";chip.textContent=String(d.handle||"Explorer");box.appendChild(chip)}});
    if(count)count.textContent=total+" online";if(!total)box.textContent="No members online yet.";
   };
-  globalMembersRef.on("value",globalMembersListener);
-  globalMessagesRef=rtdb.ref("globalChat/messages").orderByChild("createdAt").limitToLast(100);
-  globalMessagesListener=snap=>{globalMessageCache=[];snap.forEach(child=>globalMessageCache.push({id:child.key,...(child.val()||{})}));renderGlobalMessages()};
-  globalMessagesRef.on("value",globalMessagesListener);
-  globalReactionRef=rtdb.ref("globalChat/reactions");
-  globalReactionListener=snap=>{globalReactionCache=snap.val()||{};renderGlobalMessages()};
-  globalReactionRef.on("value",globalReactionListener);
-  globalTypingRef=rtdb.ref("globalChat/typing");
-  globalTypingListener=snap=>{
-   const names=[],now=Date.now();snap.forEach(child=>{const d=child.val()||{};if(child.key!==uid&&d.typing===true&&now-Number(d.updatedAt||0)<7000)names.push(String(d.handle||"Explorer"))});
-   const box=document.getElementById("globalTypingStatus");if(box)box.textContent=names.length?(names.length===1?names[0]+" is typing...":names.slice(0,-1).join(", ")+" and "+names[names.length-1]+" are typing..."):"";
-  };
-  globalTypingRef.on("value",globalTypingListener);
-  const status=document.getElementById("globalChatStatus");if(status)status.textContent="Connected · Live global conversation";
- }catch(e){const status=document.getElementById("globalChatStatus");if(status)status.textContent="Global Chat connection failed: "+e.message}
+  globalMembersRef.on("value",globalMembersListener,()=>{});
+ }catch(e){
+  const box=document.getElementById("globalOnlineMembers");if(box)box.textContent="Online list unavailable (database permission).";
+ }
+ globalTypingRef=rtdb.ref("globalChat/typing");
+ globalTypingListener=snap=>{
+  const names=[],now=Date.now();snap.forEach(child=>{const d=child.val()||{};if(child.key!==uid&&d.typing===true&&now-Number(d.updatedAt||0)<7000)names.push(String(d.handle||"Explorer"))});
+  const box=document.getElementById("globalTypingStatus");if(box)box.textContent=names.length?(names.length===1?names[0]+" is typing...":names.slice(0,-1).join(", ")+" and "+names[names.length-1]+" are typing..."):"";
+ };
+ globalTypingRef.on("value",globalTypingListener,()=>{});
 }
+
 function renderGlobalMessages(){
  const box=document.getElementById("globalChatMessages");if(!box)return;const wasBottom=box.scrollHeight-box.scrollTop-box.clientHeight<70;box.innerHTML="";
  if(!globalMessageCache.length){box.innerHTML='<div class="empty">No messages yet. Start a friendly conversation.</div>';return}
