@@ -349,8 +349,10 @@ async function copyMyChatId(){if(!myPublicChatId)return;try{await navigator.clip
 async function startPrivateChat(){
  const status=document.getElementById("privateChatStatus");
  if(!currentUser||guestMode){status.textContent="Please sign in with an account to use private messages.";return}
- const publicId=document.getElementById("recipientUid").value.trim().toUpperCase();
- if(!/^100M-[A-Z0-9]{6}$/.test(publicId)){status.textContent="Enter a valid 100m Chat ID, for example 100m-A1B2C3.";return}
+ const enteredId=document.getElementById("recipientUid").value.trim();
+ if(!/^100m-[A-Z0-9]{6}$/i.test(enteredId)){status.textContent="Enter a valid 100m Chat ID, for example 100m-A1B2C3.";return}
+ // RTDB keys are case-sensitive. Keep the stored "100m-" prefix lowercase.
+ const publicId="100m-"+enteredId.slice(5).toUpperCase();
  try{
   const lookup=await rtdb.ref("publicChatIds/"+publicId).once("value"),record=lookup.val();
   if(!record||!record.uid){status.textContent="Chat ID not found. Ask them to check and share their Profile ID.";return}
