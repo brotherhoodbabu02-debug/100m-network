@@ -157,7 +157,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <select id="reportReason"><option>Spam</option><option>Harassment</option><option>Unsafe request</option><option>Other concern</option></select>
  <textarea id="reportDetails" maxlength="180" placeholder="Optional details (do not include private information)"></textarea>
  <button class="primary" onclick="submitReport()">Save demo report</button><p id="reportStatus" class="message muted"></p>
- <div class="tile"><h3>Block demo account</h3><p>Blocking in this prototype records a local demo block. No real account is contacted.</p><button class="danger small" onclick="blockDemo()">Block sample account</button><p id="blockStatus" class="message muted"></p></div>
+ <div class="tile"><h3>Blocked accounts</h3><p>Accounts you block will appear here. You can unblock them whenever you choose.</p><div id="blockedAccountsList" class="empty">Sign in to view blocked accounts.</div><p id="blockStatus" class="message muted"></p></div>
  </div>
 </section>
 
@@ -770,9 +770,9 @@ async function stopGlobalChat(silent=false){
 
 auth.onAuthStateChanged(user=>{
  if(user){
-  guestMode=false;document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);
+  guestMode=false;document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();
  }else if(!guestMode){
-  currentUser=null;updateRadarStatusUI(false,"Sign in to control your private status.");document.getElementById("authPage").style.display="block";document.getElementById("app").style.display="none";
+  currentUser=null;updateRadarStatusUI(false,"Sign in to control your private status.");loadBlockedAccounts();document.getElementById("authPage").style.display="block";document.getElementById("app").style.display="none";
  }
 });
 function go(id,btn){
@@ -811,6 +811,34 @@ function requestReveal(){
  if(!document.getElementById("myRevealConsent").checked){status.textContent="Tick the consent box first.";status.className="message warning";return}
  status.textContent="Demo preview only: no request was sent. A real reveal must also receive the other person's separate approval.";
  status.className="message good";
+}
+async function loadBlockedAccounts(){
+ const box=document.getElementById("blockedAccountsList");
+ if(!box)return;
+ if(!currentUser||guestMode){box.textContent="Sign in to view blocked accounts.";return}
+ box.textContent="Loading blocked accounts…";
+ try{
+  const snap=await db.collection("users").doc(currentUser.uid).collection("blocked").get();
+  box.innerHTML="";
+  if(snap.empty){box.textContent="You have not blocked any accounts.";box.className="empty";return}
+  box.className="";
+  snap.forEach(doc=>{
+   const data=doc.data(),row=document.createElement("div");row.className="tile";
+   const name=document.createElement("strong");name.textContent=data.username||"Blocked account";
+   const button=document.createElement("button");button.className="secondary small";button.textContent="Unblock";button.onclick=()=>unblockAccount(doc.id,button);
+   row.append(name,button);box.appendChild(row);
+  });
+ }catch(e){box.textContent="Could not load blocked accounts: "+e.message}
+}
+async function unblockAccount(uid,button){
+ if(!currentUser||guestMode||!uid)return;
+ if(!confirm("Unblock this account? They may be able to contact you again."))return;
+ button.disabled=true;
+ try{
+  await db.collection("users").doc(currentUser.uid).collection("blocked").doc(uid).delete();
+  document.getElementById("blockStatus").textContent="Account unblocked.";
+  await loadBlockedAccounts();
+ }catch(e){button.disabled=false;document.getElementById("blockStatus").textContent="Could not unblock account: "+e.message}
 }
 function submitReport(){
  const reason=document.getElementById("reportReason").value,details=document.getElementById("reportDetails").value.trim();
