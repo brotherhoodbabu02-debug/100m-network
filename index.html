@@ -120,8 +120,8 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 <section class="page" id="chats">
  <h2>Private Messages</h2><p class="sub">One-to-one messages between signed-in accounts.</p>
  <div class="card"><h3>Start a private chat</h3>
- <p class="sub" style="margin:7px 0">Enter the other person's Firebase User UID. Only chat with someone you know and who has agreed to message you.</p>
- <input id="recipientUid" maxlength="128" placeholder="Other person's User UID">
+ <p class="sub" style="margin:7px 0">Enter their public 100m Chat ID. Ask them to share it from their Profile.</p>
+ <input id="recipientUid" maxlength="20" placeholder="Example: 100m-A1B2C3">
  <button class="primary" onclick="startPrivateChat()">Open private chat</button>
  <p id="privateChatStatus" class="message muted"></p></div>
  <div class="card"><h3>Your conversations</h3><div id="conversationList" class="chat-list"><div class="empty">Sign in to load conversations.</div></div></div>
@@ -167,6 +167,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 <section class="page" id="profile">
  <h2>Your Profile</h2><p class="sub">Your identity on 100m.</p>
  <div class="card"><div class="avatar" id="profileAvatar">U</div><h3 class="user-name" id="profileName">Explorer</h3><p class="sub" id="profileEmail"></p>
+ <div class="profile-row"><div class="profile-label">MY PUBLIC CHAT ID</div><div class="row" style="align-items:center;gap:8px"><div class="profile-value" id="myPublicChatId">Creating your Chat ID…</div><button class="secondary small" id="copyPublicChatId" onclick="copyMyChatId()">Copy</button></div><p class="sub" style="margin:4px 0">Share this ID to let someone find you for a private chat. Your Firebase UID stays private.</p></div>
  <div class="profile-row"><div class="profile-label">BIO</div><div class="profile-value" id="profileBio">No bio added yet.</div></div>
  <div class="profile-row"><div class="profile-label">COUNTRY</div><div class="profile-value" id="profileCountry">Not added</div></div>
  <div class="profile-row"><div class="profile-label">INTERESTS</div><div class="profile-value" id="profileInterests">Not added</div></div>
@@ -215,7 +216,7 @@ let radarPublicRef=null,radarPublicListener=null;
 let nearbyMembersRef=null,nearbyMembersListener=null,nearbyMessagesRef=null,nearbyMessagesListener=null,nearbyReactionsRef=null,nearbyReactionsListener=null,nearbyReplyTarget=null,nearbyMessageCache=[],nearbyReactionCache={};
 let nearbyTypingRef=null,nearbyTypingListener=null,nearbyTypingTimer=null,nearbyTypingActive=false;
 let globalMembersRef=null,globalMembersListener=null,globalMessagesRef=null,globalMessagesListener=null,globalTypingRef=null,globalTypingListener=null,globalTypingTimer=null,globalTypingActive=false,globalReactionRef=null,globalReactionListener=null,globalMessageCache=[],globalReactionCache={};
-let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null;
+let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,myPublicChatId="";
 const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
 function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90))}
 function toggleAuth(){
@@ -279,7 +280,7 @@ async function loadUserProfile(user){
    data={uid:user.uid,username:user.displayName||"Explorer",email:user.email||"",bio:"",country:"",interests:""};
    await ref.set({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
   }
-  displayProfile(data);renderInterestRadar(data.interests||"");updateRadarStatusUI(false,"Your private status is OFF. Turn it ON when you choose.");document.getElementById("profileMessage").textContent="Profile saved in Firestore.";
+  displayProfile(data);myPublicChatId=await ensurePublicChatId(user, data);document.getElementById("myPublicChatId").textContent=myPublicChatId;renderInterestRadar(data.interests||"");updateRadarStatusUI(false,"Your private status is OFF. Turn it ON when you choose.");document.getElementById("profileMessage").textContent="Profile saved in Firestore.";
  }catch(e){document.getElementById("profileMessage").textContent="Database error: "+e.message}
 }
 function displayProfile(data){
@@ -333,17 +334,30 @@ function loadConversations(user){
   });
  },error=>{box.textContent="Could not load conversations: "+error.message});
 }
+function makePublicChatId(){return "100m-"+Math.random().toString(36).slice(2,8).toUpperCase()}
+async function ensurePublicChatId(user,profile){
+ let id=profile.publicChatId||"";
+ if(id){const existing=await rtdb.ref("publicChatIds/"+id).once("value");if(!existing.exists()||existing.val().uid===user.uid){if(!existing.exists())await rtdb.ref("publicChatIds/"+id).set({uid:user.uid});return id}}
+ for(let attempt=0;attempt<8;attempt++){
+  const candidate=makePublicChatId(),ref=rtdb.ref("publicChatIds/"+candidate);
+  const result=await ref.transaction(current=>current===null?{uid:user.uid}:undefined);
+  if(result.committed){await db.collection("users").doc(user.uid).set({publicChatId:candidate},{merge:true});return candidate}
+ }
+ throw new Error("Could not create a unique Chat ID. Please try again.");
+}
+async function copyMyChatId(){if(!myPublicChatId)return;try{await navigator.clipboard.writeText(myPublicChatId);document.getElementById("profileMessage").textContent="Chat ID copied."}catch(e){document.getElementById("profileMessage").textContent="Copy not available. Please select and copy the ID."}}
 async function startPrivateChat(){
  const status=document.getElementById("privateChatStatus");
  if(!currentUser||guestMode){status.textContent="Please sign in with an account to use private messages.";return}
- const other=document.getElementById("recipientUid").value.trim();
- if(!other){status.textContent="Enter the other person's User UID.";return}
- if(other===currentUser.uid){status.textContent="You cannot start a chat with your own account.";return}
+ const publicId=document.getElementById("recipientUid").value.trim().toUpperCase();
+ if(!/^100M-[A-Z0-9]{6}$/.test(publicId)){status.textContent="Enter a valid 100m Chat ID, for example 100m-A1B2C3.";return}
  try{
+  const lookup=await rtdb.ref("publicChatIds/"+publicId).once("value"),record=lookup.val();
+  if(!record||!record.uid){status.textContent="Chat ID not found. Ask them to check and share their Profile ID.";return}
+  const other=record.uid;
+  if(other===currentUser.uid){status.textContent="You cannot start a chat with your own account.";return}
   const id=chatDocumentId(currentUser.uid,other),ref=db.collection("chats").doc(id),snap=await ref.get();
-  if(!snap.exists){
-   await ref.set({participantsList:[currentUser.uid,other].sort(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  }
+  if(!snap.exists)await ref.set({participantsList:[currentUser.uid,other].sort(),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   status.textContent="Private chat opened.";openPrivateChat(id,other);
  }catch(e){status.textContent="Could not open chat: "+e.message}
 }
