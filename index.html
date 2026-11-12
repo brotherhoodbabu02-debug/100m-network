@@ -90,18 +90,17 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </section>
 
 <section class="page" id="radar">
- <h2>Nearby Radar</h2><p class="sub">Discover your community while keeping your identity private.</p>
+ <h2>Live Radar</h2><p class="sub">See signed-in members who have chosen to appear online.</p>
  <div class="card"><div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
- <h3 style="text-align:center;color:var(--cyan)">People Around You</h3><p class="sub" style="text-align:center;margin:8px 0">Turn Radar ON to appear in the anonymous LIVE members list. No GPS location is collected.</p>
- <div class="row"><button class="primary small" id="range100" onclick="setRadarRange(100)">100m</button><button class="secondary small" id="range200" onclick="setRadarRange(200)">200m</button></div>
- <p id="rangeTitle" class="message muted" style="text-align:center">Selected range: 100m</p></div>
+ <h3 style="text-align:center;color:var(--cyan)">Opt-in Members</h3><p class="sub" style="text-align:center;margin:8px 0">Turn Radar ON to appear to other signed-in members. This version does not collect GPS or measure physical distance.</p>
+ <p id="rangeTitle" class="message muted" style="text-align:center">Live opt-in presence · no location tracking</p></div>
  <div class="card"><h3>My Anonymous Identity</h3><div class="row" style="align-items:center;margin-top:14px"><div class="avatar" style="margin:0">👤</div><div><h3 id="radarAnonymousHandle" style="color:var(--cyan)">Explorer</h3><p class="sub" style="margin:5px 0">Anonymous Radar profile</p></div></div></div>
  <div class="card"><h3>My Radar Privacy</h3><p class="sub" style="margin:7px 0">Radar starts OFF. Your private opt-in status is saved when you turn it ON. Your exact GPS location, email and real name are not displayed.</p>
  <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
- <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global online list, not GPS-based nearby matching.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
- <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat. This version includes all opted-in Radar members; it does not verify a 100m distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are hidden in this app; Firebase Spark does not guarantee server-side deletion after 24 hours.</p></div></div>
- <footer class="note">Privacy: Radar shows anonymous profile icons and handles. No exact GPS is collected. The shared chat includes all opted-in Radar members; 100m/200m are display preferences, not verified distance matching.</footer>
+ <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global opt-in online list, not a nearby-distance finder.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
+ <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat with other opted-in members. This room is not limited by physical distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are hidden in this app; Firebase Spark does not guarantee server-side deletion after 24 hours.</p></div></div>
+ <footer class="note">Privacy: Live Radar uses opt-in online presence only. It does not request GPS, calculate 100m proximity, or reveal physical location. Only signed-in members who turn Radar ON appear. The community chat is shared with opted-in members.</footer>
 </section>
 
 <section class="page" id="globalchat">
@@ -182,7 +181,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-<footer class="note">Prototype notice: Global Chat, private chats and profiles use Firebase. Ghost Room, Radar, reports, identity reveal and Karma remain demo/local features. Radar LIVE shares only a generated anonymous handle and online status with signed-in users. Nearby Group Chat uses an 8-character opt-in room code; it does not verify 100m distance. Exact GPS is not collected. Messages older than 24 hours are hidden client-side; Spark does not guarantee server deletion. Global Chat uses the separate globalChat RTDB path.</footer>
+<footer class="note">Prototype notice: Global Chat, private chats, profiles and opt-in Radar presence use Firebase. Radar displays signed-in members who have turned it ON; it is not GPS-based and does not verify a 100m radius. Nearby Group Chat is a shared opt-in room, not distance restricted. Ghost Room, reports, identity reveal and Karma remain demo/local features. Messages older than 24 hours are hidden client-side; Firebase Spark does not guarantee server-side deletion. Global Chat uses the separate globalChat RTDB path.</footer>
 </main>
 <nav>
  <button class="active" onclick="go('home',this)">⌂<br>Home</button>
@@ -648,12 +647,9 @@ async function leaveNearbyRoom(silent=false){
  if(!silent){const status=document.getElementById("nearbyRoomStatus");if(status)status.textContent="You left the shared chat."}
 }
 
-function setRadarRange(m){
- selectedRadarRange=Number(m)===200?200:100;
- const title=document.getElementById("rangeTitle"),b100=document.getElementById("range100"),b200=document.getElementById("range200");
- if(title)title.textContent="Display preference: "+selectedRadarRange+"m (not GPS distance)";
- if(b100)b100.className=selectedRadarRange===100?"primary small":"secondary small";
- if(b200)b200.className=selectedRadarRange===200?"primary small":"secondary small";
+function setRadarRange(){
+ const title=document.getElementById("rangeTitle");
+ if(title)title.textContent="Live opt-in presence · no location tracking";
 }
 function renderInterestRadar(rawInterests){
  const box=document.getElementById("interestRadarSuggestions");
