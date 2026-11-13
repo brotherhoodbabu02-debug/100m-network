@@ -157,7 +157,6 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <select id="reportReason"><option>Spam</option><option>Harassment</option><option>Unsafe request</option><option>Other concern</option></select>
  <textarea id="reportDetails" maxlength="180" placeholder="Optional details (do not include private information)"></textarea>
  <button class="primary" onclick="submitReport()">Save demo report</button><p id="reportStatus" class="message muted"></p>
- <div class="tile"><h3>Blocked accounts</h3><p>Accounts you block will appear here. You can unblock them whenever you choose.</p><div id="blockedAccountsList" class="empty">Sign in to view blocked accounts.</div><p id="blockStatus" class="message muted"></p></div>
  </div>
 </section>
 
@@ -171,6 +170,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="profile-row"><div class="profile-label">COUNTRY</div><div class="profile-value" id="profileCountry">Not added</div></div>
  <div class="profile-row"><div class="profile-label">INTERESTS</div><div class="profile-value" id="profileInterests">Not added</div></div>
  <button class="primary" id="editProfileButton" onclick="openEditProfile()">✎ Edit Profile</button>
+ <div class="tile" style="margin-top:16px"><h3>Blocked Accounts</h3><p class="sub">Accounts you block appear here. You can unblock them whenever you choose.</p><div id="blockedAccountsList" class="empty">Sign in to view blocked accounts.</div><p id="blockStatus" class="message muted"></p><button class="secondary small" type="button" onclick="loadBlockedAccounts()">Refresh list</button></div>
  <button class="logout" onclick="logout()">Logout</button><button class="secondary logout hidden" id="exitGuestButton" onclick="exitGuest()">Exit Guest Mode</button>
  <p id="profileMessage"></p></div>
  <div class="card hidden" id="editProfileCard"><h3>Edit Your Profile</h3>
