@@ -55,6 +55,10 @@ nav button.active{color:var(--cyan)}
 .live-node-layer{position:absolute;inset:0;pointer-events:none;z-index:1}.live-node{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.live-member{display:flex;justify-content:center;gap:10px;align-items:center;padding:10px 12px;margin:7px 0;border:1px solid #293b59;background:#0d1628;border-radius:12px;font-size:13px}.radar-profile-button{position:absolute;width:54px;height:54px;border-radius:50%;padding:0;border:2px solid #35d9ff;background:linear-gradient(135deg,#087eae,#7652bb);font-size:25px;display:grid;place-items:center;transform:translate(-50%,-50%);box-shadow:0 0 18px #35d9ff55;z-index:3}.radar-profile-button:focus{outline:2px solid white;outline-offset:3px}.radar-stage{position:relative;width:100%;max-width:360px;height:310px;margin:14px auto 4px;border-radius:18px;overflow:hidden;background:radial-gradient(circle at center,#102d43 0%,#0b1728 48%,#080d18 100%);border:1px solid #24425d}.radar-stage:before,.radar-stage:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid #35d9ff35;border-radius:50%;aspect-ratio:1}.radar-stage:before{width:76%}.radar-stage:after{width:48%}.radar-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#123a50;border:2px solid #35d9ff;box-shadow:0 0 24px #35d9ff66;color:#8beaff;font-size:11px;font-weight:800;z-index:2}.radar-sweep{position:absolute;left:50%;top:50%;width:76%;height:88%;transform:translate(-50%,-50%);transform-origin:center;background:conic-gradient(from 0deg,#35d9ff55,transparent 72deg);border-radius:50%;opacity:.55;pointer-events:none}.radar-stage.scanning .radar-sweep{animation:radarStageSpin 2.8s linear infinite}@keyframes radarSpin{to{transform:rotate(360deg)}}@keyframes radarStageSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}@media(prefers-reduced-motion:reduce){.radar.scanning:before,.radar-stage.scanning .radar-sweep{animation-duration:8s}}.radar-empty{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:90%;text-align:center;color:var(--muted);font-size:12px;z-index:4}.live-count{color:var(--green);font-weight:700}.global-chat-layout{display:grid;gap:10px}.global-chat-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.global-chat-messages{height:min(48vh,440px);min-height:240px;overflow-y:auto;padding:8px;background:#091222;border:1px solid var(--line);border-radius:14px}.global-chat-input{display:flex;gap:8px;align-items:flex-end}.global-chat-input textarea{flex:1;min-width:0;margin:0;min-height:48px;max-height:120px}.global-chat-input button{flex:0 0 auto}.global-chat-msg{background:#111e33;border:1px solid #263852;border-radius:13px;padding:10px;margin:8px 0;overflow-wrap:anywhere}.global-chat-msg .author{color:var(--cyan);font-size:12px;font-weight:700}.global-chat-msg .body{font-size:14px;white-space:pre-wrap;margin-top:5px}.global-chat-msg .meta{color:var(--muted);font-size:10px;margin-top:5px}.global-online-list{display:flex;gap:6px;flex-wrap:wrap}.global-online-chip{padding:6px 9px;border:1px solid #31516b;border-radius:20px;background:#0d1b2e;color:#d5eaff;font-size:11px;touch-action:pan-y}.profile-action-trigger{touch-action:pan-y;cursor:pointer}.profile-action-overlay{position:fixed;inset:0;z-index:1200;background:#000b;display:grid;place-items:center;padding:22px}.profile-action-panel{width:min(100%,340px);background:#151e35;border:1px solid #35d9ff88;border-radius:18px;padding:20px;box-shadow:0 18px 55px #0009}.profile-action-panel h3{color:var(--cyan);overflow-wrap:anywhere;margin-bottom:14px}.profile-action-panel button{width:100%;margin-top:8px}.hidden{display:none!important}
 footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </style>
+
+<style>
+.ptt-wrap{display:flex;flex-direction:column;gap:10px}.ptt-button{width:100%;min-height:64px;font-size:18px;font-weight:800;background:#087eae;border:1px solid #35d9ff;touch-action:none;user-select:none}.ptt-button.is-live{background:#8b2635;border-color:#ff8585}.ptt-state{font-size:13px;color:var(--muted);line-height:1.5}.ptt-state.live{color:#ff9b9b}
+</style>
 </head>
 <body>
 <header><div class="logo">100m<span>.</span></div><div class="status" id="topStatus">● NETWORK</div></header>
@@ -100,6 +104,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
  <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global opt-in online list, not a nearby-distance finder.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
  <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat with other opted-in members. This room is not limited by physical distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are hidden in this app; Firebase Spark does not guarantee server-side deletion after 24 hours.</p></div></div>
+ <div class="card" id="voiceRoomCard"><h3>🎙️ Push-to-Talk · Mic Test</h3><p class="sub" style="margin:7px 0">This is a local microphone test only. Your voice is not transmitted to other members in this version.</p><div class="ptt-wrap"><p id="pttStatus" class="ptt-state" aria-live="polite">Join the shared chat, then allow microphone access to test Push-to-Talk.</p><button type="button" id="pttButton" class="ptt-button" disabled>Hold to Talk</button><button type="button" id="pttStopButton" class="secondary" onclick="stopPushToTalk()" disabled>Stop microphone</button></div><p class="comment-note">Microphone access starts only while you hold the button. Release the button or press Stop to turn it off. Do not use this feature in a public or shared space without considering who can hear you.</p></div>
  <footer class="note">Privacy: Live Radar uses opt-in online presence only. It does not request GPS, calculate 100m proximity, or reveal physical location. Only signed-in members who turn Radar ON appear. The community chat is shared with opted-in members.</footer>
 </section>
 
@@ -668,6 +673,7 @@ async function joinNearbyRoom(){
   await memberRef.onDisconnect().remove();
   await memberRef.set({active:true,handle,joinedAt:firebase.database.ServerValue.TIMESTAMP});
   document.getElementById("nearbyRoomActive").classList.remove("hidden");
+  const pttButton=document.getElementById("pttButton");if(pttButton)pttButton.disabled=false;
   document.getElementById("nearbyRoomStatus").textContent="You joined the shared Radar chat.";
   startNearbyRoomListeners();
  }catch(e){const s=document.getElementById("nearbyRoomStatus");if(s)s.textContent="Could not join chat: "+e.message}
@@ -699,6 +705,7 @@ async function toggleNearbyReaction(messageId,emoji){
  catch(e){document.getElementById("nearbyRoomStatus").textContent="Reaction not saved: "+e.message}
 }
 async function leaveNearbyRoom(silent=false){
+ stopPushToTalk();const pttButton=document.getElementById("pttButton");if(pttButton)pttButton.disabled=true;
  if(currentUser&&radarIsOn)await setNearbyTyping(false);
  stopNearbyRoomListeners();cancelNearbyReply();
  try{if(currentUser){const ref=rtdb.ref("nearbyChat/members/"+currentUser.uid);await ref.onDisconnect().cancel();await ref.remove()}}
@@ -913,6 +920,24 @@ function blockDemo(){document.getElementById("blockStatus").textContent="Select 
 function earnKarma(){
  karma++;document.getElementById("karmaPoints").textContent=karma+" Karma points";
 }
+
+// Push-to-Talk microphone test (local device only; no audio is broadcast).
+let pttStream=null,pttActive=false,pttPressed=false;
+function setPttStatus(message,isLive=false){const el=document.getElementById("pttStatus");if(el){el.textContent=message;el.className="ptt-state"+(isLive?" live":"")};}
+async function startPushToTalk(){
+ if(pttActive)return;
+ if(!currentUser||guestMode){setPttStatus("Sign in with an account to use the microphone test.");return;}
+ if(!document.getElementById("nearbyRoomActive")||document.getElementById("nearbyRoomActive").classList.contains("hidden")){setPttStatus("Join the shared Radar Chat first. Turn Radar ON to join.");return;}
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){setPttStatus("Microphone access is unavailable. Use a supported browser over HTTPS.");return;}
+ const button=document.getElementById("pttButton"),stop=document.getElementById("pttStopButton");button.disabled=true;
+ try{pttStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});pttActive=true;if(!pttPressed){stopPushToTalk();return;}button.classList.add("is-live");button.textContent="● Mic Active — Release to Stop";stop.disabled=false;setPttStatus("Microphone is active on this device only. Audio is NOT being sent to the room.",true);}
+ catch(e){setPttStatus(e.name==="NotAllowedError"?"Microphone permission was denied. Allow it in browser site settings if you choose.":"Could not start microphone: "+e.message);}
+ finally{if(!pttActive)button.disabled=false;}
+}
+function stopPushToTalk(){pttPressed=false;if(pttStream){pttStream.getTracks().forEach(track=>track.stop());pttStream=null;}pttActive=false;const button=document.getElementById("pttButton"),stop=document.getElementById("pttStopButton");if(button){button.disabled=false;button.classList.remove("is-live");button.textContent="Hold to Talk";}if(stop)stop.disabled=true;setPttStatus("Microphone is OFF. Hold the button when you are ready to test again.");}
+function setupPushToTalk(){const button=document.getElementById("pttButton");if(!button)return;button.addEventListener("pointerdown",e=>{e.preventDefault();pttPressed=true;startPushToTalk();});["pointerup","pointercancel","pointerleave","lostpointercapture"].forEach(name=>button.addEventListener(name,()=>stopPushToTalk()));document.addEventListener("visibilitychange",()=>{if(document.hidden)stopPushToTalk();});}
+document.addEventListener("DOMContentLoaded",setupPushToTalk);
+window.addEventListener("beforeunload",()=>{if(pttStream)pttStream.getTracks().forEach(track=>track.stop());});
 </script>
 </body>
 </html>
