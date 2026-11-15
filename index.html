@@ -972,10 +972,23 @@ async function voiceStartRoom(){
 function voiceClosePeer(uid){const pc=voicePeers[uid];if(pc){pc.close();delete voicePeers[uid]}}
 async function voiceAcquireLock(){
  voiceLockRef=rtdb.ref('voiceRoom/speakerLock');
- await voiceLockRef.onDisconnect().remove();
- const result=await voiceLockRef.transaction(current=>{if(current)return;return {uid:currentUser.uid,handle:voiceHandle(),startedAt:firebase.database.ServerValue.TIMESTAMP}});
- if(!result.committed||result.snapshot.val()?.uid!==currentUser.uid){await voiceLockRef.onDisconnect().cancel();throw Error('Another member is speaking. Please wait.')}
- voiceLockOwned=true
+ const result=await voiceLockRef.transaction(current=>{
+  if(current)return;
+  return {uid:currentUser.uid,handle:voiceHandle(),startedAt:Date.now()};
+ });
+ if(!result.committed||result.snapshot.val()?.uid!==currentUser.uid){
+  throw Error('Another member is speaking. Please wait.');
+ }
+ voiceLockOwned=true;
+ try{
+  // Register disconnect cleanup only after the lock exists and belongs to this user.
+  await voiceLockRef.onDisconnect().remove();
+ }catch(e){
+  const snap=await voiceLockRef.once('value');
+  if(snap.val()?.uid===currentUser.uid)await voiceLockRef.remove();
+  voiceLockOwned=false;
+  throw e;
+ }
 }
 async function startPushToTalk(){
  if(pttActive||!pttPressed)return;
