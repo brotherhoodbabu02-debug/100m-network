@@ -104,7 +104,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
  <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global opt-in online list, not a nearby-distance finder.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
  <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat with other opted-in members. This room is not limited by physical distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are hidden in this app; Firebase Spark does not guarantee server-side deletion after 24 hours.</p></div></div>
- <div class="card" id="voiceRoomCard"><h3>🎙️ Walkie-Talkie</h3><p class="sub" style="margin:7px 0">Join the shared Radar Chat. Hold the button to speak; release it to stop. Only members currently in this shared room can receive the audio.</p><div class="ptt-wrap"><p id="pttStatus" class="ptt-state" aria-live="polite">Join the shared Radar Chat. Hold to speak to room members.</p><button type="button" id="pttButton" class="ptt-button" disabled>Hold to Talk</button><button type="button" id="pttStopButton" class="secondary" onclick="stopPushToTalk()" disabled>Stop microphone</button></div><p class="comment-note">Your microphone is active only while you hold the button. Use headphones where possible. Audio is sent to other opted-in members in this shared room; this room is not physically restricted to 100m.</p></div>
+ <div class="card" id="voiceRoomCard"><h3>🎙️ Walkie-Talkie</h3><p class="sub" style="margin:7px 0">Join the shared Radar Chat. Hold the button to speak; release it to stop. Every talk session is limited to 10 seconds for everyone.</p><div class="ptt-wrap"><p id="nearbySpeakingStatus" class="ptt-state" aria-live="polite">Nobody is speaking right now.</p><p id="pttStatus" class="ptt-state" aria-live="polite">Join the shared Radar Chat. Hold to speak to room members.</p><button type="button" id="pttButton" class="ptt-button" disabled>Hold to Talk (10s max)</button><button type="button" id="pttStopButton" class="secondary" onclick="stopPushToTalk()" disabled>Stop microphone</button></div><p class="comment-note">Your microphone is active only while you hold the button. Use headphones where possible. Audio is sent to other opted-in members in this shared room; this room is not physically restricted to 100m.</p></div>
  <footer class="note">Privacy: Live Radar uses opt-in online presence only. It does not request GPS, calculate 100m proximity, or reveal physical location. Only signed-in members who turn Radar ON appear. The community chat is shared with opted-in members.</footer>
 </section>
 
@@ -218,7 +218,7 @@ let chatItems=[];
 let selectedRadarRange=100,radarIsOn=false;
 let radarPublicRef=null,radarPublicListener=null;
 let nearbyMembersRef=null,nearbyMembersListener=null,nearbyMessagesRef=null,nearbyMessagesListener=null,nearbyReactionsRef=null,nearbyReactionsListener=null,nearbyReplyTarget=null,nearbyMessageCache=[],nearbyReactionCache={};
-let voiceSignalRef=null,voiceSignalListener=null,voicePeers={},voiceRemoteAudio={},voiceSessionStarted=false,voicePendingCandidates={};
+let voiceSignalRef=null,voiceSignalListener=null,voiceSignalRemovedListener=null,voiceSignalSenderListeners={},voicePeers={},voiceRemoteAudio={},voiceSessionStarted=false,voicePendingCandidates={};
 let nearbyTypingRef=null,nearbyTypingListener=null,nearbyTypingTimer=null,nearbyTypingActive=false;
 let globalMembersRef=null,globalMembersListener=null,globalMessagesRef=null,globalMessagesListener=null,globalTypingRef=null,globalTypingListener=null,globalTypingTimer=null,globalTypingActive=false,globalReactionRef=null,globalReactionListener=null,globalMessageCache=[],globalReactionCache={};
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,myPublicChatId="";
@@ -583,10 +583,11 @@ function stopNearbyRoomListeners(){
 }
 function renderNearbyRoomMembers(snapshot){
  const box=document.getElementById("nearbyRoomMembers"),count=document.getElementById("nearbyRoomMemberCount");
- if(!box)return;box.innerHTML="";let total=0;
- snapshot.forEach(child=>{const m=child.val()||{};if(m.active===true){total++;const item=document.createElement("div");item.className="live-member";item.textContent="👤  "+String(m.handle||"Explorer");box.appendChild(item)}});
+ if(!box)return;box.innerHTML="";let total=0;const speakers=[];const now=Date.now();
+ snapshot.forEach(child=>{const m=child.val()||{};if(m.active===true){total++;const handle=String(m.handle||"Explorer");const speaking=m.speaking===true&&Number(m.speakingUntil||0)>now;if(speaking)speakers.push(handle);const item=document.createElement("div");item.className="live-member";item.textContent=(speaking?"🎙️  ":"👤  ")+handle+(speaking?" — speaking":"");box.appendChild(item)}});
  if(count)count.textContent=total+" member"+(total===1?"":"s")+" online";
  if(!total)box.innerHTML='<div class="empty">No Radar members online.</div>';
+ const speakingBox=document.getElementById("nearbySpeakingStatus");if(speakingBox)speakingBox.textContent=speakers.length?(speakers.length===1?speakers[0]+" is speaking...":speakers.join(", ")+" are speaking..."):"Nobody is speaking right now.";
 }
 function renderNearbyMessages(){
  const box=document.getElementById("nearbyRoomMessages");if(!box)return;box.innerHTML="";
@@ -673,7 +674,7 @@ async function joinNearbyRoom(){
   const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
   const memberRef=rtdb.ref("nearbyChat/members/"+currentUser.uid);
   await memberRef.onDisconnect().remove();
-  await memberRef.set({active:true,handle,joinedAt:firebase.database.ServerValue.TIMESTAMP});
+  await memberRef.set({active:true,handle,speaking:false,speakingUntil:0,joinedAt:firebase.database.ServerValue.TIMESTAMP});
   document.getElementById("nearbyRoomActive").classList.remove("hidden");
   const pttButton=document.getElementById("pttButton");if(pttButton)pttButton.disabled=false;
   document.getElementById("nearbyRoomStatus").textContent="You joined the shared Radar chat.";
@@ -926,7 +927,7 @@ function earnKarma(){
 
 // Walkie-Talkie audio: WebRTC carries audio; Firebase RTDB carries signaling only.
 // STUN is used here. Some mobile networks require a TURN relay for reliable connectivity.
-let pttStream=null,pttActive=false,pttPressed=false,pttStarting=false;
+let pttStream=null,pttActive=false,pttPressed=false,pttStarting=false,pttLimitTimer=null;
 const voiceIceConfig={iceServers:[{urls:"stun:stun.l.google.com:19302"}]};
 function setPttStatus(message,isLive=false){const el=document.getElementById("pttStatus");if(el){el.textContent=message;el.className="ptt-state"+(isLive?" live":"")};}
 function inNearbyVoiceRoom(){const a=document.getElementById("nearbyRoomActive");return !!(currentUser&&!guestMode&&radarIsOn&&a&&!a.classList.contains("hidden"));}
@@ -993,19 +994,38 @@ async function handleNearbyVoiceSignal(snapshot){
   }
  }catch(e){console.log("Nearby voice signaling:",e.message);}
 }
+function attachNearbyVoiceSenderListener(senderUid){
+ if(!currentUser||!senderUid||senderUid===currentUser.uid||voiceSignalSenderListeners[senderUid])return;
+ const senderRef=rtdb.ref("nearbyVoiceSignals/"+currentUser.uid+"/"+senderUid);
+ const packetListener=packetSnapshot=>handleNearbyVoiceSignal(packetSnapshot);
+ senderRef.on("child_added",packetListener,error=>setPttStatus("Incoming voice signal unavailable: "+error.message));
+ voiceSignalSenderListeners[senderUid]={ref:senderRef,listener:packetListener};
+}
+function detachNearbyVoiceSenderListener(senderUid){
+ const entry=voiceSignalSenderListeners[senderUid];
+ if(entry){entry.ref.off("child_added",entry.listener);delete voiceSignalSenderListeners[senderUid];}
+}
+function stopNearbyVoiceSignalListeners(){
+ if(voiceSignalRef&&voiceSignalListener)voiceSignalRef.off("child_added",voiceSignalListener);
+ if(voiceSignalRef&&voiceSignalRemovedListener)voiceSignalRef.off("child_removed",voiceSignalRemovedListener);
+ Object.keys(voiceSignalSenderListeners).forEach(detachNearbyVoiceSenderListener);
+ voiceSignalRef=null;voiceSignalListener=null;voiceSignalRemovedListener=null;
+}
 function startNearbyVoiceRoom(){
  if(!currentUser||!inNearbyVoiceRoom())return;
- if(voiceSignalRef&&voiceSignalListener)voiceSignalRef.off("child_added",voiceSignalListener);
+ stopNearbyVoiceSignalListeners();
  voiceSignalRef=rtdb.ref("nearbyVoiceSignals/"+currentUser.uid);
- voiceSignalListener=snapshot=>handleNearbyVoiceSignal(snapshot);
+ voiceSignalListener=snapshot=>attachNearbyVoiceSenderListener(snapshot.key);
+ voiceSignalRemovedListener=snapshot=>detachNearbyVoiceSenderListener(snapshot.key);
  voiceSignalRef.on("child_added",voiceSignalListener,error=>setPttStatus("Voice signaling unavailable: "+error.message));
+ voiceSignalRef.on("child_removed",voiceSignalRemovedListener);
  voiceSessionStarted=true;
  if(nearbyMembersRef)nearbyMembersRef.once("value").then(syncNearbyVoicePeers).catch(()=>{});
  setPttStatus("Walkie-Talkie ready. Hold the button to speak to members in this room.");
 }
 function stopNearbyVoiceRoom(){
- if(voiceSignalRef&&voiceSignalListener)voiceSignalRef.off("child_added",voiceSignalListener);
- voiceSignalRef=null;voiceSignalListener=null;voiceSessionStarted=false;voicePendingCandidates={};
+ stopNearbyVoiceSignalListeners();
+ voiceSessionStarted=false;voicePendingCandidates={};
  Object.keys(voicePeers).forEach(closeNearbyVoicePeer);
  Object.keys(voiceRemoteAudio).forEach(uid=>{const a=voiceRemoteAudio[uid];if(a){a.pause();a.srcObject=null;a.remove();}delete voiceRemoteAudio[uid];});
 }
@@ -1020,22 +1040,28 @@ async function startPushToTalk(){
   pttStream=stream;pttActive=true;
   const track=stream.getAudioTracks()[0];
   await Promise.all(Object.values(voicePeers).map(peer=>peer.sender.replaceTrack(track).catch(()=>{})));
-  if(button){button.classList.add("is-live");button.textContent="● TRANSMITTING — Release to Stop";button.disabled=false;}
+  const memberRef=rtdb.ref("nearbyChat/members/"+currentUser.uid);
+  await memberRef.update({speaking:true,speakingUntil:Date.now()+10000});
+  if(button){button.classList.add("is-live");button.textContent="● TRANSMITTING — 10s maximum";button.disabled=false;}
   if(stop)stop.disabled=false;
-  setPttStatus("LIVE — your voice is being sent to connected members in the shared Radar Chat.",true);
+  setPttStatus("LIVE — you have up to 10 seconds. The microphone will stop automatically.",true);
+  if(pttLimitTimer)clearTimeout(pttLimitTimer);
+  pttLimitTimer=setTimeout(()=>{pttPressed=false;stopPushToTalk(true);},10000);
  }catch(e){
   if(e.name==="NotAllowedError")setPttStatus("Microphone permission was denied. You can allow it in your browser settings.");
   else setPttStatus("Could not start microphone: "+e.message);
  }finally{pttStarting=false;if(!pttActive&&button)button.disabled=false;}
 }
-async function stopPushToTalk(){
+async function stopPushToTalk(autoStopped=false){
  pttPressed=false;
+ if(pttLimitTimer){clearTimeout(pttLimitTimer);pttLimitTimer=null;}
  const stream=pttStream;pttStream=null;pttActive=false;
  if(stream){const silence=Object.values(voicePeers).map(peer=>peer.sender.replaceTrack(null).catch(()=>{}));await Promise.all(silence);stream.getTracks().forEach(track=>track.stop());}
+ if(currentUser){rtdb.ref("nearbyChat/members/"+currentUser.uid).update({speaking:false,speakingUntil:0}).catch(()=>{});}
  const button=document.getElementById("pttButton"),stop=document.getElementById("pttStopButton");
- if(button){button.disabled=!inNearbyVoiceRoom();button.classList.remove("is-live");button.textContent="Hold to Talk";}
+ if(button){button.disabled=!inNearbyVoiceRoom();button.classList.remove("is-live");button.textContent="Hold to Talk (10s max)";}
  if(stop)stop.disabled=true;
- setPttStatus("Microphone OFF. Hold the button when you are ready to speak.");
+ setPttStatus(autoStopped?"10 seconds reached. Microphone stopped automatically.":"Microphone OFF. Hold the button when you are ready to speak.");
 }
 function setupPushToTalk(){
  const button=document.getElementById("pttButton");if(!button)return;
