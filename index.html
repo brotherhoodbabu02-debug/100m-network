@@ -81,9 +81,6 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
   <p id="authMessage"></p>
   <p class="auth-switch"><span id="switchText">Already have an account?</span><span onclick="toggleAuth()" id="switchButton">Login</span></p>
  </div>
- <div class="card">
-  <h3>Try Ghost Mode</h3><p class="sub" style="margin:7px 0">Explore the demo without creating an account. A temporary nickname is created on this device.</p>
-  <button class="primary" onclick="enterGhostMode()">Continue as Guest</button>
  </div>
  <p class="sub" style="text-align:center">Use a username instead of sharing your full name.</p>
 </section>
@@ -96,7 +93,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
   <h3 style="text-align:center">Explore your world</h3><p class="sub" style="text-align:center;margin-top:8px">Radar markers are visual decoration, not real people or physical locations.</p>
   <button class="primary" onclick="go('radar')">Explore Radar</button>
  </div>
- <div class="card"><h3>Welcome to 100m</h3><p class="sub" style="margin:9px 0 0">Meet people. Share ideas. Build connections.</p><span class="pill">Ghost Mode</span></div>
+ <div class="card"><h3>Welcome to 100m</h3><p class="sub" style="margin:9px 0 0">Meet people. Share ideas. Build connections.</p></div>
  <div class="card"><h3>Community safety</h3><p class="sub" style="margin:8px 0 0">Keep personal details private. Never share your exact location or meet strangers based only on an online interaction.</p></div>
 </section>
 
@@ -161,19 +158,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button class="primary" id="sendPrivateButton" onclick="sendPrivateMessage()" disabled>Send message</button>
  <p class="message muted">Messages are stored in Firestore and visible only to the two chat participants under the current security rules.</p>
  </div>
- <div class="card"><h3>💬 Local Ghost Room</h3><p class="sub" style="margin:7px 0">This separate demo room is only on this device and is not sent to other users.</p>
- <div id="chatMessages" class="chat-list"><div class="empty">No local messages yet.</div></div>
- <textarea id="chatInput" maxlength="300" placeholder="Write a local demo message..."></textarea>
- <button class="secondary" onclick="sendChat()">Send local message</button></div>
 </section>
-
-<section class="page" id="ghostchat">
- <h2>Ghost Room</h2><p class="sub">Temporary room preview.</p>
- <div class="card"><span class="pill">30-minute message timer</span><span class="pill">Demo only</span>
- <p class="sub" style="margin:12px 0">When you leave this demo page, the room is not actually connected to a proximity system. In a real version, room access would require consent and coarse proximity checks.</p>
- <button class="primary" onclick="go('chats')">Enter local demo chat</button></div>
-</section>
-
 
 <section class="page" id="reveal">
  <h2>Mutual Identity Reveal</h2><p class="sub">Privacy-first preview.</p>
@@ -202,7 +187,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <div class="profile-row"><div class="profile-label">INTERESTS</div><div class="profile-value" id="profileInterests">Not added</div></div>
  <button class="primary" id="editProfileButton" onclick="openEditProfile()">✎ Edit Profile</button>
  <div class="tile" style="margin-top:16px"><h3>Blocked Accounts</h3><p class="sub">Accounts you block appear here. You can unblock them whenever you choose.</p><div id="blockedAccountsList" class="empty">Sign in to view blocked accounts.</div><p id="blockStatus" class="message muted"></p><button class="secondary small" type="button" onclick="loadBlockedAccounts()">Refresh list</button></div>
- <button class="logout" onclick="logout()">Logout</button><button class="secondary logout hidden" id="exitGuestButton" onclick="exitGuest()">Exit Guest Mode</button>
+ <button class="logout" onclick="logout()">Logout</button>
  <p id="profileMessage"></p></div>
  <div class="card hidden" id="editProfileCard"><h3>Edit Your Profile</h3>
  <label class="form-label" for="editUsername">Username</label><input id="editUsername" maxlength="25" placeholder="Your username">
@@ -212,7 +197,7 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-<footer class="note">Prototype notice: Global Chat, private chats, profiles and opt-in Radar presence use Firebase. Radar displays signed-in members who have turned it ON; it is not GPS-based and does not verify a 100m radius. Nearby Group Chat is a shared opt-in room, not distance restricted. Ghost Room, reports, identity reveal and Karma remain demo/local features. Messages older than 24 hours are hidden client-side; Firebase Spark does not guarantee server-side deletion. Global Chat uses the separate globalChat RTDB path.</footer>
+<footer class="note">Prototype notice: Global Chat, private chats, profiles and opt-in Radar presence use Firebase. Radar displays signed-in members who have turned it ON; it is not GPS-based and does not verify a 100m radius. Nearby Group Chat is a shared opt-in room, not distance restricted. Reports, identity reveal and Karma remain demo/local features. Messages older than 24 hours are hidden client-side; Firebase Spark does not guarantee server-side deletion. Global Chat uses the separate globalChat RTDB path.</footer>
 </main>
 <nav class="bottom-nav" aria-label="Main navigation">
  <button type="button" class="active" data-page="home" onclick="go('home',this)" aria-label="Home"><span class="nav-icon">⌂</span><small>Home</small></button>
@@ -239,8 +224,7 @@ const firebaseConfig={
 };
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.firestore(),rtdb=firebase.database();
-let isLogin=false,currentUser=null,guestMode=false,guestName="",karma=0;
-let chatItems=[];
+let isLogin=false,currentUser=null,guestMode=false,karma=0;
 let selectedRadarRange=100,radarIsOn=false;
 let radarPublicRef=null,radarPublicListener=null;
 let nearbyMembersRef=null,nearbyMembersListener=null,nearbyMessagesRef=null,nearbyMessagesListener=null,nearbyReactionsRef=null,nearbyReactionsListener=null,nearbyReplyTarget=null,nearbyMessageCache=[],nearbyReactionCache={};
@@ -248,8 +232,6 @@ let voiceSignalRef=null,voiceSignalListener=null,voiceSignalRemovedListener=null
 let nearbyTypingRef=null,nearbyTypingListener=null,nearbyTypingTimer=null,nearbyTypingActive=false;
 let globalMembersRef=null,globalMembersListener=null,globalMessagesRef=null,globalMessagesListener=null,globalTypingRef=null,globalTypingListener=null,globalTypingTimer=null,globalTypingActive=false,globalReactionRef=null,globalReactionListener=null,globalMessageCache=[],globalReactionCache={};
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,myPublicChatId="";
-const namesA=["SpicySamosa","NightOwl","PixelPanda","CosmicChai","NeonTiger","CloudNinja","HappyComet"];
-function randomGuest(){return namesA[Math.floor(Math.random()*namesA.length)]+"_"+(10+Math.floor(Math.random()*90))}
 function toggleAuth(){
  isLogin=!isLogin;
  document.getElementById("authHeading").textContent=isLogin?"Welcome Back":"Create Account";
@@ -277,22 +259,6 @@ async function handleAuth(){
  }catch(e){showMessage(e.message)}
  finally{b.disabled=false;b.textContent=isLogin?"Login":"Create Account"}
 }
-function enterGhostMode(){
- guestMode=true;guestName=randomGuest();currentUser=null;
- document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";
- document.getElementById("topStatus").textContent="● GHOST DEMO";
- displayProfile({username:guestName,bio:"Temporary guest profile",country:"Not shared",interests:"Exploring"});renderInterestRadar("Exploring");updateRadarStatusUI(false,"Guest mode: private account status is unavailable.");
- document.getElementById("profileEmail").textContent="Guest mode • no account";
- document.getElementById("editProfileButton").classList.add("hidden");
- document.getElementById("exitGuestButton").classList.remove("hidden");
- document.getElementById("profileMessage").textContent="Temporary nickname for this demo session.";
- go("home");
-}
-function exitGuest(){
- guestMode=false;guestName="";chatItems=[];renderChats();
- document.getElementById("app").style.display="none";document.getElementById("authPage").style.display="block";
- document.getElementById("topStatus").textContent="● NETWORK";
-}
 async function loadUserProfile(user){
  currentUser=user;guestMode=false;
  startGlobalChat();
@@ -303,7 +269,6 @@ async function loadUserProfile(user){
  document.getElementById("profileMessage").textContent="Loading profile...";
  loadConversations(user);
  document.getElementById("editProfileButton").classList.remove("hidden");
- document.getElementById("exitGuestButton").classList.add("hidden");
  try{
   const ref=db.collection("users").doc(user.uid),doc=await ref.get();let data;
   if(doc.exists)data=doc.data();
@@ -886,24 +851,6 @@ function hotCold(){
  const vals=["Activity: Cool · Quiet room","Activity: Warm · Discussion active","Activity: Hot · Busy topic","Activity: Quiet right now"];
  document.getElementById("signalText").textContent=vals[Math.floor(Math.random()*vals.length)];
 }
-function sendChat(){
- const input=document.getElementById("chatInput"),value=input.value.trim();if(!value)return;
- chatItems.push({text:value,at:Date.now(),name:guestMode?guestName:(currentUser?.displayName||"You")});
- input.value="";renderChats();
-}
-function renderChats(){
- const box=document.getElementById("chatMessages");chatItems=chatItems.filter(x=>Date.now()-x.at<30*60*1000);
- if(!chatItems.length){box.innerHTML='<div class="empty">No messages yet. Start the demo conversation.</div>';return}
- box.innerHTML="";
- chatItems.forEach(x=>{
-  const el=document.createElement("div");el.className="chat-msg";
-  const strong=document.createElement("strong");strong.textContent=x.name+": ";
-  const span=document.createElement("span");span.textContent=x.text;
-  const small=document.createElement("small");small.textContent="Expires in "+Math.max(0,Math.ceil((30*60*1000-(Date.now()-x.at))/60000))+" min";
-  el.append(strong,span,small);box.appendChild(el);
- });
-}
-setInterval(renderChats,30000);
 function requestReveal(){
  const status=document.getElementById("revealStatus");
  if(!document.getElementById("myRevealConsent").checked){status.textContent="Tick the consent box first.";status.className="message warning";return}
