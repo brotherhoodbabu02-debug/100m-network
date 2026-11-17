@@ -34,9 +34,15 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .radar-room{position:absolute;display:grid;place-items:center;width:34px;height:34px;border:1px solid #35d9ff88;border-radius:50%;background:#0a2138;color:var(--cyan);font-size:9px;font-weight:700;box-shadow:0 0 15px #35d9ff35;cursor:pointer;z-index:2}.radar-room:focus{outline:2px solid white}.room-a{top:18%;left:22%}.room-b{top:30%;right:12%}.room-c{bottom:20%;left:17%}.room-d{bottom:13%;right:22%}.room-e{top:48%;left:8%}.room-f{top:55%;right:8%}.radar-legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin:8px 0}.signal-pill{display:inline-block;padding:6px 9px;border-radius:20px;background:#17243b;border:1px solid #344969;color:#d5eaff;font-size:11px;margin:3px}
 .d1{top:42px;left:75px}.d2{top:105px;right:43px}.d3{bottom:54px;left:52px}.d4{bottom:30px;right:85px}
 .section{margin-top:22px}.user-name{color:var(--cyan)}
-nav{position:fixed;bottom:0;left:0;width:100%;background:#101625;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 2px calc(10px + env(safe-area-inset-bottom));z-index:10}
-nav button{border:0;background:none;padding:5px 3px;color:var(--muted);font-size:11px;min-width:14%}
-nav button.active{color:var(--cyan)}
+nav.bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:#101625;border-top:1px solid var(--line);display:flex;justify-content:center;align-items:center;gap:clamp(8px,4vw,28px);padding:9px 12px calc(9px + env(safe-area-inset-bottom));z-index:10}
+.bottom-nav button{border:0;background:none;padding:3px 5px;color:var(--muted);font-size:11px;min-width:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:0 1 64px}
+.bottom-nav button.active{color:var(--cyan)}
+.bottom-nav .nav-icon{font-size:25px;line-height:28px}
+.bottom-nav button small{font-size:10px;letter-spacing:.2px}
+.bottom-nav .nav-mic{flex:0 0 62px;min-width:62px;margin-top:-23px;gap:4px;color:#fff}
+.bottom-nav .nav-mic-icon{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#0b9bc1,#075b83);border:2px solid #53eaff;box-shadow:0 0 22px #35d9ff66;font-size:27px}
+.bottom-nav .nav-mic.active .nav-mic-icon{box-shadow:0 0 0 5px #35d9ff20,0 0 26px #35d9ff99}
+.bottom-nav .nav-mic small{color:#8beaff;font-weight:700}
 .avatar{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),#7652bb);border:3px solid #ffffff30;box-shadow:0 0 25px #35d9ff55;font-size:30px;font-weight:900;color:white;margin-bottom:14px}
 .profile-row{padding:11px 0;border-bottom:1px solid var(--line)}.profile-label{font-size:11px;color:var(--muted);margin-bottom:5px}.profile-value{font-size:14px;overflow-wrap:anywhere}
 .form-label{display:block;color:#aebbd0;font-size:12px;margin-top:12px}
@@ -54,10 +60,11 @@ nav button.active{color:var(--cyan)}
 .comment-area{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}.comment-list{display:grid;gap:8px;margin:10px 0}.comment-item{background:#0b1426;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px}.comment-item strong{color:var(--cyan);display:block;margin-bottom:3px}.comment-form{display:flex;gap:8px;align-items:flex-end}.comment-form input{flex:1;min-width:0;margin:0}.comment-form button{white-space:nowrap}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}.reply-list{display:grid;gap:6px;margin:10px 0 8px 12px;padding-left:10px;border-left:2px solid var(--line)}.reply-item{background:#101c30;border-radius:9px;padding:7px 9px;font-size:12px}.reply-item strong{display:block;color:var(--cyan);margin-bottom:2px}.reaction-area{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px}.reaction-btn{border:1px solid var(--line);background:#101c30;color:var(--text);border-radius:20px;padding:7px 11px;font-size:13px;cursor:pointer}.reaction-btn.active{border-color:var(--cyan);background:#173044}.reaction-btn:disabled{opacity:.6}.reaction-note{font-size:12px;color:var(--muted);margin-top:5px}
 .live-node-layer{position:absolute;inset:0;pointer-events:none;z-index:1}.live-node{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.live-member{display:flex;justify-content:center;gap:10px;align-items:center;padding:10px 12px;margin:7px 0;border:1px solid #293b59;background:#0d1628;border-radius:12px;font-size:13px}.radar-profile-button{position:absolute;width:54px;height:54px;border-radius:50%;padding:0;border:2px solid #35d9ff;background:linear-gradient(135deg,#087eae,#7652bb);font-size:25px;display:grid;place-items:center;transform:translate(-50%,-50%);box-shadow:0 0 18px #35d9ff55;z-index:3}.radar-profile-button:focus{outline:2px solid white;outline-offset:3px}.radar-stage{position:relative;width:100%;max-width:360px;height:310px;margin:14px auto 4px;border-radius:18px;overflow:hidden;background:radial-gradient(circle at center,#102d43 0%,#0b1728 48%,#080d18 100%);border:1px solid #24425d}.radar-stage:before,.radar-stage:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid #35d9ff35;border-radius:50%;aspect-ratio:1}.radar-stage:before{width:76%}.radar-stage:after{width:48%}.radar-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#123a50;border:2px solid #35d9ff;box-shadow:0 0 24px #35d9ff66;color:#8beaff;font-size:11px;font-weight:800;z-index:2}.radar-sweep{position:absolute;left:50%;top:50%;width:76%;height:88%;transform:translate(-50%,-50%);transform-origin:center;background:conic-gradient(from 0deg,#35d9ff55,transparent 72deg);border-radius:50%;opacity:.55;pointer-events:none}.radar-stage.scanning .radar-sweep{animation:radarStageSpin 2.8s linear infinite}@keyframes radarSpin{to{transform:rotate(360deg)}}@keyframes radarStageSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}@media(prefers-reduced-motion:reduce){.radar.scanning:before,.radar-stage.scanning .radar-sweep{animation-duration:8s}}.radar-empty{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:90%;text-align:center;color:var(--muted);font-size:12px;z-index:4}.live-count{color:var(--green);font-weight:700}.global-chat-layout{display:grid;gap:10px}.global-chat-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.global-chat-messages{height:min(48vh,440px);min-height:240px;overflow-y:auto;padding:8px;background:#091222;border:1px solid var(--line);border-radius:14px}.global-chat-input{display:flex;gap:8px;align-items:flex-end}.global-chat-input textarea{flex:1;min-width:0;margin:0;min-height:48px;max-height:120px}.global-chat-input button{flex:0 0 auto}.global-chat-msg{background:#111e33;border:1px solid #263852;border-radius:13px;padding:10px;margin:8px 0;overflow-wrap:anywhere}.global-chat-msg .author{color:var(--cyan);font-size:12px;font-weight:700}.global-chat-msg .body{font-size:14px;white-space:pre-wrap;margin-top:5px}.global-chat-msg .meta{color:var(--muted);font-size:10px;margin-top:5px}.global-online-list{display:flex;gap:6px;flex-wrap:wrap}.global-online-chip{padding:6px 9px;border:1px solid #31516b;border-radius:20px;background:#0d1b2e;color:#d5eaff;font-size:11px;touch-action:pan-y}.profile-action-trigger{touch-action:pan-y;cursor:pointer}.profile-action-overlay{position:fixed;inset:0;z-index:1200;background:#000b;display:grid;place-items:center;padding:22px}.profile-action-panel{width:min(100%,340px);background:#151e35;border:1px solid #35d9ff88;border-radius:18px;padding:20px;box-shadow:0 18px 55px #0009}.profile-action-panel h3{color:var(--cyan);overflow-wrap:anywhere;margin-bottom:14px}.profile-action-panel button{width:100%;margin-top:8px}.hidden{display:none!important}
 footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
+@media(max-width:380px){nav.bottom-nav{gap:5px;padding-left:5px;padding-right:5px}.bottom-nav button{min-width:42px}.bottom-nav .nav-mic{flex-basis:56px;min-width:56px}.bottom-nav .nav-mic-icon{width:52px;height:52px}}
 </style>
 
 <style>
-.ptt-wrap{display:flex;flex-direction:column;gap:10px}.ptt-button{width:100%;min-height:64px;font-size:18px;font-weight:800;background:#087eae;border:1px solid #35d9ff;touch-action:none;user-select:none}.ptt-button.is-live{background:#8b2635;border-color:#ff8585}.ptt-state{font-size:13px;color:var(--muted);line-height:1.5}.ptt-state.live{color:#ff9b9b}
+.walkie-card{text-align:center;padding:22px 18px}.walkie-orb{width:94px;height:94px;border-radius:50%;margin:0 auto 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #35d9ff88;background:radial-gradient(circle,#123a50,#0b1728);box-shadow:0 0 24px #35d9ff22;color:#8beaff}.walkie-orb span{font-size:21px;font-weight:900}.walkie-orb small{font-size:9px;letter-spacing:1px}.ptt-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin:18px 0}.ptt-button{width:116px;height:116px;border-radius:50%;padding:0;display:grid;place-items:center;font-size:43px;font-weight:800;background:linear-gradient(145deg,#087eae,#07506f);border:3px solid #53eaff;box-shadow:0 0 28px #35d9ff55;touch-action:none;user-select:none;-webkit-user-select:none}.ptt-button:disabled{opacity:.45}.ptt-button.is-live{background:linear-gradient(145deg,#b83248,#6d1c30);border-color:#ff8585;box-shadow:0 0 28px #ff858566;transform:scale(1.04)}.ptt-hint{font-size:11px;letter-spacing:1px;color:#8beaff;font-weight:700}.ptt-state{font-size:13px;color:var(--muted);line-height:1.5}.ptt-state.live{color:#ff9b9b}.speaking-status{font-weight:700;color:#8beaff;font-size:15px;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -104,13 +111,33 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
  <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global opt-in online list, not a nearby-distance finder.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
  <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat with other opted-in members. This room is not limited by physical distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are hidden in this app; Firebase Spark does not guarantee server-side deletion after 24 hours.</p></div></div>
- <div class="card" id="voiceRoomCard"><h3>🎙️ Walkie-Talkie</h3><p class="sub" style="margin:7px 0">Join the shared Radar Chat. Hold the button to speak; release it to stop. Every talk session is limited to 10 seconds for everyone.</p><div class="ptt-wrap"><p id="nearbySpeakingStatus" class="ptt-state" aria-live="polite">Nobody is speaking right now.</p><p id="pttStatus" class="ptt-state" aria-live="polite">Join the shared Radar Chat. Hold to speak to room members.</p><button type="button" id="pttButton" class="ptt-button" disabled>Hold to Talk (10s max)</button><button type="button" id="pttStopButton" class="secondary" onclick="stopPushToTalk()" disabled>Stop microphone</button></div><p class="comment-note">Your microphone is active only while you hold the button. Use headphones where possible. Audio is sent to other opted-in members in this shared room; this room is not physically restricted to 100m.</p></div>
+
  <footer class="note">Privacy: Live Radar uses opt-in online presence only. It does not request GPS, calculate 100m proximity, or reveal physical location. Only signed-in members who turn Radar ON appear. The community chat is shared with opted-in members.</footer>
 </section>
 
-<section class="page" id="globalchat">
+<section class="page" id="walkie">
+ <h2>Walkie-Talkie</h2>
+ <p class="sub">Your shared voice room. Hold the microphone to speak; release to stop.</p>
+ <div class="card walkie-card" id="voiceRoomCard">
+  <div class="walkie-orb"><span>100m</span><small>VOICE ROOM</small></div>
+  <p id="nearbySpeakingStatus" class="ptt-state speaking-status" aria-live="polite">Nobody is speaking right now.</p>
+  <p id="pttStatus" class="ptt-state" aria-live="polite">Turn Radar ON to join the shared voice room.</p>
+  <div class="ptt-wrap">
+   <button type="button" id="pttButton" class="ptt-button" aria-label="Hold microphone to talk, maximum 10 seconds" disabled>🎙️</button>
+   <p class="ptt-hint">HOLD TO TALK · MAX 10 SECONDS</p>
+   <button type="button" id="pttStopButton" class="secondary" onclick="stopPushToTalk()" disabled>Stop microphone</button>
+  </div>
+  <p class="comment-note">Your microphone is active only while you hold the button. It stops automatically after 10 seconds. Voice is shared with opted-in members in this room; the room is not yet restricted to 100m.</p>
+ </div>
+</section>
+
+
+
+<section class="page" id="chats">
+ <h2>Chats</h2><p class="sub">Global conversations and private messages.</p>
+ <div class="card global-chat-layout" id="globalchat">
  <h2>🌐 100m Global Chat</h2><p class="sub">One shared live room for the 100m community. Only anonymous handles are shown.</p>
- <div class="card global-chat-layout">
+ <div class="global-chat-layout">
   <div class="global-chat-header"><h3>● Global Room</h3><span id="globalOnlineCount" class="live-count">0 online</span></div>
   <p id="globalChatStatus" class="message muted">Connecting to Global Chat...</p>
   <div><p class="comment-note">Online members</p><div id="globalOnlineMembers" class="global-online-list"><span class="muted">Loading...</span></div></div>
@@ -119,9 +146,8 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
   <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()">Send</button></div>
   <p class="comment-note">Messages are shared with all signed-in members. Be respectful; never share personal or location details.</p>
  </div>
-</section>
+</div>
 
-<section class="page" id="chats">
  <h2>Private Messages</h2><p class="sub">One-to-one messages between signed-in accounts.</p>
  <div class="card"><h3>Start a private chat</h3>
  <p class="sub" style="margin:7px 0">Enter their public 100m Chat ID. Ask them to share it from their Profile.</p>
@@ -188,12 +214,12 @@ footer.note{font-size:11px;color:#8994aa;line-height:1.5;margin:12px 2px}
 </section>
 <footer class="note">Prototype notice: Global Chat, private chats, profiles and opt-in Radar presence use Firebase. Radar displays signed-in members who have turned it ON; it is not GPS-based and does not verify a 100m radius. Nearby Group Chat is a shared opt-in room, not distance restricted. Ghost Room, reports, identity reveal and Karma remain demo/local features. Messages older than 24 hours are hidden client-side; Firebase Spark does not guarantee server-side deletion. Global Chat uses the separate globalChat RTDB path.</footer>
 </main>
-<nav>
- <button class="active" onclick="go('home',this)">⌂<br>Home</button>
- <button onclick="go('radar',this)">◎<br>Radar</button>
- <button onclick="go('globalchat',this)">🌐<br>Global</button>
- <button onclick="go('chats',this)">✉<br>Chats</button>
- <button onclick="go('profile',this)">◉<br>Profile</button>
+<nav class="bottom-nav" aria-label="Main navigation">
+ <button type="button" class="active" data-page="home" onclick="go('home',this)" aria-label="Home"><span class="nav-icon">⌂</span><small>Home</small></button>
+ <button type="button" data-page="radar" onclick="go('radar',this)" aria-label="Radar"><span class="nav-icon">◎</span><small>Radar</small></button>
+ <button type="button" class="nav-mic" data-page="walkie" onclick="go('walkie',this)" aria-label="Walkie-Talkie"><span class="nav-mic-icon">🎙️</span><small>Talk</small></button>
+ <button type="button" data-page="chats" onclick="go('chats',this)" aria-label="Chats"><span class="nav-icon">✉</span><small>Chats</small></button>
+ <button type="button" data-page="profile" onclick="go('profile',this)" aria-label="Profile"><span class="nav-icon">◉</span><small>Profile</small></button>
 </nav></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -849,8 +875,9 @@ auth.onAuthStateChanged(user=>{
 function go(id,btn){
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  const target=document.getElementById(id);if(target)target.classList.add("active");
- document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
- if(btn)btn.classList.add("active");else document.querySelectorAll("nav button")[0].classList.add("active");
+ document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));
+ const activeButton=btn||document.querySelector('.bottom-nav button[data-page="'+id+'"]');
+ if(activeButton)activeButton.classList.add("active");
  window.scrollTo(0,0);
 }
 function setRange(m){document.getElementById("rangeTitle").textContent=m+"m Demo Zone"}
@@ -1043,7 +1070,7 @@ async function startPushToTalk(){
   await Promise.all(Object.values(voicePeers).map(peer=>peer.sender.replaceTrack(track).catch(()=>{})));
   const memberRef=rtdb.ref("nearbyChat/members/"+currentUser.uid);
   await memberRef.update({speaking:true,speakingUntil:Date.now()+10000});
-  if(button){button.classList.add("is-live");button.textContent="● TRANSMITTING — 10s maximum";button.disabled=false;}
+  if(button){button.classList.add("is-live");button.textContent="🎙️";button.setAttribute("aria-label","Transmitting. Microphone will stop after 10 seconds.");button.disabled=false;}
   if(stop)stop.disabled=false;
   setPttStatus("LIVE — you have up to 10 seconds. The microphone will stop automatically.",true);
   if(pttLimitTimer)clearTimeout(pttLimitTimer);
@@ -1060,7 +1087,7 @@ async function stopPushToTalk(autoStopped=false){
  if(stream){const silence=Object.values(voicePeers).map(peer=>peer.sender.replaceTrack(null).catch(()=>{}));await Promise.all(silence);stream.getTracks().forEach(track=>track.stop());}
  if(currentUser){rtdb.ref("nearbyChat/members/"+currentUser.uid).update({speaking:false,speakingUntil:0}).catch(()=>{});}
  const button=document.getElementById("pttButton"),stop=document.getElementById("pttStopButton");
- if(button){button.disabled=!inNearbyVoiceRoom();button.classList.remove("is-live");button.textContent="Hold to Talk (10s max)";}
+ if(button){button.disabled=!inNearbyVoiceRoom();button.classList.remove("is-live");button.textContent="🎙️";button.setAttribute("aria-label","Hold microphone to talk, maximum 10 seconds");}
  if(stop)stop.disabled=true;
  setPttStatus(autoStopped?"10 seconds reached. Microphone stopped automatically.":"Microphone OFF. Hold the button when you are ready to speak.");
 }
