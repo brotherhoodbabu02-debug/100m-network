@@ -900,9 +900,14 @@ function earnKarma(){
 }
 
 // Walkie-Talkie audio: WebRTC carries audio; Firebase RTDB carries signaling only.
-// STUN is used here. Some mobile networks require a TURN relay for reliable connectivity.
+// Add TURN credentials from a TURN provider for networks that block direct peer connections.
 let pttStream=null,pttActive=false,pttPressed=false,pttStarting=false,pttLimitTimer=null;
-const voiceIceConfig={iceServers:[{urls:"stun:stun.l.google.com:19302"}]};
+const voiceIceConfig={iceServers:[
+ {urls:"stun:stun.l.google.com:19302"},
+ // TURN is optional until valid provider credentials are added:
+ // {urls:"turn:YOUR_TURN_HOST:3478",username:"YOUR_TURN_USERNAME",credential:"YOUR_TURN_CREDENTIAL"}
+]};
+const voiceReconnectTimers={};
 function setPttStatus(message,isLive=false){const el=document.getElementById("pttStatus");if(el){el.textContent=message;el.className="ptt-state"+(isLive?" live":"")};}
 function inNearbyVoiceRoom(){const a=document.getElementById("nearbyRoomActive");return !!(currentUser&&!guestMode&&radarIsOn&&a&&!a.classList.contains("hidden"));}
 function voiceSignalPath(peerUid){return "nearbyVoiceSignals/"+peerUid+"/"+currentUser.uid;}
@@ -913,10 +918,20 @@ async function sendNearbyVoiceSignal(peerUid,payload){
 }
 function attachRemoteVoiceAudio(peerUid,stream){
  let audio=voiceRemoteAudio[peerUid];
- if(!audio){audio=document.createElement("audio");audio.autoplay=true;audio.playsInline=true;audio.setAttribute("playsinline","");audio.style.display="none";audio.id="nearbyVoiceAudio_"+peerUid;document.body.appendChild(audio);voiceRemoteAudio[peerUid]=audio;}
+ if(!audio){audio=document.createElement("audio");audio.autoplay=true;audio.playsInline=true;audio.setAttribute("playsinline","");audio.setAttribute("webkit-playsinline","");audio.style.display="none";audio.id="nearbyVoiceAudio_"+peerUid;document.body.appendChild(audio);voiceRemoteAudio[peerUid]=audio;}
  audio.srcObject=stream;
- const play=()=>audio.play().catch(()=>setPttStatus("Room audio is ready. If you cannot hear it, tap the page once and check your media volume."));
- play();
+ audio.play().catch(()=>setPttStatus("Incoming audio is ready. Tap the page once, then ask the other member to speak again."));
+}
+function scheduleVoiceReconnect(peerUid){
+ if(!inNearbyVoiceRoom()||!currentUser||currentUser.uid.localeCompare(peerUid)>=0)return;
+ if(voiceReconnectTimers[peerUid])return;
+ voiceReconnectTimers[peerUid]=setTimeout(()=>{
+  delete voiceReconnectTimers[peerUid];
+  if(!inNearbyVoiceRoom()||!voicePeers[peerUid])return;
+  closeNearbyVoicePeer(peerUid);
+  createNearbyVoicePeer(peerUid,true);
+  setPttStatus("Reconnecting voice to a room member…");
+ },3500);
 }
 function createNearbyVoicePeer(peerUid,shouldOffer){
  if(!currentUser||!peerUid||peerUid===currentUser.uid)return null;
@@ -924,12 +939,17 @@ function createNearbyVoicePeer(peerUid,shouldOffer){
  const pc=new RTCPeerConnection(voiceIceConfig);
  const transceiver=pc.addTransceiver("audio",{direction:"sendrecv"});
  const peer={pc,sender:transceiver.sender,remoteSet:false,offerStarted:false};voicePeers[peerUid]=peer;voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];
- pc.onicecandidate=event=>{if(event.candidate&&inNearbyVoiceRoom())sendNearbyVoiceSignal(peerUid,{type:"ice",candidate:JSON.stringify(event.candidate.toJSON())}).catch(e=>setPttStatus("Voice connection signal failed: "+e.message));};
+ pc.onicecandidate=event=>{if(event.candidate&&inNearbyVoiceRoom())sendNearbyVoiceSignal(peerUid,{type:"ice",candidate:JSON.stringify(event.candidate.toJSON())}).catch(e=>setPttStatus("Voice signaling failed: "+e.message));};
  pc.ontrack=event=>{const stream=(event.streams&&event.streams[0])||new MediaStream([event.track]);attachRemoteVoiceAudio(peerUid,stream);};
  pc.onconnectionstatechange=()=>{
-  if(pc.connectionState==="failed")setPttStatus("Could not connect to a room member. This network may need a TURN relay.");
-  if(pc.connectionState==="disconnected")setPttStatus("Voice connection interrupted. Trying to reconnect…");
+  if(pc.connectionState==="connected"){if(voiceReconnectTimers[peerUid]){clearTimeout(voiceReconnectTimers[peerUid]);delete voiceReconnectTimers[peerUid];}setPttStatus("Room audio connected. Hold the button to speak.");}
+  if(pc.connectionState==="failed"||pc.connectionState==="disconnected"){
+   setPttStatus("Voice connection interrupted. Reconnecting…");
+   if(pc.connectionState==="failed")scheduleVoiceReconnect(peerUid);
+   else scheduleVoiceReconnect(peerUid);
+  }
  };
+ pc.oniceconnectionstatechange=()=>{if(pc.iceConnectionState==="failed"||pc.iceConnectionState==="disconnected")scheduleVoiceReconnect(peerUid);};
  if(pttStream){const track=pttStream.getAudioTracks()[0];if(track)peer.sender.replaceTrack(track).catch(()=>{});}
  if(shouldOffer){
   peer.offerStarted=true;
@@ -945,29 +965,35 @@ function syncNearbyVoicePeers(snapshot){
  Object.keys(voicePeers).forEach(uid=>{if(!active.has(uid))closeNearbyVoicePeer(uid);});
 }
 function closeNearbyVoicePeer(uid){
- const peer=voicePeers[uid];if(peer){try{peer.pc.onicecandidate=null;peer.pc.ontrack=null;peer.pc.close();}catch(e){}delete voicePeers[uid];}delete voicePendingCandidates[uid];
+ if(voiceReconnectTimers[uid]){clearTimeout(voiceReconnectTimers[uid]);delete voiceReconnectTimers[uid];}
+ const peer=voicePeers[uid];if(peer){try{peer.pc.onicecandidate=null;peer.pc.ontrack=null;peer.pc.onconnectionstatechange=null;peer.pc.oniceconnectionstatechange=null;peer.pc.close();}catch(e){}delete voicePeers[uid];}delete voicePendingCandidates[uid];
  const audio=voiceRemoteAudio[uid];if(audio){audio.pause();audio.srcObject=null;audio.remove();delete voiceRemoteAudio[uid];}
 }
 async function handleNearbyVoiceSignal(snapshot){
  const data=snapshot.val()||{};
  if(!currentUser||!inNearbyVoiceRoom()||data.to!==currentUser.uid||!data.from||data.from===currentUser.uid)return;
- // Ignore stale signaling left over from an earlier visit to the room.
  if(Number(data.createdAt||0)&&Date.now()-Number(data.createdAt)>120000)return;
  const peerUid=data.from;
  try{
   if(data.type==="offer"){
-   const peer=createNearbyVoicePeer(peerUid,false);if(!peer)return;
-   await peer.pc.setRemoteDescription({type:"offer",sdp:data.sdp});
+   let peer=voicePeers[peerUid];
+   if(peer&&peer.pc.signalingState!=="stable"){closeNearbyVoicePeer(peerUid);peer=null;}
+   if(!peer)peer=createNearbyVoicePeer(peerUid,false);if(!peer)return;
+   await peer.pc.setRemoteDescription({type:"offer",sdp:data.sdp});peer.remoteSet=true;
    const queued=voicePendingCandidates[peerUid]||[];for(const candidate of queued){try{await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){}}voicePendingCandidates[peerUid]=[];
    const answer=await peer.pc.createAnswer();await peer.pc.setLocalDescription(answer);
    await sendNearbyVoiceSignal(peerUid,{type:"answer",sdp:peer.pc.localDescription.sdp});
   }else if(data.type==="answer"){
-   const peer=voicePeers[peerUid];if(peer&&peer.pc.signalingState==="have-local-offer"){await peer.pc.setRemoteDescription({type:"answer",sdp:data.sdp});const queued=voicePendingCandidates[peerUid]||[];for(const candidate of queued){try{await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){}}voicePendingCandidates[peerUid]=[];}
+   const peer=voicePeers[peerUid];if(peer&&peer.pc.signalingState==="have-local-offer"){
+    await peer.pc.setRemoteDescription({type:"answer",sdp:data.sdp});peer.remoteSet=true;
+    const queued=voicePendingCandidates[peerUid]||[];for(const candidate of queued){try{await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){}}voicePendingCandidates[peerUid]=[];
+   }
   }else if(data.type==="ice"&&data.candidate){
-   const candidate=JSON.parse(data.candidate);
-   const peer=voicePeers[peerUid];if(peer&&peer.pc.remoteDescription)await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));else{voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];voicePendingCandidates[peerUid].push(candidate);}
+   const candidate=JSON.parse(data.candidate);const peer=voicePeers[peerUid];
+   if(peer&&peer.pc.remoteDescription)await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));
+   else{voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];voicePendingCandidates[peerUid].push(candidate);}
   }
- }catch(e){console.log("Nearby voice signaling:",e.message);}
+ }catch(e){console.log("Nearby voice signaling:",e.message);setPttStatus("Voice connection setup failed. Leave and rejoin the room.");}
 }
 function attachNearbyVoiceSenderListener(senderUid){
  if(!currentUser||!senderUid||senderUid===currentUser.uid||voiceSignalSenderListeners[senderUid])return;
@@ -999,6 +1025,7 @@ function startNearbyVoiceRoom(){
  setPttStatus("Walkie-Talkie ready. Hold the button to speak to members in this room.");
 }
 function stopNearbyVoiceRoom(){
+ Object.keys(voiceReconnectTimers).forEach(uid=>{clearTimeout(voiceReconnectTimers[uid]);delete voiceReconnectTimers[uid];});
  stopNearbyVoiceSignalListeners();
  voiceSessionStarted=false;voicePendingCandidates={};
  Object.keys(voicePeers).forEach(closeNearbyVoicePeer);
