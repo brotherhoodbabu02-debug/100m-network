@@ -900,60 +900,67 @@ function earnKarma(){
 }
 
 // Walkie-Talkie audio: WebRTC carries audio; Firebase RTDB carries signaling only.
-// Add TURN credentials from a TURN provider for networks that block direct peer connections.
+// IMPORTANT: Add real TURN credentials below for reliable calls across mobile networks.
 let pttStream=null,pttActive=false,pttPressed=false,pttStarting=false,pttLimitTimer=null;
-const voiceIceConfig={iceServers:[
- {urls:"stun:stun.l.google.com:19302"},
- // TURN is optional until valid provider credentials are added:
- // {urls:"turn:YOUR_TURN_HOST:3478",username:"YOUR_TURN_USERNAME",credential:"YOUR_TURN_CREDENTIAL"}
-]};
+const voiceIceServers=[
+ {urls:"stun:stun.l.google.com:19302"}
+ // Example TURN entry (replace with credentials from your TURN provider):
+ // ,{urls:["turn:YOUR_TURN_HOST:3478?transport=udp","turn:YOUR_TURN_HOST:3478?transport=tcp"],username:"YOUR_TURN_USERNAME",credential:"YOUR_TURN_CREDENTIAL"}
+];
+const voiceIceConfig={iceServers:voiceIceServers,iceCandidatePoolSize:10,bundlePolicy:"max-bundle"};
 const voiceReconnectTimers={};
-function setPttStatus(message,isLive=false){const el=document.getElementById("pttStatus");if(el){el.textContent=message;el.className="ptt-state"+(isLive?" live":"")};}
+function setPttStatus(message,isLive=false){const el=document.getElementById("pttStatus");if(el){el.textContent=message;el.className="ptt-state"+(isLive?" live":"");}}
 function inNearbyVoiceRoom(){const a=document.getElementById("nearbyRoomActive");return !!(currentUser&&!guestMode&&radarIsOn&&a&&!a.classList.contains("hidden"));}
 function voiceSignalPath(peerUid){return "nearbyVoiceSignals/"+peerUid+"/"+currentUser.uid;}
 async function sendNearbyVoiceSignal(peerUid,payload){
- if(!currentUser||!peerUid||peerUid===currentUser.uid)return;
+ if(!currentUser||!peerUid||peerUid===currentUser.uid||!inNearbyVoiceRoom())return;
  const packet={from:currentUser.uid,to:peerUid,createdAt:firebase.database.ServerValue.TIMESTAMP,...payload};
  await rtdb.ref(voiceSignalPath(peerUid)).push(packet);
 }
 function attachRemoteVoiceAudio(peerUid,stream){
  let audio=voiceRemoteAudio[peerUid];
- if(!audio){audio=document.createElement("audio");audio.autoplay=true;audio.playsInline=true;audio.setAttribute("playsinline","");audio.setAttribute("webkit-playsinline","");audio.style.display="none";audio.id="nearbyVoiceAudio_"+peerUid;document.body.appendChild(audio);voiceRemoteAudio[peerUid]=audio;}
- audio.srcObject=stream;
- audio.play().catch(()=>setPttStatus("Incoming audio is ready. Tap the page once, then ask the other member to speak again."));
+ if(!audio){audio=document.createElement("audio");audio.autoplay=true;audio.playsInline=true;audio.volume=1;audio.setAttribute("playsinline","");audio.setAttribute("webkit-playsinline","");audio.style.display="none";audio.id="nearbyVoiceAudio_"+peerUid;document.body.appendChild(audio);voiceRemoteAudio[peerUid]=audio;}
+ if(audio.srcObject!==stream)audio.srcObject=stream;
+ audio.play().catch(()=>setPttStatus("Incoming audio is ready. Tap the page once to enable sound, then ask the member to speak again."));
 }
 function scheduleVoiceReconnect(peerUid){
- if(!inNearbyVoiceRoom()||!currentUser||currentUser.uid.localeCompare(peerUid)>=0)return;
- if(voiceReconnectTimers[peerUid])return;
+ if(!inNearbyVoiceRoom()||!currentUser||currentUser.uid.localeCompare(peerUid)>=0||voiceReconnectTimers[peerUid])return;
  voiceReconnectTimers[peerUid]=setTimeout(()=>{
   delete voiceReconnectTimers[peerUid];
-  if(!inNearbyVoiceRoom()||!voicePeers[peerUid])return;
+  if(!inNearbyVoiceRoom())return;
+  const old=voicePeers[peerUid];
+  if(old&&old.pc.connectionState!=="failed"&&old.pc.connectionState!=="disconnected"&&old.pc.iceConnectionState!=="failed"&&old.pc.iceConnectionState!=="disconnected")return;
   closeNearbyVoicePeer(peerUid);
   createNearbyVoicePeer(peerUid,true);
   setPttStatus("Reconnecting voice to a room member…");
- },3500);
+ },6000);
 }
-function createNearbyVoicePeer(peerUid,shouldOffer){
- if(!currentUser||!peerUid||peerUid===currentUser.uid)return null;
+async function createNearbyVoicePeer(peerUid,shouldOffer){
+ if(!currentUser||!peerUid||peerUid===currentUser.uid||!inNearbyVoiceRoom())return null;
  if(voicePeers[peerUid])return voicePeers[peerUid];
  const pc=new RTCPeerConnection(voiceIceConfig);
  const transceiver=pc.addTransceiver("audio",{direction:"sendrecv"});
- const peer={pc,sender:transceiver.sender,remoteSet:false,offerStarted:false};voicePeers[peerUid]=peer;voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];
- pc.onicecandidate=event=>{if(event.candidate&&inNearbyVoiceRoom())sendNearbyVoiceSignal(peerUid,{type:"ice",candidate:JSON.stringify(event.candidate.toJSON())}).catch(e=>setPttStatus("Voice signaling failed: "+e.message));};
+ const peer={pc,sender:transceiver.sender,remoteSet:false,offerStarted:false};
+ voicePeers[peerUid]=peer;voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];
+ pc.onicecandidate=event=>{if(event.candidate&&inNearbyVoiceRoom())sendNearbyVoiceSignal(peerUid,{type:"ice",candidate:event.candidate.toJSON()}).catch(e=>setPttStatus("Voice signaling failed: "+e.message));};
  pc.ontrack=event=>{const stream=(event.streams&&event.streams[0])||new MediaStream([event.track]);attachRemoteVoiceAudio(peerUid,stream);};
  pc.onconnectionstatechange=()=>{
-  if(pc.connectionState==="connected"){if(voiceReconnectTimers[peerUid]){clearTimeout(voiceReconnectTimers[peerUid]);delete voiceReconnectTimers[peerUid];}setPttStatus("Room audio connected. Hold the button to speak.");}
-  if(pc.connectionState==="failed"||pc.connectionState==="disconnected"){
-   setPttStatus("Voice connection interrupted. Reconnecting…");
-   if(pc.connectionState==="failed")scheduleVoiceReconnect(peerUid);
-   else scheduleVoiceReconnect(peerUid);
+  if(pc.connectionState==="connected"){
+   if(voiceReconnectTimers[peerUid]){clearTimeout(voiceReconnectTimers[peerUid]);delete voiceReconnectTimers[peerUid];}
+   setPttStatus("Voice connected. Hold the microphone button to speak.");
+  }else if(pc.connectionState==="failed"||pc.connectionState==="disconnected"){
+   setPttStatus("Voice connection interrupted. Trying to reconnect…");scheduleVoiceReconnect(peerUid);
   }
  };
  pc.oniceconnectionstatechange=()=>{if(pc.iceConnectionState==="failed"||pc.iceConnectionState==="disconnected")scheduleVoiceReconnect(peerUid);};
- if(pttStream){const track=pttStream.getAudioTracks()[0];if(track)peer.sender.replaceTrack(track).catch(()=>{});}
+ pc.onicecandidateerror=()=>setPttStatus("Network is blocking voice connection. A TURN server may be required.");
+ if(pttStream){const track=pttStream.getAudioTracks()[0];if(track)await peer.sender.replaceTrack(track).catch(()=>{});}
  if(shouldOffer){
-  peer.offerStarted=true;
-  pc.createOffer().then(offer=>pc.setLocalDescription(offer)).then(()=>sendNearbyVoiceSignal(peerUid,{type:"offer",sdp:pc.localDescription.sdp})).catch(e=>setPttStatus("Could not start voice connection: "+e.message));
+  try{
+   peer.offerStarted=true;
+   const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+   await sendNearbyVoiceSignal(peerUid,{type:"offer",sdp:pc.localDescription.sdp});
+  }catch(e){setPttStatus("Could not start voice connection: "+e.message);}
  }
  return peer;
 }
@@ -966,34 +973,48 @@ function syncNearbyVoicePeers(snapshot){
 }
 function closeNearbyVoicePeer(uid){
  if(voiceReconnectTimers[uid]){clearTimeout(voiceReconnectTimers[uid]);delete voiceReconnectTimers[uid];}
- const peer=voicePeers[uid];if(peer){try{peer.pc.onicecandidate=null;peer.pc.ontrack=null;peer.pc.onconnectionstatechange=null;peer.pc.oniceconnectionstatechange=null;peer.pc.close();}catch(e){}delete voicePeers[uid];}delete voicePendingCandidates[uid];
+ const peer=voicePeers[uid];
+ if(peer){try{peer.pc.onicecandidate=null;peer.pc.ontrack=null;peer.pc.onconnectionstatechange=null;peer.pc.oniceconnectionstatechange=null;peer.pc.close();}catch(e){}delete voicePeers[uid];}
+ delete voicePendingCandidates[uid];
  const audio=voiceRemoteAudio[uid];if(audio){audio.pause();audio.srcObject=null;audio.remove();delete voiceRemoteAudio[uid];}
+}
+async function flushNearbyVoiceCandidates(peerUid,peer){
+ const queued=voicePendingCandidates[peerUid]||[];voicePendingCandidates[peerUid]=[];
+ for(const candidate of queued){try{await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){console.log("Skipped stale ICE candidate:",e.message);}}
 }
 async function handleNearbyVoiceSignal(snapshot){
  const data=snapshot.val()||{};
- if(!currentUser||!inNearbyVoiceRoom()||data.to!==currentUser.uid||!data.from||data.from===currentUser.uid)return;
- if(Number(data.createdAt||0)&&Date.now()-Number(data.createdAt)>120000)return;
- const peerUid=data.from;
  try{
+  if(!currentUser||!inNearbyVoiceRoom()||data.to!==currentUser.uid||!data.from||data.from===currentUser.uid)return;
+  if(Number(data.createdAt||0)&&Date.now()-Number(data.createdAt)>120000)return;
+  const peerUid=data.from;
   if(data.type==="offer"){
+   // Only the lexicographically higher UID accepts offers; the lower UID is the sole initiator.
+   if(currentUser.uid.localeCompare(peerUid)<0)return;
    let peer=voicePeers[peerUid];
    if(peer&&peer.pc.signalingState!=="stable"){closeNearbyVoicePeer(peerUid);peer=null;}
-   if(!peer)peer=createNearbyVoicePeer(peerUid,false);if(!peer)return;
+   if(!peer)peer=await createNearbyVoicePeer(peerUid,false);if(!peer)return;
    await peer.pc.setRemoteDescription({type:"offer",sdp:data.sdp});peer.remoteSet=true;
-   const queued=voicePendingCandidates[peerUid]||[];for(const candidate of queued){try{await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){}}voicePendingCandidates[peerUid]=[];
+   await flushNearbyVoiceCandidates(peerUid,peer);
    const answer=await peer.pc.createAnswer();await peer.pc.setLocalDescription(answer);
    await sendNearbyVoiceSignal(peerUid,{type:"answer",sdp:peer.pc.localDescription.sdp});
   }else if(data.type==="answer"){
-   const peer=voicePeers[peerUid];if(peer&&peer.pc.signalingState==="have-local-offer"){
+   const peer=voicePeers[peerUid];
+   if(peer&&peer.pc.signalingState==="have-local-offer"){
     await peer.pc.setRemoteDescription({type:"answer",sdp:data.sdp});peer.remoteSet=true;
-    const queued=voicePendingCandidates[peerUid]||[];for(const candidate of queued){try{await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){}}voicePendingCandidates[peerUid]=[];
+    await flushNearbyVoiceCandidates(peerUid,peer);
    }
   }else if(data.type==="ice"&&data.candidate){
-   const candidate=JSON.parse(data.candidate);const peer=voicePeers[peerUid];
+   const candidate=typeof data.candidate==="string"?JSON.parse(data.candidate):data.candidate;
+   const peer=voicePeers[peerUid];
    if(peer&&peer.pc.remoteDescription)await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));
    else{voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];voicePendingCandidates[peerUid].push(candidate);}
   }
- }catch(e){console.log("Nearby voice signaling:",e.message);setPttStatus("Voice connection setup failed. Leave and rejoin the room.");}
+ }catch(e){console.log("Nearby voice signaling:",e.message);setPttStatus("Voice setup failed: "+e.message);}
+ finally{
+  // A packet is single-use. Removing it prevents old offers/answers/candidates replaying on rejoin.
+  if(snapshot&&snapshot.ref)snapshot.ref.remove().catch(()=>{});
+ }
 }
 function attachNearbyVoiceSenderListener(senderUid){
  if(!currentUser||!senderUid||senderUid===currentUser.uid||voiceSignalSenderListeners[senderUid])return;
@@ -1013,7 +1034,7 @@ function stopNearbyVoiceSignalListeners(){
  voiceSignalRef=null;voiceSignalListener=null;voiceSignalRemovedListener=null;
 }
 function startNearbyVoiceRoom(){
- if(!currentUser||!inNearbyVoiceRoom())return;
+ if(!currentUser||!inNearbyVoiceRoom()||voiceSessionStarted)return;
  stopNearbyVoiceSignalListeners();
  voiceSignalRef=rtdb.ref("nearbyVoiceSignals/"+currentUser.uid);
  voiceSignalListener=snapshot=>attachNearbyVoiceSenderListener(snapshot.key);
@@ -1021,13 +1042,14 @@ function startNearbyVoiceRoom(){
  voiceSignalRef.on("child_added",voiceSignalListener,error=>setPttStatus("Voice signaling unavailable: "+error.message));
  voiceSignalRef.on("child_removed",voiceSignalRemovedListener);
  voiceSessionStarted=true;
- if(nearbyMembersRef)nearbyMembersRef.once("value").then(syncNearbyVoicePeers).catch(()=>{});
+ const membersRef=rtdb.ref("nearbyChat/members");
+ membersRef.once("value").then(syncNearbyVoicePeers).catch(e=>setPttStatus("Could not load voice room members: "+e.message));
  setPttStatus("Walkie-Talkie ready. Hold the button to speak to members in this room.");
 }
 function stopNearbyVoiceRoom(){
+ if(pttActive||pttStarting||pttPressed)stopPushToTalk();
  Object.keys(voiceReconnectTimers).forEach(uid=>{clearTimeout(voiceReconnectTimers[uid]);delete voiceReconnectTimers[uid];});
- stopNearbyVoiceSignalListeners();
- voiceSessionStarted=false;voicePendingCandidates={};
+ stopNearbyVoiceSignalListeners();voiceSessionStarted=false;voicePendingCandidates={};
  Object.keys(voicePeers).forEach(closeNearbyVoicePeer);
  Object.keys(voiceRemoteAudio).forEach(uid=>{const a=voiceRemoteAudio[uid];if(a){a.pause();a.srcObject=null;a.remove();}delete voiceRemoteAudio[uid];});
 }
@@ -1035,40 +1057,48 @@ async function startPushToTalk(){
  if(pttActive||pttStarting)return;
  if(!inNearbyVoiceRoom()){setPttStatus("Sign in, turn Radar ON, and join the shared Radar Chat first.");return;}
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){setPttStatus("Microphone is unavailable. Open this site in a supported browser over HTTPS.");return;}
- const button=document.getElementById("pttButton"),stop=document.getElementById("pttStopButton");if(button)button.disabled=true;pttStarting=true;
+ const button=document.getElementById("pttButton"),stop=document.getElementById("pttStopButton");
+ if(button)button.disabled=true;pttStarting=true;
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
   if(!pttPressed||!inNearbyVoiceRoom()){stream.getTracks().forEach(t=>t.stop());return;}
   pttStream=stream;pttActive=true;
   const track=stream.getAudioTracks()[0];
-  await Promise.all(Object.values(voicePeers).map(peer=>peer.sender.replaceTrack(track).catch(()=>{})));
-  const memberRef=rtdb.ref("nearbyChat/members/"+currentUser.uid);
-  await memberRef.update({speaking:true,speakingUntil:Date.now()+10000});
-  if(button){button.classList.add("is-live");button.textContent="🎙️";button.setAttribute("aria-label","Transmitting. Microphone will stop after 10 seconds.");button.disabled=false;}
+  await Promise.all(Object.values(voicePeers).map(peer=>peer.sender.replaceTrack(track).catch(e=>console.log("Audio sender:",e.message))));
+  await rtdb.ref("nearbyChat/members/"+currentUser.uid).update({speaking:true,speakingUntil:Date.now()+10000});
+  if(button){button.classList.add("is-live");button.textContent="🎙️";button.setAttribute("aria-label","Transmitting. Microphone stops after 10 seconds.");button.disabled=false;}
   if(stop)stop.disabled=false;
-  setPttStatus("LIVE — you have up to 10 seconds. The microphone will stop automatically.",true);
+  setPttStatus("LIVE — speaking. Microphone stops automatically after 10 seconds.",true);
   if(pttLimitTimer)clearTimeout(pttLimitTimer);
   pttLimitTimer=setTimeout(()=>{pttPressed=false;stopPushToTalk(true);},10000);
  }catch(e){
-  if(e.name==="NotAllowedError")setPttStatus("Microphone permission was denied. You can allow it in your browser settings.");
+  if(e.name==="NotAllowedError")setPttStatus("Microphone permission denied. Allow microphone access in your browser settings.");
+  else if(e.name==="NotFoundError")setPttStatus("No microphone was found on this device.");
   else setPttStatus("Could not start microphone: "+e.message);
- }finally{pttStarting=false;if(!pttActive&&button)button.disabled=false;}
+  if(pttStream){pttStream.getTracks().forEach(t=>t.stop());pttStream=null;}pttActive=false;
+ }finally{pttStarting=false;if(!pttActive&&button)button.disabled=!inNearbyVoiceRoom();}
 }
 async function stopPushToTalk(autoStopped=false){
  pttPressed=false;
  if(pttLimitTimer){clearTimeout(pttLimitTimer);pttLimitTimer=null;}
  const stream=pttStream;pttStream=null;pttActive=false;
  if(stream){const silence=Object.values(voicePeers).map(peer=>peer.sender.replaceTrack(null).catch(()=>{}));await Promise.all(silence);stream.getTracks().forEach(track=>track.stop());}
- if(currentUser){rtdb.ref("nearbyChat/members/"+currentUser.uid).update({speaking:false,speakingUntil:0}).catch(()=>{});}
+ if(currentUser)rtdb.ref("nearbyChat/members/"+currentUser.uid).update({speaking:false,speakingUntil:0}).catch(()=>{});
  const button=document.getElementById("pttButton"),stop=document.getElementById("pttStopButton");
  if(button){button.disabled=!inNearbyVoiceRoom();button.classList.remove("is-live");button.textContent="🎙️";button.setAttribute("aria-label","Hold microphone to talk, maximum 10 seconds");}
  if(stop)stop.disabled=true;
  setPttStatus(autoStopped?"10 seconds reached. Microphone stopped automatically.":"Microphone OFF. Hold the button when you are ready to speak.");
 }
 function setupPushToTalk(){
- const button=document.getElementById("pttButton");if(!button)return;
- button.addEventListener("pointerdown",e=>{e.preventDefault();if(!inNearbyVoiceRoom())return;pttPressed=true;startPushToTalk();});
- ["pointerup","pointercancel","pointerleave","lostpointercapture"].forEach(name=>button.addEventListener(name,()=>{if(pttPressed||pttActive)stopPushToTalk();}));
+ const button=document.getElementById("pttButton");if(!button||button.dataset.pttReady==="1")return;
+ button.dataset.pttReady="1";
+ button.addEventListener("pointerdown",e=>{
+  e.preventDefault();if(!inNearbyVoiceRoom()||pttStarting||pttActive)return;
+  pttPressed=true;
+  try{button.setPointerCapture(e.pointerId);}catch(err){}
+  startPushToTalk();
+ });
+ ["pointerup","pointercancel","lostpointercapture"].forEach(name=>button.addEventListener(name,()=>{if(pttPressed||pttActive)stopPushToTalk();}));
  document.addEventListener("visibilitychange",()=>{if(document.hidden)stopPushToTalk();});
 }
 document.addEventListener("DOMContentLoaded",setupPushToTalk);
