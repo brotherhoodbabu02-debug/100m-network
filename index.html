@@ -398,8 +398,8 @@ footer.note{font-size:11.5px;color:#636370;line-height:1.65;margin:16px 4px}
 #privateMessages,#nearbyRoomMessages,.global-chat-messages{
  display:flex;
  flex-direction:column;
- gap:8px;
- padding:14px;
+ gap:5px;
+ padding:12px;
  border-radius:16px;
  border:1px solid var(--line);
  background:#09090b;
@@ -407,57 +407,100 @@ footer.note{font-size:11.5px;color:#636370;line-height:1.65;margin:16px 4px}
 .global-chat-messages{height:min(52vh,460px);min-height:260px;overflow-y:auto}
 .chat-msg,.global-chat-msg{
  align-self:flex-start;
- max-width:84%;
+ width:fit-content;
+ max-width:78%;
  background:#18181c;
  color:var(--text);
  border:1px solid rgba(255,255,255,0.07);
- border-radius:4px 14px 14px 14px;
- padding:9px 12px 7px;
+ border-radius:6px 14px 14px 14px;
+ padding:5px 10px;
  margin:0;
- font-size:14px;
+ font-size:13.5px;
+ line-height:1.32;
  overflow-wrap:anywhere;
+ position:relative;
+ touch-action:pan-y;
+ user-select:none;
+ -webkit-user-select:none;
+ transition:transform .16s ease;
 }
 .chat-msg.mine,.global-chat-msg.mine{
  align-self:flex-end;
  background:#27272a;
  border-color:rgba(255,255,255,0.14);
- border-radius:14px 4px 14px 14px;
+ border-radius:14px 6px 14px 14px;
 }
+.msg-row{display:flex;align-items:flex-end;gap:7px;max-width:100%}
+.msg-row.mine{justify-content:flex-end}
+.msg-avatar{
+ width:26px;height:26px;border-radius:50%;flex:0 0 26px;
+ padding:0;display:grid;place-items:center;
+ background:#18181c;border:1px solid rgba(255,255,255,0.16);
+ color:var(--cyan);font-family:"JetBrains Mono",monospace;
+ font-size:10px;font-weight:700;cursor:pointer;
+}
+.msg-avatar:hover{border-color:var(--cyan)}
 .chat-msg.mine>strong:first-child,.global-chat-msg.mine .author{display:none}
-.global-chat-msg .author{
- background:none;border:0;padding:0;margin:0;
+.global-chat-msg .author,.chat-msg>strong:first-child{
+ background:none;border:0;padding:0;margin:0 0 1px 0;
  color:var(--cyan);
  font-family:"JetBrains Mono",monospace;
- font-size:11.5px;font-weight:600;
- border-radius:0;
+ font-size:10px;font-weight:600;line-height:1.1;
+ border-radius:0;display:block;
 }
-.global-chat-msg .body{font-size:14px;white-space:pre-wrap;margin-top:3px;line-height:1.45}
+.global-chat-msg .body{display:inline;font-size:13.5px;white-space:pre-wrap;line-height:1.32}
 .chat-msg small,.global-chat-msg .meta{
- display:block;text-align:right;
+ display:inline-block;
+ vertical-align:bottom;
+ margin-left:7px;
  color:var(--muted);
  font-family:"JetBrains Mono",monospace;
- font-size:10px;
- margin-top:4px;
+ font-size:9px;
+ line-height:1;
+ opacity:0.75;
 }
-.chat-msg .comment-note{
- background:rgba(255,255,255,0.04);
+.chat-msg .comment-note,.global-chat-msg .comment-note{
+ background:rgba(255,255,255,0.05);
  border-left:2px solid var(--cyan);
- border-radius:6px;
- padding:5px 8px;
- margin:5px 0;
+ border-radius:5px;
+ padding:3px 7px;
+ margin:3px 0;
+ font-size:11.5px;
  color:var(--subtext);
 }
-.reaction-area{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 0}
+.reaction-area{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 0}
 .reaction-btn{
  border:1px solid rgba(255,255,255,0.08);
- background:rgba(255,255,255,0.03);
+ background:rgba(255,255,255,0.04);
  color:var(--subtext);
  border-radius:999px;
- padding:2px 9px;
- font-size:11.5px;
+ padding:1px 7px;
+ font-size:11px;
  font-weight:500;
 }
-.reaction-btn.active{background:rgba(56,189,248,0.16);border-color:rgba(56,189,248,0.4);color:var(--text)}
+.reaction-btn.active{background:rgba(56,189,248,0.18);border-color:rgba(56,189,248,0.45);color:var(--text)}
+.reaction-popover-overlay{
+ position:fixed;inset:0;z-index:1300;
+ background:rgba(0,0,0,0.45);
+ backdrop-filter:blur(4px);
+ display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.reaction-popover{
+ display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+ background:#18181c;
+ border:1px solid rgba(255,255,255,0.16);
+ border-radius:999px;
+ padding:8px 12px;
+ box-shadow:0 16px 40px rgba(0,0,0,0.75);
+ animation:pageIn .15s ease-out;
+}
+.reaction-popover button{
+ border:0;background:rgba(255,255,255,0.06);
+ border-radius:999px;padding:7px 10px;font-size:18px;line-height:1;
+}
+.reaction-popover button.reply-chip{
+ font-size:12px;font-weight:700;padding:8px 12px;color:var(--text);background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.35);
+}
 .chat-msg .row{margin-top:6px;gap:5px}
 .chat-msg .secondary{background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--subtext)}
 
@@ -703,6 +746,7 @@ nav.bottom-nav{
      <div><p class="comment-note">Online members</p><div id="globalOnlineMembers" class="global-online-list"><span class="muted">Loading...</span></div></div>
      <div id="globalTypingStatus" class="comment-note" aria-live="polite"></div>
      <div id="globalChatMessages" class="global-chat-messages"><div class="empty">Loading messages...</div></div>
+     <div id="globalReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="globalReplyName">Replying</strong><p id="globalReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelGlobalReply()">Cancel</button></div></div>
      <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()">Send</button></div>
      <p class="comment-note">Messages are shared with all signed-in members. Be respectful; never share personal or location details.</p>
     </div>
@@ -790,7 +834,7 @@ let radarPublicRef=null,radarPublicListener=null;
 let nearbyMembersRef=null,nearbyMembersListener=null,nearbyMessagesRef=null,nearbyMessagesListener=null,nearbyReactionsRef=null,nearbyReactionsListener=null,nearbyReplyTarget=null,nearbyMessageCache=[],nearbyReactionCache={};
 let voiceSignalRef=null,voiceSignalListener=null,voiceSignalRemovedListener=null,voiceSignalSenderListeners={},voicePeers={},voiceRemoteAudio={},voiceSessionStarted=false,voicePendingCandidates={};
 let nearbyTypingRef=null,nearbyTypingListener=null,nearbyTypingTimer=null,nearbyTypingActive=false;
-let globalMembersRef=null,globalMembersListener=null,globalMessagesRef=null,globalMessagesListener=null,globalTypingRef=null,globalTypingListener=null,globalTypingTimer=null,globalTypingActive=false,globalReactionRef=null,globalReactionListener=null,globalMessageCache=[],globalReactionCache={};
+let globalMembersRef=null,globalMembersListener=null,globalMessagesRef=null,globalMessagesListener=null,globalTypingRef=null,globalTypingListener=null,globalTypingTimer=null,globalTypingActive=false,globalReactionRef=null,globalReactionListener=null,globalReplyTarget=null,globalMessageCache=[],globalReactionCache={};
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,myPublicChatId="";
 let blockedUids=new Set(),signupInProgress=false,reportTarget="",nearbyTypingLast=0,globalTypingLast=0;
 function handleFor(uid){return "Explorer-"+String(uid||"").slice(0,4).toLowerCase()}
@@ -1170,25 +1214,87 @@ function renderNearbyRoomMembers(snapshot){
  if(!total)box.innerHTML='<div class="empty">No Radar members online.</div>';
  const speakingBox=document.getElementById("nearbySpeakingStatus");if(speakingBox)speakingBox.textContent=speakers.length?(speakers.length===1?speakers[0]+" is speaking...":speakers.join(", ")+" are speaking..."):"Nobody is speaking right now.";
 }
+function showReactionPicker(onReact,onReply){
+ const old=document.getElementById("msgReactionPopover");if(old)old.remove();
+ const overlay=document.createElement("div");overlay.id="msgReactionPopover";overlay.className="reaction-popover-overlay";
+ const bar=document.createElement("div");bar.className="reaction-popover";
+ ["❤️","😂","👍","🔥"].forEach(emoji=>{
+  const b=document.createElement("button");b.type="button";b.textContent=emoji;
+  b.onclick=()=>{overlay.remove();onReact(emoji)};
+  bar.appendChild(b);
+ });
+ if(onReply){
+  const rb=document.createElement("button");rb.type="button";rb.className="reply-chip";rb.textContent="↩ Reply";
+  rb.onclick=()=>{overlay.remove();onReply()};
+  bar.appendChild(rb);
+ }
+ overlay.appendChild(bar);
+ overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});
+ document.body.appendChild(overlay);
+}
+function attachMessageGestures(el,onReact,onReply){
+ let holdTimer=null,startX=0,startY=0,dx=0,swiping=false;
+ const clearHold=()=>{if(holdTimer){clearTimeout(holdTimer);holdTimer=null}};
+ el.addEventListener("pointerdown",e=>{
+  if(e.target.closest("button"))return;
+  if(e.pointerType==="mouse"&&e.button!==0)return;
+  startX=e.clientX;startY=e.clientY;dx=0;swiping=false;
+  clearHold();
+  holdTimer=setTimeout(()=>{clearHold();showReactionPicker(onReact,onReply)},480);
+ });
+ el.addEventListener("pointermove",e=>{
+  const mx=e.clientX-startX,my=e.clientY-startY;
+  if(Math.abs(mx)>10||Math.abs(my)>10)clearHold();
+  if(mx>8&&Math.abs(my)<36){
+   swiping=true;dx=Math.min(mx,64);
+   el.style.transition="none";
+   el.style.transform="translateX("+dx+"px)";
+  }
+ });
+ const finish=()=>{
+  clearHold();
+  if(swiping){
+   el.style.transition="transform .16s ease";
+   el.style.transform="translateX(0)";
+   if(dx>=46&&onReply)onReply();
+  }
+  swiping=false;dx=0;
+ };
+ ["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,finish));
+ el.addEventListener("contextmenu",e=>{e.preventDefault();clearHold();showReactionPicker(onReact,onReply)});
+}
 function renderNearbyMessages(){
  const box=document.getElementById("nearbyRoomMessages");if(!box)return;const wasBottom=box.scrollHeight-box.scrollTop-box.clientHeight<70;box.innerHTML="";
  const cutoff=Date.now()-24*60*60*1000;
  const list=nearbyMessageCache.filter(m=>Number(m.createdAt)>=cutoff&&!blockedUids.has(m.uid)).sort((a,b)=>Number(a.createdAt)-Number(b.createdAt));
  if(!list.length){box.innerHTML='<div class="empty">No messages in the last 24 hours. Start the conversation.</div>';return}
  list.forEach(m=>{
-  const item=document.createElement("div");item.className="chat-msg"+(currentUser&&m.uid===currentUser.uid?" mine":"");
-  const who=document.createElement("strong");who.textContent=String(m.handle||"Member");who.style.color="var(--cyan)";if(m.uid&&currentUser&&m.uid!==currentUser.uid)attachProfileAction(who,m.uid,String(m.handle||"Member"));
-  const body=document.createElement("div");body.textContent=String(m.text||"");body.style.marginTop="5px";
+  const isMine=!!(currentUser&&m.uid===currentUser.uid);
+  const row=document.createElement("div");row.className="msg-row"+(isMine?" mine":"");
+  if(!isMine){
+   const h=String(m.handle||"M");
+   const badge=(h.includes("-")?h.split("-")[1]:h).slice(0,2).toUpperCase()||"M";
+   const av=document.createElement("button");av.type="button";av.className="msg-avatar";av.textContent=badge;av.title=h;
+   if(m.uid){av.onclick=()=>showProfileActionMenu(m.uid,h);attachProfileAction(av,m.uid,h);}
+   row.appendChild(av);
+  }
+  const item=document.createElement("div");item.className="chat-msg"+(isMine?" mine":"");
+  const body=document.createElement("span");body.textContent=String(m.text||"");
   const time=document.createElement("small");time.textContent=new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
-  item.append(who);
   if(m.replyText){const quote=document.createElement("div");quote.className="comment-note";quote.textContent="↪ "+String(m.replyHandle||"Member")+": "+String(m.replyText);item.appendChild(quote)}
   item.append(body,time);
-  const actions=document.createElement("div");actions.className="row";actions.style.marginTop="8px";
-  const reply=document.createElement("button");reply.className="secondary small fit";reply.textContent="↩ Reply";reply.onclick=()=>setNearbyReply(m.id,m.handle,m.text);
-  actions.appendChild(reply);
   const reactions=(m.reactions||{});const totals={};Object.values(reactions).forEach(v=>{totals[v]=(totals[v]||0)+1});
-  ["❤️","😂","👍","🔥"].forEach(emoji=>{const b=document.createElement("button");b.className="reaction-btn";b.textContent=emoji+(totals[emoji]?" "+totals[emoji]:"");b.onclick=()=>toggleNearbyReaction(m.id,emoji);actions.appendChild(b)});
-  item.appendChild(actions);box.appendChild(item);
+  const activeEmojis=["❤️","😂","👍","🔥"].filter(em=>totals[em]>0);
+  if(activeEmojis.length){
+   const area=document.createElement("div");area.className="reaction-area";
+   activeEmojis.forEach(emoji=>{
+    const b=document.createElement("button");b.className="reaction-btn"+(currentUser&&reactions[currentUser.uid]===emoji?" active":"");
+    b.textContent=emoji+" "+totals[emoji];b.onclick=()=>toggleNearbyReaction(m.id,emoji);area.appendChild(b);
+   });
+   item.appendChild(area);
+  }
+  attachMessageGestures(item,emoji=>toggleNearbyReaction(m.id,emoji),()=>setNearbyReply(m.id,m.handle,m.text));
+  row.appendChild(item);box.appendChild(row);
  });
  if(wasBottom)box.scrollTop=box.scrollHeight;
 }
@@ -1383,18 +1489,45 @@ async function startGlobalChat(){
  globalTypingRef.on("value",globalTypingListener,()=>{});
 }
 
+function setGlobalReply(id,handle,text){
+ globalReplyTarget={id,handle:String(handle||"Explorer"),text:String(text||"")};
+ document.getElementById("globalReplyPreview").classList.remove("hidden");
+ document.getElementById("globalReplyName").textContent="Replying to "+globalReplyTarget.handle;
+ document.getElementById("globalReplyText").textContent=globalReplyTarget.text.slice(0,120);
+ document.getElementById("globalMessageInput").focus();
+}
+function cancelGlobalReply(){globalReplyTarget=null;const p=document.getElementById("globalReplyPreview");if(p)p.classList.add("hidden")}
 function renderGlobalMessages(){
  const box=document.getElementById("globalChatMessages");if(!box)return;const wasBottom=box.scrollHeight-box.scrollTop-box.clientHeight<70;box.innerHTML="";
  if(!globalMessageCache.length){box.innerHTML='<div class="empty">No messages yet. Start a friendly conversation.</div>';return}
  globalMessageCache.filter(m=>!blockedUids.has(m.uid)).forEach(m=>{
-  const item=document.createElement("div");item.className="global-chat-msg"+(currentUser&&m.uid===currentUser.uid?" mine":"");
-  const author=document.createElement("button");author.type="button";author.className="author global-online-chip";author.textContent=String(m.handle||"Explorer");attachProfileAction(author,m.uid,m.handle||"Explorer");
-  const body=document.createElement("div");body.className="body";body.textContent=String(m.text||"");
-  const meta=document.createElement("div");meta.className="meta";meta.textContent=new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});item.append(author,body,meta);
-  const actions=document.createElement("div");actions.className="reaction-area";
+  const isMine=!!(currentUser&&m.uid===currentUser.uid);
+  const row=document.createElement("div");row.className="msg-row"+(isMine?" mine":"");
+  if(!isMine){
+   const h=String(m.handle||"Explorer");
+   const badge=(h.includes("-")?h.split("-")[1]:h).slice(0,2).toUpperCase()||"E";
+   const av=document.createElement("button");av.type="button";av.className="msg-avatar";av.textContent=badge;av.title=h;
+   if(m.uid){av.onclick=()=>showProfileActionMenu(m.uid,h);attachProfileAction(av,m.uid,h);}
+   row.appendChild(av);
+  }
+  const item=document.createElement("div");item.className="global-chat-msg"+(isMine?" mine":"");
+  const body=document.createElement("span");body.className="body";body.textContent=String(m.text||"");
+  const meta=document.createElement("span");meta.className="meta";meta.textContent=new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  if(m.replyText){const quote=document.createElement("div");quote.className="comment-note";quote.textContent="↪ "+String(m.replyHandle||"Explorer")+": "+String(m.replyText);item.appendChild(quote)}
+  item.append(body,meta);
   const mine=globalReactionCache[m.id]||{};
-  ["❤️","😂","👍","🔥"].forEach(emoji=>{let n=0;Object.values(mine).forEach(v=>{if(v===emoji)n++});const b=document.createElement("button");b.className="reaction-btn"+(currentUser&&mine[currentUser.uid]===emoji?" active":"");b.textContent=emoji+(n?" "+n:"");b.onclick=()=>toggleGlobalReaction(m.id,emoji);actions.appendChild(b)});
-  item.appendChild(actions);box.appendChild(item);
+  const totals={};Object.values(mine).forEach(v=>{totals[v]=(totals[v]||0)+1});
+  const activeEmojis=["❤️","😂","👍","🔥"].filter(em=>totals[em]>0);
+  if(activeEmojis.length){
+   const actions=document.createElement("div");actions.className="reaction-area";
+   activeEmojis.forEach(emoji=>{
+    const b=document.createElement("button");b.className="reaction-btn"+(currentUser&&mine[currentUser.uid]===emoji?" active":"");
+    b.textContent=emoji+" "+totals[emoji];b.onclick=()=>toggleGlobalReaction(m.id,emoji);actions.appendChild(b);
+   });
+   item.appendChild(actions);
+  }
+  attachMessageGestures(item,emoji=>toggleGlobalReaction(m.id,emoji),()=>setGlobalReply(m.id,m.handle,m.text));
+  row.appendChild(item);box.appendChild(row);
  });if(wasBottom)box.scrollTop=box.scrollHeight;
 }
 async function setGlobalTyping(on){if(!currentUser)return;const ref=rtdb.ref("globalChat/typing/"+currentUser.uid);try{if(on){if(globalTypingActive&&Date.now()-globalTypingLast<3000)return;if(!globalTypingActive)await ref.onDisconnect().remove();globalTypingLast=Date.now();globalTypingActive=true;await ref.set({typing:true,handle:globalHandle(),updatedAt:firebase.database.ServerValue.TIMESTAMP})}else{globalTypingActive=false;await ref.onDisconnect().cancel();await ref.remove()}}catch(e){console.log("Global typing:",e.message)}}
@@ -1403,7 +1536,7 @@ async function sendGlobalMessage(){
  const input=document.getElementById("globalMessageInput"),value=input.value.trim(),button=document.getElementById("globalSendButton"),status=document.getElementById("globalChatStatus");
  if(!currentUser||guestMode){status.textContent="Please sign in to send a Global Chat message.";return}if(!value)return;
  button.disabled=true;
- try{await rtdb.ref("globalChat/messages").push({uid:currentUser.uid,handle:globalHandle(),text:value,createdAt:firebase.database.ServerValue.TIMESTAMP});input.value="";await setGlobalTyping(false)}
+ try{const payload={uid:currentUser.uid,handle:globalHandle(),text:value,createdAt:firebase.database.ServerValue.TIMESTAMP};if(globalReplyTarget){payload.replyTo=globalReplyTarget.id;payload.replyHandle=globalReplyTarget.handle;payload.replyText=globalReplyTarget.text.slice(0,120)}await rtdb.ref("globalChat/messages").push(payload);input.value="";await setGlobalTyping(false);cancelGlobalReply()}
  catch(e){status.textContent="Message not sent: "+e.message}finally{button.disabled=false}
 }
 async function toggleGlobalReaction(messageId,emoji){if(!currentUser)return;const ref=rtdb.ref("globalChat/reactions/"+messageId+"/"+currentUser.uid);try{const snap=await ref.once("value");if(snap.val()===emoji)await ref.remove();else await ref.set(emoji)}catch(e){document.getElementById("globalChatStatus").textContent="Reaction not saved: "+e.message}}
