@@ -1,102 +1,607 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#080b14">
+<meta name="theme-color" content="#09090b">
 <title>100m Network</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--bg:#060912;--glass:#0f1a2cb8;--line:#ffffff14;--cyan:#35d9ff;--violet:#8b5cf6;--green:#54e6a0;--red:#ff8585;--muted:#8d98b0;--text:#eaf0ff;--grad:linear-gradient(135deg,#0ea5e9,#7c3aed 62%,#c026d3)}
-body{background:var(--bg) linear-gradient(#ffffff07 1px,transparent 1px) 0 0/46px 46px;color:var(--text);font-family:"DM Sans",system-ui,sans-serif;min-height:100vh;padding-bottom:120px;overflow-x:hidden;line-height:1.45}
-body:before,body:after{content:"";position:fixed;z-index:-1;width:62vmax;height:62vmax;border-radius:50%;filter:blur(100px);opacity:.34;animation:drift 20s ease-in-out infinite alternate}
-body:before{background:#0ea5e9;top:-30vmax;left:-24vmax}body:after{background:#7c3aed;bottom:-30vmax;right:-24vmax;animation-delay:-10s}
-h1,h2,h3,.logo{font-family:Syne,"DM Sans",sans-serif;letter-spacing:-.02em}
-h2{font-size:26px;font-weight:800;margin-bottom:6px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-h3{font-size:17px;font-weight:700}
-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5;background:#060912cc;backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
-.logo{font-size:28px;font-weight:800;background:linear-gradient(100deg,#35d9ff,#8b5cf6,#35d9ff);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}.logo span{color:inherit}
-.status{font-size:11px;font-weight:600;padding:5px 11px;border:1px solid var(--line);border-radius:20px;background:#ffffff08;color:var(--green)}
-main{padding:14px 16px;max-width:720px;margin:auto}
-.sub{color:var(--muted);font-size:13.5px;line-height:1.55;margin-bottom:16px}
-.card{background:var(--glass);border:1px solid var(--line);border-radius:24px;padding:20px;margin-bottom:16px;backdrop-filter:blur(18px);box-shadow:0 14px 40px #0005,inset 0 1px 0 #ffffff12}
-input,textarea,select{width:100%;padding:14px 16px;margin:7px 0;background:#0a1222;border:1px solid #ffffff1a;border-radius:14px;color:#fff;font:inherit;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
-input:focus,textarea:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #35d9ff24}
-textarea{resize:vertical;min-height:80px}
-button{background:#ffffff0d;color:#fff;border:1px solid var(--line);padding:12px 16px;border-radius:14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .2s,background .2s}
-button:active{transform:scale(.96)}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-.primary{background:var(--grad);border:0;width:100%;margin-top:10px;box-shadow:0 8px 26px #7c3aed44}.primary:hover:not(:disabled){box-shadow:0 10px 32px #35d9ff55;transform:translateY(-1px)}
-.secondary{background:#ffffff0f}.danger{background:#ff85851f;border-color:#ff858544;color:#ffb3b3}.small{padding:8px 12px;font-size:12px}.logout{background:#ff85851f;border-color:#ff858544;color:#ffb3b3;width:100%;margin-top:10px}
-.hidden{display:none!important}.muted{color:var(--muted)}.good{color:var(--green)}.warning{color:#ffd27d}.error{color:var(--red)}
-.auth-page{max-width:440px;margin:30px auto;padding:16px}.auth-title{text-align:center;margin-bottom:26px}
-.auth-title h1{font-size:44px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}.auth-title p{color:var(--muted);margin-top:8px;font-size:14px}
-.auth-switch{text-align:center;margin-top:18px;color:#aebbd0;font-size:14px}.auth-switch span{color:var(--cyan);cursor:pointer;margin-left:5px;font-weight:600}
-#authMessage{color:#ff9b9b;font-size:13px;margin-top:12px;line-height:1.5}
-#app,.page{display:none}.page.active{display:block;animation:pageIn .3s ease-out}
-.section{margin-top:22px}.user-name{color:var(--cyan)}.message{font-size:13px;margin-top:10px;line-height:1.5}#profileMessage,#editMessage{font-size:13px;margin-top:10px}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.row .fit{flex:0 0 auto}
-.tile{padding:14px;border:1px solid var(--line);background:#ffffff08;border-radius:16px;margin-top:10px}.tile p{color:#b7c2d6;font-size:13px;line-height:1.5;margin-top:6px}
-.pill{display:inline-block;padding:6px 11px;border:1px solid #35d9ff44;border-radius:30px;color:var(--cyan);font-size:11px;margin:3px}
-.form-label{display:block;color:#aebbd0;font-size:12px;margin-top:12px}.empty{text-align:center;padding:22px;color:var(--muted);font-size:13px}
-footer.note{font-size:11px;color:#79849b;line-height:1.6;margin:14px 4px}
-.avatar{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;background:var(--grad);border:3px solid #ffffff2e;box-shadow:0 0 30px #8b5cf655;font:800 32px Syne,sans-serif;color:#fff;margin-bottom:14px}
-.profile-row{padding:12px 0;border-bottom:1px solid var(--line)}.profile-label{font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:.04em}.profile-value{font-size:14px;overflow-wrap:anywhere}
-/* ---------- RADAR ---------- */
-.radar{width:min(74vw,270px);aspect-ratio:1;border-radius:50%;margin:20px auto;position:relative;display:grid;place-items:center;overflow:hidden;border:1px solid #35d9ff66;box-shadow:0 0 50px #35d9ff25,inset 0 0 40px #35d9ff1c;background:linear-gradient(#35d9ff22,#35d9ff22) center/1px 100% no-repeat,linear-gradient(#35d9ff22,#35d9ff22) center/100% 1px no-repeat,repeating-radial-gradient(circle,transparent 0 32px,#35d9ff30 33px 34px),radial-gradient(circle,#0f2f47,#0a1626 68%,#070d18)}
-.radar:before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#35d9ff77,#35d9ff00 75deg,transparent);animation:spin 7s linear infinite}.radar.scanning:before{animation-duration:2.6s}
-.center{width:14px;height:14px;border-radius:50%;background:var(--cyan);z-index:1;animation:ping 2.4s ease-out infinite}
-.dot{position:absolute;width:8px;height:8px;background:var(--green);border-radius:50%;box-shadow:0 0 12px var(--green);animation:blink 2.6s ease-in-out infinite}
-.d1{top:16%;left:28%}.d2{top:40%;right:17%;animation-delay:-.8s}.d3{bottom:22%;left:20%;animation-delay:-1.4s}.d4{bottom:12%;right:33%;animation-delay:-2s}
-.radar-stage{position:relative;width:100%;max-width:360px;height:320px;margin:14px auto 4px;border-radius:22px;overflow:hidden;border:1px solid #35d9ff44;box-shadow:inset 0 0 50px #35d9ff18;background:linear-gradient(#35d9ff1c,#35d9ff1c) center/1px 100% no-repeat,linear-gradient(#35d9ff1c,#35d9ff1c) center/100% 1px no-repeat,radial-gradient(circle at center,#12354d,#0a1626 55%,#070d18)}
-.radar-stage:before,.radar-stage:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid #35d9ff38;border-radius:50%;aspect-ratio:1}.radar-stage:before{width:78%}.radar-stage:after{width:46%}
-.radar-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#0f3a52;border:2px solid var(--cyan);box-shadow:0 0 26px #35d9ff77;color:#8beaff;font:800 11px Syne,sans-serif;z-index:2;animation:ping 2.8s ease-out infinite}
-.radar-sweep{position:absolute;left:50%;top:50%;width:78%;aspect-ratio:1;transform:translate(-50%,-50%);background:conic-gradient(from 0deg,#35d9ff66,transparent 75deg);border-radius:50%;pointer-events:none}.radar-stage.scanning .radar-sweep{animation:radarStageSpin 2.8s linear infinite}
-.radar-profile-button{position:absolute;width:52px;height:52px;border-radius:50%;padding:0;border:2px solid var(--cyan);background:var(--grad);font-size:24px;display:grid;place-items:center;transform:translate(-50%,-50%);box-shadow:0 0 20px #35d9ff66;z-index:3;animation:ping 3s ease-out infinite}
-.radar-empty{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:90%;text-align:center;color:var(--muted);font-size:12px;z-index:4}
-.live-count{color:var(--green);font-weight:700}.live-member{display:flex;gap:10px;align-items:center;padding:10px 12px;margin:7px 0;border:1px solid var(--line);background:#ffffff08;border-radius:14px;font-size:13px}
-/* ---------- CHAT (WhatsApp style) ---------- */
+:root{
+ --bg:#09090b;
+ --surface:#111114;
+ --elevated:#18181c;
+ --glass:rgba(17,17,20,0.88);
+ --line:rgba(255,255,255,0.08);
+ --line-strong:rgba(255,255,255,0.16);
+ --cyan:#38bdf8;
+ --accent:#f4f4f5;
+ --green:#34d399;
+ --red:#f87171;
+ --amber:#fbbf24;
+ --muted:#8a8a98;
+ --text:#f4f4f5;
+ --subtext:#b4b4c0;
+ --grad:linear-gradient(180deg,#ffffff 0%,#d4d4d8 100%);
+}
+body{
+ background:var(--bg);
+ background-image:
+  radial-gradient(700px circle at 50% -10%, rgba(56,189,248,0.08), transparent 65%),
+  linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+ background-size:100% 100%, 48px 48px, 48px 48px;
+ background-attachment:fixed;
+ color:var(--text);
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter",system-ui,sans-serif;
+ font-weight:500;
+ min-height:100vh;
+ padding-bottom:124px;
+ overflow-x:hidden;
+ line-height:1.5;
+ -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.logo{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,sans-serif;letter-spacing:-0.035em;font-weight:800}
+h2{font-size:27px;font-weight:800;margin-bottom:6px;color:var(--text)}
+h3{font-size:16.5px;font-weight:700;color:var(--text)}
+
+header{
+ padding:14px 20px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ position:sticky;
+ top:0;
+ z-index:20;
+ background:rgba(9,9,11,0.82);
+ backdrop-filter:blur(18px);
+ -webkit-backdrop-filter:blur(18px);
+ border-bottom:1px solid var(--line);
+}
+.logo{
+ display:flex;
+ align-items:center;
+ gap:0;
+ font-size:22px;
+ font-weight:800;
+ color:var(--text);
+}
+.logo span{color:var(--cyan)}
+.status{
+ font-family:"JetBrains Mono",monospace;
+ font-size:11px;
+ font-weight:500;
+ letter-spacing:0.04em;
+ padding:5px 11px;
+ border:1px solid var(--line);
+ border-radius:999px;
+ background:rgba(255,255,255,0.03);
+ color:var(--green);
+}
+
+main{padding:18px 16px;max-width:740px;margin:auto}
+.sub{color:var(--muted);font-size:13.5px;line-height:1.6;margin-bottom:16px}
+.card{
+ background:linear-gradient(180deg, rgba(24,24,28,0.78) 0%, rgba(17,17,20,0.92) 100%);
+ border:1px solid var(--line);
+ border-radius:20px;
+ padding:22px;
+ margin-bottom:16px;
+ backdrop-filter:blur(16px);
+ box-shadow:0 16px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+ transition:border-color .2s ease;
+}
+.card:hover{border-color:rgba(255,255,255,0.13)}
+
+input,textarea,select{
+ width:100%;
+ padding:13px 15px;
+ margin:7px 0;
+ background:#09090b;
+ border:1px solid rgba(255,255,255,0.11);
+ border-radius:12px;
+ color:var(--text);
+ font:inherit;
+ font-size:14.5px;
+ outline:none;
+ transition:border-color .2s, box-shadow .2s, background .2s;
+}
+input::placeholder,textarea::placeholder{color:#52525b}
+input:focus,textarea:focus,select:focus{
+ border-color:var(--cyan);
+ box-shadow:0 0 0 3px rgba(56,189,248,0.14);
+ background:#0c0c0f;
+}
+textarea{resize:vertical;min-height:84px}
+
+button{
+ background:rgba(255,255,255,0.05);
+ color:var(--text);
+ border:1px solid var(--line);
+ padding:11px 16px;
+ border-radius:12px;
+ font:inherit;
+ font-size:13.5px;
+ font-weight:700;
+ cursor:pointer;
+ transition:transform .12s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+button:hover:not(:disabled){background:rgba(255,255,255,0.09);border-color:var(--line-strong)}
+button:active:not(:disabled){transform:scale(0.97)}
+button:disabled{opacity:0.4;cursor:not-allowed}
+button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+.primary{
+ background:#f4f4f5;
+ color:#09090b;
+ border:1px solid #ffffff;
+ width:100%;
+ margin-top:10px;
+ box-shadow:0 4px 20px rgba(255,255,255,0.08);
+}
+.primary:hover:not(:disabled){
+ background:#ffffff;
+ box-shadow:0 8px 26px rgba(255,255,255,0.14);
+ transform:translateY(-1px);
+}
+.secondary{background:rgba(255,255,255,0.04);color:var(--subtext)}
+.danger{background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.28);color:#fca5a5}
+.danger:hover:not(:disabled){background:rgba(248,113,113,0.18)}
+.small{padding:7px 12px;font-size:12px;border-radius:10px}
+.logout{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.25);color:#fca5a5;width:100%;margin-top:10px}
+.logout:hover:not(:disabled){background:rgba(248,113,113,0.16)}
+
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.good{color:var(--green)}
+.warning{color:var(--amber)}
+.error{color:var(--red)}
+
+/* ---------- AUTH ---------- */
+.auth-page{max-width:430px;margin:38px auto;padding:16px}
+.auth-title{text-align:center;margin-bottom:26px}
+.auth-title h1{
+ font-size:42px;
+ font-weight:800;
+ color:var(--text);
+ letter-spacing:-0.04em;
+}
+.auth-title p{color:var(--muted);margin-top:8px;font-size:14px}
+.auth-switch{text-align:center;margin-top:18px;color:var(--muted);font-size:13.5px}
+.auth-switch span:last-child{color:var(--text);cursor:pointer;margin-left:5px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+#authMessage{color:var(--red);font-size:13px;margin-top:12px;line-height:1.5}
+
+#app,.page{display:none}
+.page.active{display:block;animation:pageIn .24s cubic-bezier(0.16,1,0.3,1)}
+.section{margin-top:22px}
+.user-name{color:var(--text)}
+.message{font-size:13px;margin-top:10px;line-height:1.5}
+#profileMessage,#editMessage{font-size:13px;margin-top:10px}
+
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+.row .fit{flex:0 0 auto}
+
+.tile{
+ padding:14px 16px;
+ border:1px solid var(--line);
+ background:rgba(255,255,255,0.025);
+ border-radius:14px;
+ margin-top:10px;
+}
+.tile p{color:var(--subtext);font-size:13px;line-height:1.55;margin-top:5px}
+.pill{
+ display:inline-block;
+ font-family:"JetBrains Mono",monospace;
+ padding:5px 10px;
+ border:1px solid rgba(56,189,248,0.28);
+ border-radius:999px;
+ color:var(--cyan);
+ font-size:11px;
+ margin:3px;
+}
+.form-label{
+ display:block;
+ font-family:"JetBrains Mono",monospace;
+ color:var(--muted);
+ font-size:11px;
+ text-transform:uppercase;
+ letter-spacing:0.06em;
+ margin-top:14px;
+}
+.empty{text-align:center;padding:24px;color:var(--muted);font-size:13px}
+footer.note{font-size:11.5px;color:#636370;line-height:1.65;margin:16px 4px}
+
+.avatar{
+ width:72px;height:72px;
+ border-radius:18px;
+ display:grid;place-items:center;
+ background:#18181c;
+ border:1px solid rgba(255,255,255,0.16);
+ box-shadow:0 8px 24px rgba(0,0,0,0.4);
+ font:800 28px -apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",sans-serif;
+ color:var(--text);
+ margin-bottom:14px;
+}
+.profile-row{padding:13px 0;border-bottom:1px solid var(--line)}
+.profile-label{
+ font-family:"JetBrains Mono",monospace;
+ font-size:10.5px;
+ color:var(--muted);
+ margin-bottom:5px;
+ letter-spacing:0.06em;
+}
+.profile-value{font-size:14px;overflow-wrap:anywhere;color:var(--text)}
+
+/* ---------- TACTICAL MONOCHROME RADAR ---------- */
+.radar{
+ width:min(72vw,250px);
+ aspect-ratio:1;
+ border-radius:50%;
+ margin:20px auto;
+ position:relative;
+ display:grid;
+ place-items:center;
+ overflow:hidden;
+ border:1px solid rgba(255,255,255,0.16);
+ box-shadow:0 0 45px rgba(0,0,0,0.6), inset 0 0 36px rgba(56,189,248,0.06);
+ background:
+  linear-gradient(rgba(255,255,255,0.07),rgba(255,255,255,0.07)) center/1px 100% no-repeat,
+  linear-gradient(rgba(255,255,255,0.07),rgba(255,255,255,0.07)) center/100% 1px no-repeat,
+  repeating-radial-gradient(circle,transparent 0 32px,rgba(255,255,255,0.07) 33px 34px),
+  radial-gradient(circle,#141418 0%,#0b0b0e 70%,#09090b 100%);
+}
+.radar:before{
+ content:"";
+ position:absolute;
+ inset:0;
+ border-radius:50%;
+ background:conic-gradient(from 0deg, rgba(56,189,248,0.38), rgba(56,189,248,0) 68deg, transparent);
+ animation:spin 7s linear infinite;
+}
+.radar.scanning:before{animation-duration:2.6s}
+.center{
+ width:12px;height:12px;
+ border-radius:50%;
+ background:var(--cyan);
+ z-index:1;
+ animation:ping 2.4s ease-out infinite;
+}
+.dot{
+ position:absolute;
+ width:7px;height:7px;
+ background:var(--text);
+ border-radius:50%;
+ box-shadow:0 0 10px rgba(255,255,255,0.6);
+ animation:blink 2.6s ease-in-out infinite;
+}
+.d1{top:18%;left:28%}.d2{top:40%;right:18%;animation-delay:-.8s}.d3{bottom:22%;left:22%;animation-delay:-1.4s}.d4{bottom:14%;right:33%;animation-delay:-2s}
+
+.radar-stage{
+ position:relative;
+ width:100%;
+ max-width:360px;
+ height:320px;
+ margin:14px auto 4px;
+ border-radius:20px;
+ overflow:hidden;
+ border:1px solid rgba(255,255,255,0.12);
+ box-shadow:inset 0 0 40px rgba(0,0,0,0.6);
+ background:
+  linear-gradient(rgba(255,255,255,0.05),rgba(255,255,255,0.05)) center/1px 100% no-repeat,
+  linear-gradient(rgba(255,255,255,0.05),rgba(255,255,255,0.05)) center/100% 1px no-repeat,
+  radial-gradient(circle at center,#151519,#0c0c0f 58%,#09090b);
+}
+.radar-stage:before,.radar-stage:after{
+ content:"";
+ position:absolute;
+ left:50%;top:50%;
+ transform:translate(-50%,-50%);
+ border:1px solid rgba(255,255,255,0.08);
+ border-radius:50%;
+ aspect-ratio:1;
+}
+.radar-stage:before{width:78%}
+.radar-stage:after{width:46%}
+.radar-center{
+ position:absolute;
+ left:50%;top:50%;
+ transform:translate(-50%,-50%);
+ width:56px;height:56px;
+ border-radius:50%;
+ display:grid;place-items:center;
+ background:#111114;
+ border:1.5px solid var(--cyan);
+ box-shadow:0 0 22px rgba(56,189,248,0.25);
+ color:var(--text);
+ font:600 10px "JetBrains Mono",monospace;
+ letter-spacing:0.08em;
+ z-index:2;
+ animation:ping 2.8s ease-out infinite;
+}
+.radar-sweep{
+ position:absolute;
+ left:50%;top:50%;
+ width:78%;
+ aspect-ratio:1;
+ transform:translate(-50%,-50%);
+ background:conic-gradient(from 0deg,rgba(56,189,248,0.32),transparent 70deg);
+ border-radius:50%;
+ pointer-events:none;
+}
+.radar-stage.scanning .radar-sweep{animation:radarStageSpin 2.8s linear infinite}
+.radar-profile-button{
+ position:absolute;
+ width:48px;height:48px;
+ border-radius:50%;
+ padding:0;
+ border:1.5px solid rgba(255,255,255,0.35);
+ background:#18181c;
+ font-size:20px;
+ display:grid;place-items:center;
+ transform:translate(-50%,-50%);
+ box-shadow:0 6px 20px rgba(0,0,0,0.5);
+ z-index:3;
+}
+.radar-profile-button:hover{border-color:var(--cyan)}
+.radar-empty{
+ position:absolute;
+ left:50%;bottom:14px;
+ transform:translateX(-50%);
+ width:90%;
+ text-align:center;
+ color:var(--muted);
+ font-size:12px;
+ z-index:4;
+}
+.live-count{
+ font-family:"JetBrains Mono",monospace;
+ font-size:11.5px;
+ color:var(--cyan);
+ font-weight:600;
+}
+.live-member{
+ display:flex;gap:10px;align-items:center;
+ padding:10px 12px;margin:7px 0;
+ border:1px solid var(--line);
+ background:rgba(255,255,255,0.025);
+ border-radius:12px;
+ font-size:13px;
+}
+
+/* ---------- SLEEK MONOCHROME CHAT ---------- */
 .chat-list{max-height:340px;overflow:auto;margin:12px 0}
-#privateMessages,#nearbyRoomMessages,.global-chat-messages{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:18px;border:1px solid var(--line);background:#0b141a radial-gradient(#ffffff0c 1.2px,transparent 1.6px) 0 0/22px 22px}
+#privateMessages,#nearbyRoomMessages,.global-chat-messages{
+ display:flex;
+ flex-direction:column;
+ gap:8px;
+ padding:14px;
+ border-radius:16px;
+ border:1px solid var(--line);
+ background:#09090b;
+}
 .global-chat-messages{height:min(52vh,460px);min-height:260px;overflow-y:auto}
-.chat-msg,.global-chat-msg{align-self:flex-start;max-width:84%;background:#202c33;color:#e9edef;border:0;border-radius:4px 14px 14px 14px;padding:7px 10px 5px;margin:0;font-size:14.5px;overflow-wrap:anywhere;box-shadow:0 1px 1px #0006}
-.chat-msg.mine,.global-chat-msg.mine{align-self:flex-end;background:#005c4b;border-radius:14px 4px 14px 14px}
+.chat-msg,.global-chat-msg{
+ align-self:flex-start;
+ max-width:84%;
+ background:#18181c;
+ color:var(--text);
+ border:1px solid rgba(255,255,255,0.07);
+ border-radius:4px 14px 14px 14px;
+ padding:9px 12px 7px;
+ margin:0;
+ font-size:14px;
+ overflow-wrap:anywhere;
+}
+.chat-msg.mine,.global-chat-msg.mine{
+ align-self:flex-end;
+ background:#27272a;
+ border-color:rgba(255,255,255,0.14);
+ border-radius:14px 4px 14px 14px;
+}
 .chat-msg.mine>strong:first-child,.global-chat-msg.mine .author{display:none}
-.global-chat-msg .author{background:none;border:0;padding:0;margin:0;color:#53bdeb;font-size:12.5px;font-weight:700;border-radius:0}
-.global-chat-msg .body{font-size:14.5px;white-space:pre-wrap;margin-top:2px}
-.chat-msg small,.global-chat-msg .meta{display:block;text-align:right;color:#8696a0;font-size:10.5px;margin-top:2px}
-.chat-msg .comment-note{background:#0000003d;border-left:3px solid var(--green);border-radius:6px;padding:4px 8px;margin:4px 0;color:#c5d0d6}
-.reaction-area{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 0}.reaction-btn{border:0;background:#ffffff12;color:#e9edef;border-radius:14px;padding:2px 8px;font-size:12px;font-weight:500}.reaction-btn.active{background:#00a88455}
-.chat-msg .row{margin-top:4px;gap:5px}.chat-msg .secondary{background:#ffffff12;border:0;color:#aebac1}
-.global-chat-layout{display:grid;gap:10px}.global-chat-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.global-chat-input{display:flex;gap:8px;align-items:flex-end}.global-chat-input textarea,#privateMessageInput,#nearbyRoomMessageInput{border-radius:22px;background:#2a3942;border:0;padding:12px 16px}
-.global-chat-input textarea{flex:1;min-width:0;margin:0;min-height:48px;max-height:120px}
-#globalSendButton{width:48px!important;height:48px;padding:0;border-radius:50%;background:#00a884;box-shadow:0 4px 14px #00a88455;font-size:0;flex:0 0 48px}#globalSendButton:before{content:"\27A4";font-size:19px;color:#fff}
-.global-online-list{display:flex;gap:6px;flex-wrap:wrap}.global-online-chip{padding:6px 11px;border:1px solid #35d9ff33;border-radius:20px;background:#35d9ff12;color:#d5eaff;font-size:11.5px;font-weight:500}
-.profile-action-trigger{touch-action:pan-y;cursor:pointer}.comment-note{font-size:12px;color:var(--muted);margin-top:6px}
-#conversationList button{display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;border-radius:16px}#conversationList button:before{content:"\1F464";display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--grad);flex:0 0 38px}
-.profile-action-overlay{position:fixed;inset:0;z-index:1200;background:#000a;backdrop-filter:blur(8px);display:grid;place-items:center;padding:22px}
-.profile-action-panel{width:min(100%,340px);background:#101a2c;border:1px solid #35d9ff55;border-radius:24px;padding:22px;box-shadow:0 20px 60px #000a}.profile-action-panel h3{color:var(--cyan);overflow-wrap:anywhere;margin-bottom:14px}.profile-action-panel button{width:100%;margin-top:8px}
-/* ---------- WALKIE ---------- */
-.walkie-card{text-align:center;padding:24px 18px}
-.walkie-orb{width:100px;height:100px;border-radius:50%;margin:0 auto 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #35d9ff88;background:radial-gradient(circle,#123a50,#0b1728);box-shadow:0 0 30px #35d9ff33;color:#8beaff;animation:ping 3s ease-out infinite}.walkie-orb span{font:800 22px Syne,sans-serif}.walkie-orb small{font-size:9px;letter-spacing:1px}
-.ptt-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin:18px 0}
-.ptt-button{width:120px;height:120px;border-radius:50%;padding:0;display:grid;place-items:center;font-size:44px;background:var(--grad);border:3px solid #ffffff55;box-shadow:0 0 34px #8b5cf666;touch-action:none;user-select:none;-webkit-user-select:none}.ptt-button:disabled{opacity:.4}
-.ptt-button.is-live{background:linear-gradient(145deg,#ef4444,#9f1239);border-color:#ffb3b3;box-shadow:0 0 0 8px #ef444433,0 0 40px #ef444488;transform:scale(1.05)}
-.ptt-hint{font-size:11px;letter-spacing:1px;color:#8beaff;font-weight:700}.ptt-state{font-size:13px;color:var(--muted);line-height:1.5}.ptt-state.live{color:#ff9b9b}.speaking-status{font-weight:700;color:#8beaff;font-size:15px;margin-bottom:8px}
-/* ---------- NAV ---------- */
-nav.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:min(94%,440px);background:#0c1424d9;backdrop-filter:blur(20px);border:1px solid #ffffff1c;border-radius:28px;box-shadow:0 14px 40px #000a;display:flex;justify-content:space-around;align-items:center;padding:8px 8px;z-index:10}
-.bottom-nav button{border:0;background:none;padding:4px 6px;color:var(--muted);font-size:10.5px;min-width:52px;display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 1 62px;position:relative}
-.bottom-nav button.active{color:var(--cyan)}.bottom-nav button.active:after{content:"";position:absolute;bottom:-5px;width:18px;height:3px;border-radius:3px;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
-.nav-icon svg,.nav-mic-icon svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.bottom-nav .nav-mic{flex:0 0 64px;margin-top:-30px;color:#fff}.bottom-nav .nav-mic:after{display:none}
-.nav-mic-icon{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--grad);border:3px solid #060912;box-shadow:0 0 26px #8b5cf688;animation:ping 3.2s ease-out infinite}
-.bottom-nav .nav-mic small{color:#8beaff;font-weight:700}
-@keyframes spin{to{transform:rotate(360deg)}}@keyframes radarStageSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-@keyframes ping{0%{box-shadow:0 0 0 0 #35d9ff88}70%,100%{box-shadow:0 0 0 18px #35d9ff00}}
-@keyframes blink{50%{opacity:.35;transform:scale(.7)}}@keyframes shine{to{background-position:200% 0}}
-@keyframes drift{to{transform:translate(8vmax,6vmax) scale(1.15)}}@keyframes pageIn{from{opacity:0;transform:translateY(8px)}}
+.global-chat-msg .author{
+ background:none;border:0;padding:0;margin:0;
+ color:var(--cyan);
+ font-family:"JetBrains Mono",monospace;
+ font-size:11.5px;font-weight:600;
+ border-radius:0;
+}
+.global-chat-msg .body{font-size:14px;white-space:pre-wrap;margin-top:3px;line-height:1.45}
+.chat-msg small,.global-chat-msg .meta{
+ display:block;text-align:right;
+ color:var(--muted);
+ font-family:"JetBrains Mono",monospace;
+ font-size:10px;
+ margin-top:4px;
+}
+.chat-msg .comment-note{
+ background:rgba(255,255,255,0.04);
+ border-left:2px solid var(--cyan);
+ border-radius:6px;
+ padding:5px 8px;
+ margin:5px 0;
+ color:var(--subtext);
+}
+.reaction-area{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 0}
+.reaction-btn{
+ border:1px solid rgba(255,255,255,0.08);
+ background:rgba(255,255,255,0.03);
+ color:var(--subtext);
+ border-radius:999px;
+ padding:2px 9px;
+ font-size:11.5px;
+ font-weight:500;
+}
+.reaction-btn.active{background:rgba(56,189,248,0.16);border-color:rgba(56,189,248,0.4);color:var(--text)}
+.chat-msg .row{margin-top:6px;gap:5px}
+.chat-msg .secondary{background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--subtext)}
+
+.global-chat-layout{display:grid;gap:10px}
+.global-chat-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.global-chat-input{display:flex;gap:8px;align-items:flex-end}
+.global-chat-input textarea,#privateMessageInput,#nearbyRoomMessageInput{
+ border-radius:14px;
+ background:#111114;
+ border:1px solid rgba(255,255,255,0.1);
+ padding:12px 14px;
+}
+.global-chat-input textarea{flex:1;min-width:0;margin:0;min-height:46px;max-height:120px}
+#globalSendButton{
+ width:46px!important;height:46px;
+ padding:0;
+ border-radius:12px;
+ background:#f4f4f5;
+ border:0;
+ box-shadow:0 4px 14px rgba(255,255,255,0.1);
+ font-size:0;
+ flex:0 0 46px;
+}
+#globalSendButton:before{content:"\27A4";font-size:17px;color:#09090b}
+.global-online-list{display:flex;gap:6px;flex-wrap:wrap}
+.global-online-chip{
+ padding:5px 10px;
+ border:1px solid var(--line);
+ border-radius:999px;
+ background:rgba(255,255,255,0.03);
+ color:var(--subtext);
+ font-family:"JetBrains Mono",monospace;
+ font-size:11px;
+ font-weight:500;
+}
+.profile-action-trigger{touch-action:pan-y;cursor:pointer}
+.comment-note{font-size:12px;color:var(--muted);margin-top:6px}
+#conversationList button{display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;border-radius:14px}
+#conversationList button:before{
+ content:"\1F464";
+ display:grid;place-items:center;
+ width:36px;height:36px;
+ border-radius:10px;
+ background:#18181c;
+ border:1px solid rgba(255,255,255,0.12);
+ flex:0 0 36px;
+}
+
+.profile-action-overlay{
+ position:fixed;inset:0;z-index:1200;
+ background:rgba(0,0,0,0.75);
+ backdrop-filter:blur(8px);
+ display:grid;place-items:center;padding:22px;
+}
+.profile-action-panel{
+ width:min(100%,340px);
+ background:#111114;
+ border:1px solid var(--line-strong);
+ border-radius:20px;
+ padding:22px;
+ box-shadow:0 24px 60px rgba(0,0,0,0.75);
+}
+.profile-action-panel h3{color:var(--text);overflow-wrap:anywhere;margin-bottom:14px}
+.profile-action-panel button{width:100%;margin-top:8px}
+
+/* ---------- WALKIE-TALKIE ---------- */
+.walkie-card{text-align:center;padding:28px 18px}
+.walkie-orb{
+ width:104px;height:104px;
+ border-radius:50%;
+ margin:0 auto 18px;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ border:1px solid rgba(255,255,255,0.16);
+ background:radial-gradient(circle,#18181c,#09090b);
+ box-shadow:0 0 32px rgba(56,189,248,0.08);
+ color:var(--text);
+ animation:ping 3s ease-out infinite;
+}
+.walkie-orb span{font:800 22px -apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",sans-serif;letter-spacing:-0.03em}
+.walkie-orb small{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:1.2px;color:var(--cyan);margin-top:2px}
+.ptt-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin:20px 0}
+.ptt-button{
+ width:118px;height:118px;
+ border-radius:50%;
+ padding:0;
+ display:grid;place-items:center;
+ font-size:40px;
+ background:#18181c;
+ border:2px solid rgba(255,255,255,0.28);
+ box-shadow:0 12px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15);
+ touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.ptt-button:disabled{opacity:0.35}
+.ptt-button.is-live{
+ background:#7f1d1d;
+ border-color:#f87171;
+ box-shadow:0 0 0 8px rgba(248,113,113,0.2), 0 0 36px rgba(248,113,113,0.45);
+ transform:scale(1.04);
+}
+.ptt-hint{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:600}
+.ptt-state{font-size:13px;color:var(--muted);line-height:1.5}
+.ptt-state.live{color:var(--red)}
+.speaking-status{font-weight:600;color:var(--cyan);font-size:14.5px;margin-bottom:8px}
+
+/* ---------- FLOATING DOCK NAV ---------- */
+nav.bottom-nav{
+ position:fixed;
+ left:50%;transform:translateX(-50%);
+ bottom:calc(12px + env(safe-area-inset-bottom));
+ width:min(94%,440px);
+ background:rgba(15,15,18,0.88);
+ backdrop-filter:blur(22px);
+ -webkit-backdrop-filter:blur(22px);
+ border:1px solid rgba(255,255,255,0.11);
+ border-radius:22px;
+ box-shadow:0 16px 40px rgba(0,0,0,0.75);
+ display:flex;justify-content:space-around;align-items:center;
+ padding:7px 8px;
+ z-index:30;
+}
+.bottom-nav button{
+ border:0;background:none;
+ padding:5px 6px;
+ color:var(--muted);
+ font-size:10.5px;font-weight:500;
+ min-width:52px;
+ display:flex;flex-direction:column;align-items:center;gap:3px;
+ flex:0 1 62px;
+ position:relative;
+}
+.bottom-nav button.active{color:var(--text)}
+.bottom-nav button.active:after{
+ content:"";position:absolute;bottom:-4px;
+ width:16px;height:2.5px;border-radius:3px;
+ background:var(--cyan);
+}
+.nav-icon svg,.nav-mic-icon svg{
+ width:21px;height:21px;
+ stroke:currentColor;fill:none;
+ stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+}
+.bottom-nav .nav-mic{flex:0 0 62px;margin-top:-26px;color:#09090b}
+.bottom-nav .nav-mic:after{display:none}
+.nav-mic-icon{
+ width:54px;height:54px;
+ border-radius:50%;
+ display:grid;place-items:center;
+ background:#f4f4f5;
+ color:#09090b;
+ border:3px solid #09090b;
+ box-shadow:0 6px 22px rgba(255,255,255,0.16);
+}
+.bottom-nav .nav-mic small{color:var(--text);font-weight:600}
+
+/* Custom scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#27272a;border-radius:3px}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes radarStageSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(56,189,248,0.45)}70%,100%{box-shadow:0 0 0 16px rgba(56,189,248,0)}}
+@keyframes blink{50%{opacity:.35;transform:scale(.7)}}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px)}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 </style>
 </head>
@@ -120,7 +625,7 @@ nav.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10
 <div id="app"><main>
 <section class="page active" id="home">
  <h2>Discover Nearby.</h2><p class="sub">Your world starts around you.</p>
- <div class="card"><p style="color:var(--cyan)">YOUR NETWORK</p>
+ <div class="card"><p style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.06em">YOUR NETWORK</p>
   <div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
   <h3 style="text-align:center">Explore your world</h3><p class="sub" style="text-align:center;margin-top:8px">The markers here are decorative. Live members appear on the Radar page.</p>
   <button class="primary" onclick="go('radar')">Explore Radar</button>
@@ -133,7 +638,7 @@ nav.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10
 <section class="page" id="radar">
  <h2>Live Radar</h2><p class="sub">See signed-in members who have chosen to appear online.</p>
  <div class="card"><div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
- <h3 style="text-align:center;color:var(--cyan)">Opt-in Members</h3><p class="sub" style="text-align:center;margin:8px 0">Turn Radar ON to appear to other signed-in members. This version does not collect GPS or measure physical distance.</p>
+ <h3 style="text-align:center">Opt-in Members</h3><p class="sub" style="text-align:center;margin:8px 0">Turn Radar ON to appear to other signed-in members. This version does not collect GPS or measure physical distance.</p>
  <p id="rangeTitle" class="message muted" style="text-align:center">Live opt-in presence · no location tracking</p></div>
  <div class="card"><h3>My Anonymous Identity</h3><div class="row" style="align-items:center;margin-top:14px"><div class="avatar" style="margin:0">👤</div><div><h3 id="radarAnonymousHandle" style="color:var(--cyan)">Explorer</h3><p class="sub" style="margin:5px 0">Anonymous Radar profile</p></div></div></div>
  <div class="card"><h3>My Radar Privacy</h3><p class="sub" style="margin:7px 0">Radar starts OFF. Your private opt-in status is saved when you turn it ON. Your exact GPS location, email and real name are not displayed.</p>
@@ -162,12 +667,10 @@ nav.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10
  </div>
 </section>
 
-
-
 <section class="page" id="chats">
  <h2>Chats</h2><p class="sub">Global conversations and private messages.</p>
  <div class="card global-chat-layout" id="globalchat">
- <h2>🌐 100m Global Chat</h2><p class="sub">One shared live room for the 100m community. Only anonymous handles are shown.</p>
+ <h2>100m Global Chat</h2><p class="sub">One shared live room for the 100m community. Only anonymous handles are shown.</p>
  <div class="global-chat-layout">
   <div class="global-chat-header"><h3>● Global Room</h3><span id="globalOnlineCount" class="live-count">0 online</span></div>
   <p id="globalChatStatus" class="message muted">Connecting to Global Chat...</p>
@@ -194,7 +697,6 @@ nav.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10
  </div>
 </section>
 
-
 <section class="page" id="safety">
  <h2>Safety</h2><p class="sub">Report spam, harassment or unsafe behaviour.</p>
  <div class="card"><h3>Report a concern</h3><p class="sub" style="margin:7px 0">Do not include private information in your report.</p>
@@ -203,8 +705,6 @@ nav.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10
  <button class="primary" onclick="submitReport()">Submit report</button><p id="reportStatus" class="message muted"></p>
  </div>
 </section>
-
-
 
 <section class="page" id="profile">
  <h2>Your Profile</h2><p class="sub">Your identity on 100m.</p>
@@ -274,7 +774,7 @@ function toggleAuth(){
  document.getElementById("password").autocomplete=isLogin?"current-password":"new-password";document.getElementById("forgotRow").style.display=isLogin?"block":"none";
  document.getElementById("authMessage").textContent="";
 }
-function showMessage(m,ok){const el=document.getElementById("authMessage");el.textContent=m;el.style.color=ok?"var(--green)":"#ff9b9b"}
+function showMessage(m,ok){const el=document.getElementById("authMessage");el.textContent=m;el.style.color=ok?"var(--green)":"var(--red)"}
 function friendlyAuthError(e){const map={"auth/email-already-in-use":"This email is already registered. Try logging in.","auth/invalid-email":"Please enter a valid email address.","auth/weak-password":"Password is too weak. Use at least 6 characters.","auth/user-not-found":"Incorrect email or password.","auth/wrong-password":"Incorrect email or password.","auth/invalid-credential":"Incorrect email or password.","auth/too-many-requests":"Too many attempts. Please wait a moment and try again.","auth/network-request-failed":"Network error. Check your connection."};return map[e&&e.code]||"Something went wrong. Please try again."}
 async function resetPassword(){const email=document.getElementById("email").value.trim();if(!email){showMessage("Enter your email above first.");return}try{await auth.sendPasswordResetEmail(email);showMessage("Password reset email sent. Check your inbox.",true)}catch(e){showMessage(friendlyAuthError(e))}}
 async function handleAuth(){
@@ -298,7 +798,7 @@ async function loadUserProfile(user){
  currentUser=user;guestMode=false;{const h=document.getElementById("radarAnonymousHandle");if(h)h.textContent=handleFor(user.uid)}
  startGlobalChat();
  startRadarRoomListener();
- 
+
  document.getElementById("profileName").textContent=user.displayName||"Explorer";
  document.getElementById("profileEmail").textContent=user.email||"";
  document.getElementById("profileMessage").textContent="Loading profile...";
@@ -382,7 +882,6 @@ async function startPrivateChat(){
  if(!currentUser||guestMode){status.textContent="Please sign in with an account to use private messages.";return}
  const enteredId=document.getElementById("recipientUid").value.trim();
  if(!/^100m-[A-Z0-9]{6}$/i.test(enteredId)){status.textContent="Enter a valid 100m Chat ID, for example 100m-A1B2C3.";return}
- // RTDB keys are case-sensitive. Keep the stored "100m-" prefix lowercase.
  const publicId="100m-"+enteredId.slice(5).toUpperCase();
  try{
   const lookup=await rtdb.ref("publicChatIds/"+publicId).once("value"),record=lookup.val();
@@ -395,7 +894,7 @@ async function startPrivateChat(){
   status.textContent="Private chat opened.";openPrivateChat(id,other);
  }catch(e){status.textContent="Could not open chat: "+e.message}
 }
- function openPrivateChat(chatId,otherUid){if(blockedUids.has(otherUid))return;
+function openPrivateChat(chatId,otherUid){if(blockedUids.has(otherUid))return;
  if(!currentUser||guestMode)return;
  if(activeChatUnsubscribe)activeChatUnsubscribe();
  activeChatId=chatId;
@@ -478,9 +977,24 @@ async function openPrivateChatByUid(otherUid){
   go("chats");
  }catch(e){if(status)status.textContent="Could not open private chat: "+e.message;}
 }
+function showConfirmModal(message){
+ return new Promise(resolve=>{
+  const old=document.getElementById("confirmActionModal");if(old)old.remove();
+  const overlay=document.createElement("div");overlay.id="confirmActionModal";overlay.className="profile-action-overlay";
+  const panel=document.createElement("div");panel.className="profile-action-panel";
+  const title=document.createElement("h3");title.textContent="Confirm Action";
+  const body=document.createElement("p");body.className="sub";body.style.marginBottom="14px";body.textContent=message;
+  const ok=document.createElement("button");ok.type="button";ok.className="primary";ok.textContent="Confirm";
+  const cancel=document.createElement("button");cancel.type="button";cancel.className="secondary";cancel.textContent="Cancel";
+  ok.onclick=()=>{overlay.remove();resolve(true)};
+  cancel.onclick=()=>{overlay.remove();resolve(false)};
+  overlay.addEventListener("click",e=>{if(e.target===overlay){overlay.remove();resolve(false)}});
+  panel.append(title,body,ok,cancel);overlay.appendChild(panel);document.body.appendChild(overlay);
+ });
+}
 async function blockAccount(uid,handle){
  if(!currentUser||guestMode||!uid||uid===currentUser.uid)return;
- if(!confirm("Block "+(handle||"this account")+"? This saves the block to your account."))return;
+ if(!(await showConfirmModal("Block "+(handle||"this account")+"? This saves the block to your account.")))return;
  const status=document.getElementById("blockStatus");
  try{
   await db.collection("users").doc(currentUser.uid).collection("blocked").doc(uid).set({
@@ -776,7 +1290,7 @@ function renderInterestRadar(rawInterests){
  const note=document.createElement("p");note.className="comment-note";note.textContent="These are topic ideas only, not live user or location matches.";box.appendChild(note);
 }
 
-// GLOBAL CHAT: shared by every signed-in account; independent of Radar status.
+// GLOBAL CHAT
 function globalHandle(){return "Explorer-"+(currentUser?.uid||"guest").slice(0,4).toLowerCase()}
 function stopGlobalChatListeners(){
  if(globalMembersRef&&globalMembersListener)globalMembersRef.off("value",globalMembersListener);
@@ -792,8 +1306,6 @@ async function startGlobalChat(){
  const uid=currentUser.uid,handle=globalHandle();
  const status=document.getElementById("globalChatStatus");
  if(status)status.textContent="Connecting to shared messages…";
- // Attach the message listener FIRST. A denied online-presence write must not
- // prevent the shared message feed from loading.
  globalMessagesRef=rtdb.ref("globalChat/messages").limitToLast(100);
  globalMessagesListener=snap=>{
   globalMessageCache=[];
@@ -806,11 +1318,9 @@ async function startGlobalChat(){
   if(status)status.textContent="Could not load messages. Please try again.";
   const box=document.getElementById("globalChatMessages");if(box)box.innerHTML='<div class="empty error">Messages could not load. Database read permission is needed.</div>';
  });
- // Reactions are optional; their failure should not break message loading.
  globalReactionRef=rtdb.ref("globalChat/reactions");
  globalReactionListener=snap=>{globalReactionCache=snap.val()||{};renderGlobalMessages()};
  globalReactionRef.on("value",globalReactionListener,()=>{});
- // Online presence is independent from message reads.
  const memberRef=rtdb.ref("globalChat/members/"+uid);
  try{
   await memberRef.onDisconnect().remove();
@@ -908,7 +1418,7 @@ async function loadBlockedAccounts(){
 }
 async function unblockAccount(uid,button){
  if(!currentUser||guestMode||!uid)return;
- if(!confirm("Unblock this account? They may be able to contact you again."))return;
+ if(!(await showConfirmModal("Unblock this account? They may be able to contact you again.")))return;
  button.disabled=true;
  try{
   await db.collection("users").doc(currentUser.uid).collection("blocked").doc(uid).delete();
@@ -924,12 +1434,9 @@ async function submitReport(){
  document.getElementById("reportDetails").value="";reportTarget="";
 }
 // Walkie-Talkie audio: WebRTC carries audio; Firebase RTDB carries signaling only.
-// IMPORTANT: Add real TURN credentials below for reliable calls across mobile networks.
 let pttStream=null,pttActive=false,pttPressed=false,pttStarting=false,pttLimitTimer=null;
 const voiceIceServers=[
  {urls:"stun:stun.l.google.com:19302"}
- // Example TURN entry (replace with credentials from your TURN provider):
- // ,{urls:["turn:YOUR_TURN_HOST:3478?transport=udp","turn:YOUR_TURN_HOST:3478?transport=tcp"],username:"YOUR_TURN_USERNAME",credential:"YOUR_TURN_CREDENTIAL"}
 ];
 const voiceIceConfig={iceServers:voiceIceServers,iceCandidatePoolSize:10,bundlePolicy:"max-bundle"};
 const voiceReconnectTimers={};
@@ -963,7 +1470,6 @@ async function createNearbyVoicePeer(peerUid,shouldOffer){
  if(!currentUser||!peerUid||peerUid===currentUser.uid||!inNearbyVoiceRoom())return null;
  if(voicePeers[peerUid])return voicePeers[peerUid];
  const pc=new RTCPeerConnection(voiceIceConfig);
- 
  const peer={pc,sender:null,remoteSet:false,offerStarted:false};if(shouldOffer)peer.sender=pc.addTransceiver("audio",{direction:"sendrecv"}).sender;
  voicePeers[peerUid]=peer;voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];
  pc.onicecandidate=event=>{if(event.candidate&&inNearbyVoiceRoom())sendNearbyVoiceSignal(peerUid,{type:"ice",candidate:event.candidate.toJSON()}).catch(e=>setPttStatus("Voice signaling failed: "+e.message));};
@@ -1013,7 +1519,6 @@ async function handleNearbyVoiceSignal(snapshot){
   if(Number(data.createdAt||0)&&Date.now()-Number(data.createdAt)>120000)return;
   const peerUid=data.from;if(blockedUids.has(peerUid))return;
   if(data.type==="offer"){
-   // Only the lexicographically higher UID accepts offers; the lower UID is the sole initiator.
    if(currentUser.uid.localeCompare(peerUid)<0)return;
    let peer=voicePeers[peerUid];
    if(peer&&peer.pc.signalingState!=="stable"){closeNearbyVoicePeer(peerUid);peer=null;}
@@ -1037,7 +1542,6 @@ async function handleNearbyVoiceSignal(snapshot){
   }
  }catch(e){console.log("Nearby voice signaling:",e.message);setPttStatus("Voice setup failed: "+e.message);}
  finally{
-  // A packet is single-use. Removing it prevents old offers/answers/candidates replaying on rejoin.
   if(snapshot&&snapshot.ref)snapshot.ref.remove().catch(()=>{});
  }
 }
@@ -1134,3 +1638,4 @@ rtdb.ref(".info/connected").on("value",x=>{const t=document.getElementById("topS
 </script>
 </body>
 </html>
+```
