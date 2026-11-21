@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,7 +82,28 @@ header{
  color:var(--green);
 }
 
-main{padding:18px 16px;max-width:740px;margin:auto}
+main{padding:18px 16px;max-width:740px;margin:auto;transition:max-width .2s ease}
+main:has(#chats.active){max-width:1180px}
+.chat-mode-tabs{
+ display:grid;grid-template-columns:1fr 1fr;gap:6px;
+ padding:5px;margin-bottom:14px;
+ background:#111114;border:1px solid var(--line);border-radius:14px;
+}
+.chat-mode-tab{
+ border:0;background:transparent;color:var(--muted);
+ padding:9px 12px;border-radius:10px;font-size:13px;font-weight:700;
+}
+.chat-mode-tab.active{background:#f4f4f5;color:#09090b}
+.chats-split{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+.chats-col{min-width:0}
+@media(max-width:767px){
+ .chats-col.mobile-hidden{display:none}
+}
+@media(min-width:768px){
+ .chat-mode-tabs{display:none}
+ .chats-split{grid-template-columns:1.05fr 0.95fr}
+ .chats-col.mobile-hidden{display:block}
+}
 .sub{color:var(--muted);font-size:13.5px;line-height:1.6;margin-bottom:16px}
 .card{
  background:linear-gradient(180deg, rgba(24,24,28,0.78) 0%, rgba(17,17,20,0.92) 100%);
@@ -669,31 +689,42 @@ nav.bottom-nav{
 
 <section class="page" id="chats">
  <h2>Chats</h2><p class="sub">Global conversations and private messages.</p>
- <div class="card global-chat-layout" id="globalchat">
- <h2>100m Global Chat</h2><p class="sub">One shared live room for the 100m community. Only anonymous handles are shown.</p>
- <div class="global-chat-layout">
-  <div class="global-chat-header"><h3>● Global Room</h3><span id="globalOnlineCount" class="live-count">0 online</span></div>
-  <p id="globalChatStatus" class="message muted">Connecting to Global Chat...</p>
-  <div><p class="comment-note">Online members</p><div id="globalOnlineMembers" class="global-online-list"><span class="muted">Loading...</span></div></div>
-  <div id="globalTypingStatus" class="comment-note" aria-live="polite"></div>
-  <div id="globalChatMessages" class="global-chat-messages"><div class="empty">Loading messages...</div></div>
-  <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()">Send</button></div>
-  <p class="comment-note">Messages are shared with all signed-in members. Be respectful; never share personal or location details.</p>
+ <div class="chat-mode-tabs" role="tablist" aria-label="Chat sections">
+  <button type="button" class="chat-mode-tab active" data-chat-tab="global" onclick="switchChatTab('global')">Global Chat</button>
+  <button type="button" class="chat-mode-tab" data-chat-tab="private" onclick="switchChatTab('private')">Private Chat</button>
  </div>
-</div>
-
- <h2>Private Messages</h2><p class="sub">One-to-one messages between signed-in accounts.</p>
- <div class="card"><h3>Start a private chat</h3>
- <p class="sub" style="margin:7px 0">Enter their public 100m Chat ID. Ask them to share it from their Profile.</p>
- <input id="recipientUid" maxlength="20" placeholder="Example: 100m-A1B2C3">
- <button class="primary" onclick="startPrivateChat()">Open private chat</button>
- <p id="privateChatStatus" class="message muted"></p></div>
- <div class="card"><h3>Your conversations</h3><div id="conversationList" class="chat-list"><div class="empty">Sign in to load conversations.</div></div></div>
- <div class="card"><h3 id="activeChatTitle">Select a conversation</h3>
- <div id="privateMessages" class="chat-list"><div class="empty">Your private messages will appear here.</div></div>
- <textarea id="privateMessageInput" maxlength="2000" placeholder="Write a message..."></textarea>
- <button class="primary" id="sendPrivateButton" onclick="sendPrivateMessage()" disabled>Send message</button>
- <p class="message muted">Private messages are visible only to you and the other person.</p>
+ <div class="chats-split">
+  <div class="chats-col" id="globalChatCol">
+   <div class="card global-chat-layout" id="globalchat">
+    <h2>100m Global Chat</h2><p class="sub">One shared live room for the 100m community. Only anonymous handles are shown.</p>
+    <div class="global-chat-layout">
+     <div class="global-chat-header"><h3>● Global Room</h3><span id="globalOnlineCount" class="live-count">0 online</span></div>
+     <p id="globalChatStatus" class="message muted">Connecting to Global Chat...</p>
+     <div><p class="comment-note">Online members</p><div id="globalOnlineMembers" class="global-online-list"><span class="muted">Loading...</span></div></div>
+     <div id="globalTypingStatus" class="comment-note" aria-live="polite"></div>
+     <div id="globalChatMessages" class="global-chat-messages"><div class="empty">Loading messages...</div></div>
+     <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()">Send</button></div>
+     <p class="comment-note">Messages are shared with all signed-in members. Be respectful; never share personal or location details.</p>
+    </div>
+   </div>
+  </div>
+  <div class="chats-col mobile-hidden" id="privateChatCol">
+   <div class="card">
+    <h2>Private Messages</h2><p class="sub">One-to-one messages between signed-in accounts.</p>
+    <h3>Start a private chat</h3>
+    <p class="sub" style="margin:7px 0">Enter their public 100m Chat ID. Ask them to share it from their Profile.</p>
+    <input id="recipientUid" maxlength="20" placeholder="Example: 100m-A1B2C3">
+    <button class="primary" onclick="startPrivateChat()">Open private chat</button>
+    <p id="privateChatStatus" class="message muted"></p>
+   </div>
+   <div class="card"><h3>Your conversations</h3><div id="conversationList" class="chat-list"><div class="empty">Sign in to load conversations.</div></div></div>
+   <div class="card"><h3 id="activeChatTitle">Select a conversation</h3>
+    <div id="privateMessages" class="chat-list"><div class="empty">Your private messages will appear here.</div></div>
+    <textarea id="privateMessageInput" maxlength="2000" placeholder="Write a message..."></textarea>
+    <button class="primary" id="sendPrivateButton" onclick="sendPrivateMessage()" disabled>Send message</button>
+    <p class="message muted">Private messages are visible only to you and the other person.</p>
+   </div>
+  </div>
  </div>
 </section>
 
@@ -894,7 +925,15 @@ async function startPrivateChat(){
   status.textContent="Private chat opened.";openPrivateChat(id,other);
  }catch(e){status.textContent="Could not open chat: "+e.message}
 }
-function openPrivateChat(chatId,otherUid){if(blockedUids.has(otherUid))return;
+function switchChatTab(tab){
+ const g=document.getElementById("globalChatCol"),pr=document.getElementById("privateChatCol");
+ if(g&&pr){
+  g.classList.toggle("mobile-hidden",tab!=="global");
+  pr.classList.toggle("mobile-hidden",tab!=="private");
+ }
+ document.querySelectorAll(".chat-mode-tab").forEach(b=>b.classList.toggle("active",b.dataset.chatTab===tab));
+}
+function openPrivateChat(chatId,otherUid){if(blockedUids.has(otherUid))return;switchChatTab("private");
  if(!currentUser||guestMode)return;
  if(activeChatUnsubscribe)activeChatUnsubscribe();
  activeChatId=chatId;
@@ -1638,4 +1677,3 @@ rtdb.ref(".info/connected").on("value",x=>{const t=document.getElementById("topS
 </script>
 </body>
 </html>
-```
