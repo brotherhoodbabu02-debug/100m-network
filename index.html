@@ -281,7 +281,7 @@ footer.note{font-size:11.5px;color:#636370;line-height:1.65;margin:16px 4px}
  inset:0;
  border-radius:50%;
  background:conic-gradient(from 0deg, rgba(56,189,248,0.38), rgba(56,189,248,0) 68deg, transparent);
- animation:spin 7s linear infinite;
+ animation:radarSpin 7s linear infinite;
 }
 .radar.scanning:before{animation-duration:2.6s}
 .center{
@@ -660,15 +660,120 @@ nav.bottom-nav{
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#27272a;border-radius:3px}
 
-@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes radarSpin{to{transform:rotate(360deg)}}
 @keyframes radarStageSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 @keyframes ping{0%{box-shadow:0 0 0 0 rgba(56,189,248,0.45)}70%,100%{box-shadow:0 0 0 16px rgba(56,189,248,0)}}
 @keyframes blink{50%{opacity:.35;transform:scale(.7)}}
 @keyframes pageIn{from{opacity:0;transform:translateY(6px)}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+
+/* ---------- INTRO SPLASH ANIMATION (Uiverse.io by SelfMadeSystem style) ---------- */
+#introSplash{
+ position:fixed;inset:0;z-index:9999;
+ background:#09090b;
+ background-image:
+  radial-gradient(560px circle at 50% 48%, rgba(56,189,248,0.12), transparent 68%),
+  linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+ background-size:100% 100%, 44px 44px, 44px 44px;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+ transition:opacity .55s cubic-bezier(0.16,1,0.3,1), visibility .55s ease;
+ cursor:pointer;
+}
+#introSplash.hide{opacity:0;visibility:hidden;pointer-events:none}
+#introSplash .absolute{position:absolute}
+#introSplash .inline-block{display:inline-block}
+#introSplash .loader{display:flex;align-items:center;justify-content:center;margin:0.25em 0;gap:6px}
+#introSplash .w-2{width:0.5em}
+#introSplash .dash{animation:dashArray 2s ease-in-out infinite, dashOffset 2s linear infinite}
+#introSplash .spin{animation:spinDashArray 2s ease-in-out infinite, splashSpin 8s ease-in-out infinite, dashOffset 2s linear infinite;transform-origin:center}
+#introSplash .splash-sub{
+ font-family:"JetBrains Mono",monospace;
+ font-size:12px;font-weight:700;letter-spacing:0.42em;
+ color:#a1a1aa;text-transform:uppercase;
+ padding-left:0.42em;
+ animation:subReveal 1.2s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+#introSplash .splash-bar{
+ width:140px;height:2px;border-radius:2px;
+ background:rgba(255,255,255,0.08);overflow:hidden;margin-top:6px;
+}
+#introSplash .splash-bar i{
+ display:block;height:100%;width:100%;
+ background:linear-gradient(90deg,#f4f4f5,#38bdf8);
+ transform-origin:left;
+ animation:barFill 2.4s cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes dashArray{
+ 0%{stroke-dasharray:0 1 359 0}
+ 50%{stroke-dasharray:0 359 1 0}
+ 100%{stroke-dasharray:359 1 0 0}
+}
+@keyframes spinDashArray{
+ 0%{stroke-dasharray:270 90}
+ 50%{stroke-dasharray:0 360}
+ 100%{stroke-dasharray:270 90}
+}
+@keyframes dashOffset{
+ 0%{stroke-dashoffset:365}
+ 100%{stroke-dashoffset:5}
+}
+@keyframes splashSpin{
+ 0%{rotate:0deg}
+ 12.5%,25%{rotate:270deg}
+ 37.5%,50%{rotate:540deg}
+ 62.5%,75%{rotate:810deg}
+ 87.5%,100%{rotate:1080deg}
+}
+@keyframes subReveal{
+ from{opacity:0;letter-spacing:0.75em;transform:translateY(6px)}
+ to{opacity:1;letter-spacing:0.42em;transform:translateY(0)}
+}
+@keyframes barFill{
+ from{transform:scaleX(0)}
+ to{transform:scaleX(1)}
+}
 </style>
 </head>
 <body>
+<div id="introSplash" aria-label="100m Network loading animation" onclick="dismissIntroSplash()">
+ <div class="loader">
+  <svg height="0" width="0" viewBox="0 0 64 64" class="absolute">
+   <defs xmlns="http://www.w3.org/2000/svg">
+    <linearGradient id="gWhite" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+     <stop offset="0%" stop-color="#ffffff"></stop>
+     <stop offset="100%" stop-color="#a1a1aa"></stop>
+    </linearGradient>
+    <linearGradient id="gCyan" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+     <stop offset="0%" stop-color="#38bdf8"></stop>
+     <stop offset="100%" stop-color="#f4f4f5"></stop>
+    </linearGradient>
+   </defs>
+  </svg>
+  <!-- 1 -->
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 44 64" height="68" width="46" class="inline-block">
+   <path stroke-linejoin="round" stroke-linecap="round" stroke-width="7" stroke="rgba(255,255,255,0.12)" d="M 12 20 L 24 10 L 24 54 M 13 54 L 35 54"></path>
+   <path stroke-linejoin="round" stroke-linecap="round" stroke-width="7" stroke="url(#gWhite)" d="M 12 20 L 24 10 L 24 54 M 13 54 L 35 54" class="dash" pathLength="360"></path>
+  </svg>
+  <!-- 0 -->
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 64 64" height="68" width="66" class="inline-block">
+   <path stroke-linejoin="round" stroke-linecap="round" stroke-width="7" stroke="rgba(255,255,255,0.12)" d="M 32 32 m 0 -22 a 22 22 0 1 1 0 44 a 22 22 0 1 1 0 -44"></path>
+   <path stroke-linejoin="round" stroke-linecap="round" stroke-width="7" stroke="url(#gCyan)" d="M 32 32 m 0 -22 a 22 22 0 1 1 0 44 a 22 22 0 1 1 0 -44" class="spin" pathLength="360"></path>
+  </svg>
+  <!-- 0 -->
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 64 64" height="68" width="66" class="inline-block">
+   <path stroke-linejoin="round" stroke-linecap="round" stroke-width="7" stroke="rgba(255,255,255,0.12)" d="M 32 32 m 0 -22 a 22 22 0 1 1 0 44 a 22 22 0 1 1 0 -44"></path>
+   <path stroke-linejoin="round" stroke-linecap="round" stroke-width="7" stroke="url(#gWhite)" d="M 32 32 m 0 -22 a 22 22 0 1 1 0 44 a 22 22 0 1 1 0 -44" class="spin" pathLength="360"></path>
+  </svg>
+  <!-- M -->
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 64 64" height="68" width="66" class="inline-block">
+   <path stroke-linejoin="round" stroke-linecap="round" stroke-width="7" stroke="rgba(255,255,255,0.12)" d="M 10 54 L 10 12 L 32 36 L 54 12 L 54 54"></path>
+   <path stroke-linejoin="round" stroke-linecap="round" stroke-width="7" stroke="url(#gCyan)" d="M 10 54 L 10 12 L 32 36 L 54 12 L 54 54" class="dash" pathLength="360"></path>
+  </svg>
+ </div>
+ <div class="splash-sub">100M NETWORK</div>
+ <div class="splash-bar"><i></i></div>
+</div>
 <header><div class="logo">100m<span>.</span></div><div class="status" id="topStatus">● NETWORK</div></header>
 
 <section id="authPage" class="auth-page">
@@ -1794,6 +1899,15 @@ window.addEventListener("beforeunload",()=>{if(pttStream)pttStream.getTracks().f
 [["globalMessageInput","sendGlobalMessage"],["nearbyRoomMessageInput","sendNearbyRoomMessage"],["privateMessageInput","sendPrivateMessage"]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el)el.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&matchMedia("(pointer:fine)").matches){e.preventDefault();window[fn]()}})});
 ["email","password","displayName"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("keydown",e=>{if(e.key==="Enter")handleAuth()})});
 rtdb.ref(".info/connected").on("value",x=>{const t=document.getElementById("topStatus");if(t){t.textContent=x.val()?"\u25cf ONLINE":"\u25cb OFFLINE";t.style.color=x.val()?"var(--green)":"var(--red)"}});
+
+function dismissIntroSplash(){
+ const el=document.getElementById("introSplash");
+ if(!el||el.classList.contains("hide"))return;
+ el.classList.add("hide");
+ setTimeout(()=>{if(el.parentNode)el.remove()},600);
+}
+window.addEventListener("load",()=>setTimeout(dismissIntroSplash,2450));
+setTimeout(dismissIntroSplash,3200);
 </script>
 </body>
 </html>
