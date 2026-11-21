@@ -761,7 +761,6 @@ nav.bottom-nav{
     <button class="primary" onclick="startPrivateChat()">Open private chat</button>
     <p id="privateChatStatus" class="message muted"></p>
    </div>
-   <div class="card"><h3>Your conversations</h3><div id="conversationList" class="chat-list"><div class="empty">Sign in to load conversations.</div></div></div>
    <div class="card"><h3 id="activeChatTitle">Select a conversation</h3>
     <div id="privateMessages" class="chat-list"><div class="empty">Your private messages will appear here.</div></div>
     <textarea id="privateMessageInput" maxlength="2000" placeholder="Write a message..."></textarea>
@@ -927,19 +926,7 @@ async function logout(){
  activeChatId=null;try{await stopGlobalChat(true)}catch(e){}auth.signOut();
 }
 function chatDocumentId(uidA,uidB){return [uidA,uidB].sort().join("__")}
-function loadConversations(user){
- if(conversationsUnsubscribe)conversationsUnsubscribe();
- const box=document.getElementById("conversationList");
- conversationsUnsubscribe=db.collection("chats").where("participantsList","array-contains",user.uid).onSnapshot(snapshot=>{
-  box.innerHTML="";
-  if(snapshot.empty){box.innerHTML="<div class=\"empty\">No private conversations yet. Enter a Chat ID above to start one.</div>";return}
-  snapshot.forEach(doc=>{
-   const data=doc.data(),other=(data.participantsList||[]).find(id=>id!==user.uid)||"Unknown";if(blockedUids.has(other))return;
-   const button=document.createElement("button");button.className="secondary";button.style.width="100%";button.style.margin="5px 0";
-   button.textContent="Chat with "+handleFor(other);button.onclick=()=>openPrivateChat(doc.id,other);attachProfileAction(button,other,"100m member");box.appendChild(button);
-  });
- },error=>{box.textContent="Could not load conversations: "+error.message});
-}
+function loadConversations(){}
 function makePublicChatId(){const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=new Uint32Array(6);crypto.getRandomValues(r);return "100m-"+Array.from(r,n=>a[n%a.length]).join("")}
 async function ensurePublicChatId(user,profile){
  let id=profile.publicChatId||"";
@@ -1553,7 +1540,7 @@ function cleanupSession(){
  if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
  activeChatId=null;blockedUids=new Set();
- ["globalChatMessages","privateMessages","conversationList"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=""});
+ ["globalChatMessages","privateMessages"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=""});
  closeEditProfile();go("home");
 }
 auth.onAuthStateChanged(user=>{
