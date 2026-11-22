@@ -1034,7 +1034,7 @@ nav.bottom-nav{
 <section class="page" id="safety">
  <h2>Safety</h2><p class="sub">Report spam, harassment or unsafe behaviour.</p>
  <div class="card"><h3>Report a concern</h3><p class="sub" style="margin:7px 0">Do not include private information in your report.</p>
- <select id="reportReason"><option>Spam</option><option>Harassment</option><option>Unsafe request</option><option>Other concern</option></select>
+ <select id="reportReason"><option>Spam</option><option>Harassment</option><option>Bullying</option><option>Unsafe content</option><option>Impersonation</option><option>Other concern</option></select>
  <textarea id="reportDetails" maxlength="180" placeholder="Optional details (do not include private information)"></textarea>
  <button class="primary" onclick="submitReport()">Submit report</button><p id="reportStatus" class="message muted"></p>
  </div>
@@ -1383,6 +1383,8 @@ async function blockAccount(uid,handle){
    uid,username:String(handle||"100m member").slice(0,25),
    createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
+  blockedUids.add(uid);
+  closeNearbyVoicePeer(uid);
   if(status)status.textContent="Account blocked in your account settings.";
   await loadBlockedAccounts();
  }catch(e){if(status)status.textContent="Could not block account: "+e.message;}
@@ -1727,10 +1729,21 @@ async function joinNearbyRoom(){
   startNearbyVoiceRoom();
  }catch(e){const s=document.getElementById("nearbyRoomStatus");if(s)s.textContent="Could not join chat: "+e.message}
 }
+let lastMsgSentAt=0;
+function checkMessageCooldown(statusId){
+ const now=Date.now();
+ if(now-lastMsgSentAt<1000){
+  const el=document.getElementById(statusId);
+  if(el)el.textContent="Slow down a bit before sending another message.";
+  return false;
+ }
+ lastMsgSentAt=now;
+ return true;
+}
 async function sendNearbyRoomMessage(){
  const input=document.getElementById("nearbyRoomMessageInput"),textValue=input.value.trim();
  if(!currentUser||!radarIsOn){document.getElementById("nearbyRoomStatus").textContent="Sign in and turn Radar ON before sending.";return}
- if(!textValue)return;
+ if(!textValue||!checkMessageCooldown("nearbyRoomStatus"))return;
  try{
   const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
   const payload={uid:currentUser.uid,handle,text:textValue,createdAt:firebase.database.ServerValue.TIMESTAMP};
@@ -1900,7 +1913,7 @@ async function setGlobalTyping(on){if(!currentUser)return;const ref=rtdb.ref("gl
 function handleGlobalTyping(){const gIn=document.getElementById("globalMessageInput"),sIn=document.getElementById("signalMessageInput");const hasVal=(gIn&&gIn.value.trim())||(sIn&&sIn.value.trim());if(!currentUser)return;if(globalTypingTimer)clearTimeout(globalTypingTimer);if(!hasVal){setGlobalTyping(false);return}setGlobalTyping(true);globalTypingTimer=setTimeout(()=>setGlobalTyping(false),2200)}
 async function sendGlobalMessage(){
  const input=document.getElementById("globalMessageInput"),value=input.value.trim(),button=document.getElementById("globalSendButton"),status=document.getElementById("globalChatStatus");
- if(!currentUser||guestMode){status.textContent="Please sign in to send a Global Chat message.";return}if(!value)return;
+ if(!currentUser||guestMode){status.textContent="Please sign in to send a Global Chat message.";return}if(!value||!checkMessageCooldown("globalChatStatus"))return;
  button.disabled=true;
  try{const payload={uid:currentUser.uid,handle:globalHandle(),text:value,createdAt:firebase.database.ServerValue.TIMESTAMP};if(globalReplyTarget){payload.replyTo=globalReplyTarget.id;payload.replyHandle=globalReplyTarget.handle;payload.replyText=globalReplyTarget.text.slice(0,120)}await rtdb.ref("globalChat/messages").push(payload);input.value="";await setGlobalTyping(false);cancelGlobalReply()}
  catch(e){status.textContent="Message not sent: "+e.message}finally{button.disabled=false}
@@ -1965,10 +1978,21 @@ async function unblockAccount(uid,button){
  }catch(e){button.disabled=false;document.getElementById("blockStatus").textContent="Could not unblock account: "+e.message}
 }
 async function submitReport(){
- const status=document.getElementById("reportStatus"),reason=document.getElementById("reportReason").value,details=document.getElementById("reportDetails").value.trim();
+ const status=document.getElementById("reportStatus"),reason=document.getElementById("reportReason").value,details=document.getElementById("reportDetails").value.trim().slice(0,300);
  if(!currentUser){status.textContent="Please sign in first.";return}
- try{await db.collection("reports").add({reason,details,reporter:currentUser.uid,target:reportTarget||"",createdAt:firebase.firestore.FieldValue.serverTimestamp()});status.textContent="Report sent. Thank you for helping keep 100m safe.";status.className="message good"}
- catch(e){try{const r=JSON.parse(localStorage.getItem("100m_reports")||"[]");r.push({reason,details,target:reportTarget||"",createdAt:Date.now()});localStorage.setItem("100m_reports",JSON.stringify(r));status.textContent="Could not reach the server. Your report was saved on this device only.";status.className="message warning"}catch(x){status.textContent="Could not save the report."}}
+ if(!reportTarget){status.textContent="Tap a member avatar and choose Report so we know which account to review.";status.className="message warning";return}
+ const payload={
+  reporterId:currentUser.uid,
+  reporterName:String(currentUser.displayName||globalHandle()).slice(0,30),
+  targetType:"user",
+  targetId:reportTarget,
+  reason,
+  details,
+  status:"new",
+  createdAt:firebase.firestore.FieldValue.serverTimestamp()
+ };
+ try{await db.collection("reports").add(payload);status.textContent="Report sent safely. Thank you for keeping 100m clean.";status.className="message good"}
+ catch(e){status.textContent="Could not submit report: "+e.message;status.className="message error"}
  document.getElementById("reportDetails").value="";reportTarget="";
 }
 // Live Hands-Free Voice Room (Free WebRTC Mesh, max 8 members, fixed stringified ICE for Firebase RTDB rules)
@@ -2030,6 +2054,7 @@ function renderVoiceRoomSeats(snapshot){
   av.textContent=short;
   const lbl=document.createElement("small");
   lbl.textContent=(currentUser&&st.uid===currentUser.uid)?"You":st.handle;
+  if(currentUser&&st.uid!==currentUser.uid){wrap.style.cursor="pointer";wrap.title="Tap for Chat / Report / Block";wrap.onclick=()=>showProfileActionMenu(st.uid,st.handle);}
   wrap.append(av,lbl);grid.appendChild(wrap);
  });
 }
@@ -2392,7 +2417,7 @@ async function enterSignalRoom(roomId,partnerUid,partnerHandle){
  const nameEl=document.getElementById("signalPartnerName"),noteEl=document.getElementById("signalRoomNote"),box=document.getElementById("signalMessages");
  if(nameEl)nameEl.textContent="Connected to "+partnerHandle;
  if(noteEl)noteEl.textContent="Global 1-on-1 · Anonymous session";
- if(box)box.innerHTML='<div class="empty">Signal locked with '+partnerHandle+'! Say hello.</div>';
+ if(box){box.innerHTML="";const em=document.createElement("div");em.className="empty";em.textContent="Signal locked with "+partnerHandle+"! Say hello.";box.appendChild(em);}
  setSignalUI("matched","");
  const myOnlineRef=rtdb.ref("globalChat/signalRooms/"+roomId+"/online/"+currentUser.uid);
  try{await myOnlineRef.onDisconnect().remove();await myOnlineRef.set(true);}catch(e){}
@@ -2450,7 +2475,7 @@ function cancelSignalReply(){signalReplyTarget=null;const p=document.getElementB
 async function sendSignalMessage(){
  if(!currentUser||!signalRoomId||signalState!=="matched")return;
  const input=document.getElementById("signalMessageInput"),val=input.value.trim();
- if(!val)return;
+ if(!val||!checkMessageCooldown("signalStatusText"))return;
  const btn=document.getElementById("signalSendBtn");if(btn)btn.disabled=true;
  try{
   const payload={uid:currentUser.uid,handle:globalHandle(),text:val,createdAt:firebase.database.ServerValue.TIMESTAMP};
