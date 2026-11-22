@@ -623,26 +623,9 @@ footer.note{font-size:11.5px;color:#636370;line-height:1.65;margin:16px 4px}
  box-shadow:0 12px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15);
  touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
 }
-.ptt-timer{
- font-family:"JetBrains Mono",monospace;
- font-size:13px;font-weight:700;
- color:var(--text);letter-spacing:0.08em;
- min-height:20px;
-}
-.ptt-timer.live{color:var(--red)}
 .walkie-controls{
  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px;
 }
-.walkie-last-clip{
- margin-top:14px;padding:10px 14px;
- border:1px solid var(--line);border-radius:14px;
- background:rgba(255,255,255,0.03);
- display:flex;align-items:center;justify-content:space-between;gap:10px;
- text-align:left;
-}
-.walkie-last-clip.hidden{display:none!important}
-.walkie-clip-meta{font-size:12px;color:var(--subtext);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.walkie-clip-meta strong{color:var(--cyan);font-family:"JetBrains Mono",monospace;font-size:11px}
 .voice-room-grid{
  display:flex;flex-wrap:wrap;justify-content:center;gap:12px;
  margin:16px 0;min-height:52px;
@@ -892,31 +875,37 @@ nav.bottom-nav{
 
 <div id="app"><main>
 <section class="page active" id="home">
- <h2>Discover Nearby.</h2><p class="sub">Your world starts around you.</p>
- <div class="card"><p style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.06em">YOUR NETWORK</p>
-  <div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
-  <h3 style="text-align:center">Explore your world</h3><p class="sub" style="text-align:center;margin-top:8px">The markers here are decorative. Live members appear on the Radar page.</p>
-  <button class="primary" onclick="go('radar')">Explore Radar</button>
-  <button class="secondary" style="width:100%;margin-top:8px" onclick="go('chats');switchChatTab('signal')">⚡ Find Global Signal (1-on-1)</button>
+ <h2>100m Network</h2><p class="sub">Real-time anonymous communication — zero noise.</p>
+ <div class="card">
+  <p style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.06em">QUICK LAUNCH</p>
+  <h3 style="margin-top:6px;font-size:20px">Jump into a live channel</h3>
+  <p class="sub" style="margin:6px 0 14px">Connect worldwide via Signal Match, join Live Voice, or explore online members on Radar.</p>
+  <button class="primary" onclick="go('chats');switchChatTab('signal')">⚡ Find Global Signal (1-on-1)</button>
+  <div class="row" style="margin-top:8px">
+   <button class="secondary" onclick="go('radar')">Live Radar</button>
+   <button class="secondary" onclick="go('walkie')">🎙️ Live Voice</button>
+  </div>
  </div>
- <div class="card"><h3>Ideas for you</h3><div id="interestRadarSuggestions"><div class="empty">Add interests in Edit Profile to see suggestions.</div></div></div>
- <div class="card"><h3>Welcome to 100m</h3><p class="sub" style="margin:9px 0 0">Meet people. Share ideas. Build connections.</p></div>
- <div class="card"><h3>Community safety</h3><p class="sub" style="margin:8px 0 0">Keep personal details private. Never share your exact location or meet strangers based only on an online interaction.</p></div>
+ <div class="card">
+  <h3>Community Safety</h3>
+  <p class="sub" style="margin:6px 0 0">Keep personal details private. No GPS or location is ever collected — tap any member avatar to Report or Block instantly.</p>
+ </div>
 </section>
 
 <section class="page" id="radar">
- <h2>Live Radar</h2><p class="sub">See signed-in members who have chosen to appear online.</p>
- <div class="card"><div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
- <h3 style="text-align:center">Opt-in Members</h3><p class="sub" style="text-align:center;margin:8px 0">Turn Radar ON to appear to other signed-in members. This version does not collect GPS or measure physical distance.</p>
- <p id="rangeTitle" class="message muted" style="text-align:center">Live opt-in presence · no location tracking</p></div>
- <div class="card"><h3>My Anonymous Identity</h3><div class="row" style="align-items:center;margin-top:14px"><div class="avatar" style="margin:0">👤</div><div><h3 id="radarAnonymousHandle" style="color:var(--cyan)">Explorer</h3><p class="sub" style="margin:5px 0">Anonymous Radar profile</p></div></div></div>
- <div class="card"><h3>My Radar Privacy</h3><p class="sub" style="margin:7px 0">Radar starts OFF. Your private opt-in status is saved when you turn it ON. Your exact GPS location, email and real name are not displayed.</p>
- <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
- <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
- <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global opt-in online list, not a nearby-distance finder.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
- <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat with other opted-in members. This room is not limited by physical distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><div id="nearbyTypingStatus" class="typing-slot" aria-live="polite"></div><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are automatically deleted.</p></div></div>
-
- <footer class="note">Privacy: Live Radar uses opt-in online presence only. It does not request GPS, calculate 100m proximity, or reveal physical location. Only signed-in members who turn Radar ON appear. The community chat is shared with opted-in members.</footer>
+ <h2>Live Radar</h2><p class="sub">Opt-in live online presence · zero GPS tracking.</p>
+ <div class="card">
+  <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:12px">
+   <div style="display:flex;align-items:center;gap:12px">
+    <div class="avatar" style="margin:0;width:48px;height:48px;font-size:20px">👤</div>
+    <div><h3 id="radarAnonymousHandle" style="color:var(--cyan);margin:0">Explorer</h3><p class="sub" style="margin:2px 0 0;font-size:12px">Anonymous Radar handle</p></div>
+   </div>
+  </div>
+  <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
+  <p id="radarStatusText" class="message muted">Radar is OFF.</p>
+ </div>
+ <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small fit" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p id="radarRefreshTime" class="message muted" style="margin:6px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
+ <div class="card" id="nearbyRoomCard"><h3>Shared Radar Chat</h3><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the shared group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Online in Room</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><div id="nearbyTypingStatus" class="typing-slot" aria-live="polite"></div><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Long-press for reactions/edit/delete · swipe right to reply · auto-deletes after 24h.</p></div></div>
 </section>
 
 <section class="page" id="walkie">
@@ -1087,8 +1076,7 @@ const firebaseConfig={
 };
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(),db=firebase.firestore(),rtdb=firebase.database();
-let isLogin=false,currentUser=null,guestMode=false,karma=0;
-let selectedRadarRange=100,radarIsOn=false;
+let isLogin=false,currentUser=null,guestMode=false,radarIsOn=false;
 let radarPublicRef=null,radarPublicListener=null;
 let nearbyMembersRef=null,nearbyMembersListener=null,nearbyMessagesRef=null,nearbyMessagesListener=null,nearbyReactionsRef=null,nearbyReactionsListener=null,nearbyReplyTarget=null,nearbyMessageCache=[],nearbyReactionCache={};
 let voiceSignalRef=null,voiceSignalListener=null,voiceSignalRemovedListener=null,voiceSignalSenderListeners={},voicePeers={},voiceRemoteAudio={},voiceSessionStarted=false,voicePendingCandidates={};
@@ -1145,7 +1133,7 @@ async function loadUserProfile(user){
    data={uid:user.uid,username:user.displayName||"Explorer",email:user.email||"",bio:"",country:"",interests:""};
    await ref.set({...data,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
   }
-  displayProfile(data);myPublicChatId=await ensurePublicChatId(user, data);document.getElementById("myPublicChatId").textContent=myPublicChatId;renderInterestRadar(data.interests||"");updateRadarStatusUI(false,"Your private status is OFF. Turn it ON when you choose.");document.getElementById("profileMessage").textContent="";
+  displayProfile(data);myPublicChatId=await ensurePublicChatId(user, data);document.getElementById("myPublicChatId").textContent=myPublicChatId;updateRadarStatusUI(false,"Your private status is OFF. Turn it ON when you choose.");document.getElementById("profileMessage").textContent="";
  }catch(e){document.getElementById("profileMessage").textContent="Database error: "+e.message}
 }
 function displayProfile(data){
@@ -1174,7 +1162,7 @@ async function saveProfile(){
  const b=document.getElementById("saveProfileButton");b.disabled=true;b.textContent="Saving...";
  try{
   await db.collection("users").doc(currentUser.uid).update({username,bio,country,interests,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await currentUser.updateProfile({displayName:username});displayProfile({username,bio,country,interests});renderInterestRadar(interests);
+  await currentUser.updateProfile({displayName:username});displayProfile({username,bio,country,interests});
   document.getElementById("profileMessage").textContent="Profile updated successfully!";closeEditProfile();
  }catch(e){document.getElementById("editMessage").textContent="Could not save: "+e.message}
  finally{b.disabled=false;b.textContent="Save Changes"}
@@ -1774,36 +1762,6 @@ async function leaveNearbyRoom(silent=false){
  catch(e){if(!silent){const s=document.getElementById("nearbyRoomStatus");if(s)s.textContent="Could not leave chat cleanly: "+e.message}}
  const active=document.getElementById("nearbyRoomActive");if(active)active.classList.add("hidden");
  if(!silent){const status=document.getElementById("nearbyRoomStatus");if(status)status.textContent="You left the shared chat."}
-}
-
-function renderInterestRadar(rawInterests){
- const box=document.getElementById("interestRadarSuggestions");
- if(!box)return;
- const interests=String(rawInterests||"").split(/[,;|]/).map(x=>x.trim().toLowerCase()).filter(Boolean);
- if(!interests.length){
-  box.innerHTML='<div class="empty">Add interests in Edit Profile to see suggestions.</div>';
-  return;
- }
- const categories=[
-  {name:"Technology",keys:["technology","tech","coding","programming","computer","ai","robotics"],ideas:["Beginner coding discussions","Build-a-project community"]},
-  {name:"Education",keys:["education","study","learning","science","math","english","books"],ideas:["Study tips and learning circle","Share useful learning resources"]},
-  {name:"Music",keys:["music","singing","song","guitar","dance"],ideas:["Music discussion community","Share original creative ideas"]},
-  {name:"Art",keys:["art","drawing","design","painting","photography"],ideas:["Creative art community","Share artwork and feedback respectfully"]},
-  {name:"Environment",keys:["environment","nature","plants","farming","climate"],ideas:["Nature and environment ideas","Community improvement projects"]},
-  {name:"Sports",keys:["sports","football","cricket","basketball","fitness"],ideas:["Sports discussion community","Rules, teamwork and match chat"]},
-  {name:"General",keys:["general","ideas","friends","reading"],ideas:["Open discussion community","Positive ideas and questions"]}
- ];
- const matches=categories.filter(c=>interests.some(i=>c.keys.some(k=>i.includes(k)||k.includes(i))));
- const chosen=matches.length?matches:categories.filter(c=>c.name==="General");
- box.innerHTML="";
- const intro=document.createElement("p");intro.className="message muted";intro.textContent="Based on your profile interests: "+interests.join(", ");box.appendChild(intro);
- chosen.forEach(c=>{
-  const tile=document.createElement("div");tile.className="tile";
-  const heading=document.createElement("h3");heading.textContent=c.name+" Community";
-  const desc=document.createElement("p");desc.textContent=c.ideas.join(" • ");
-  tile.append(heading,desc);box.appendChild(tile);
- });
- const note=document.createElement("p");note.className="comment-note";note.textContent="These are topic ideas only, not live user or location matches.";box.appendChild(note);
 }
 
 // GLOBAL CHAT
