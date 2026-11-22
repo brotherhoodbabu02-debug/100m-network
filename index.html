@@ -1215,7 +1215,19 @@ function openPrivateChat(chatId,otherUid){if(blockedUids.has(otherUid))return;sw
    const ts=m.createdAt&&m.createdAt.toDate?m.createdAt.toDate():null;
    const time=document.createElement("small");time.textContent=(m.edited?"edited · ":"")+(ts?ts.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"");
    el.append(body,time);
+   const reactions=m.reactions||{};
+   const totals={};Object.values(reactions).forEach(v=>{if(v)totals[v]=(totals[v]||0)+1});
+   const activeEmojis=["❤️","😂","👍","🔥"].filter(em=>totals[em]>0);
+   if(activeEmojis.length){
+    const area=document.createElement("div");area.className="reaction-area";
+    activeEmojis.forEach(emoji=>{
+     const b=document.createElement("button");b.className="reaction-btn"+(reactions[currentUser.uid]===emoji?" active":"");
+     b.textContent=emoji+" "+totals[emoji];b.onclick=()=>togglePrivateReaction(chatId,doc.id,reactions,emoji);area.appendChild(b);
+    });
+    el.appendChild(area);
+   }
    attachMessageGestures(el,{
+    onReact:emoji=>togglePrivateReaction(chatId,doc.id,reactions,emoji),
     onReply:()=>setPrivateReply(doc.id,isMine?"You":handleFor(otherUid),m.text||""),
     onEdit:isMine?()=>editPrivateMessage(chatId,doc.id,m.text||""):null,
     onDelete:isMine?()=>deletePrivateMessage(chatId,doc.id):null
@@ -1233,6 +1245,14 @@ function setPrivateReply(id,handle,text){
  document.getElementById("privateMessageInput").focus();
 }
 function cancelPrivateReply(){privateReplyTarget=null;const p=document.getElementById("privateReplyPreview");if(p)p.classList.add("hidden");}
+async function togglePrivateReaction(chatId,msgId,currentReactions,emoji){
+ if(!currentUser||!chatId||!msgId)return;
+ const ref=db.collection("chats").doc(chatId).collection("messages").doc(msgId);
+ const key="reactions."+currentUser.uid;
+ const val=(currentReactions&&currentReactions[currentUser.uid]===emoji)?firebase.firestore.FieldValue.delete():emoji;
+ try{await ref.update({[key]:val});}
+ catch(e){document.getElementById("privateChatStatus").textContent="Reaction failed: "+e.message;}
+}
 async function editPrivateMessage(chatId,msgId,currentText){
  const next=await showEditMessageModal(currentText);
  if(!next||next===currentText)return;
