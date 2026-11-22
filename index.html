@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2074,9 +2075,9 @@ window.addEventListener("beforeunload",()=>{if(pttStream)pttStream.getTracks().f
 rtdb.ref(".info/connected").on("value",x=>{const t=document.getElementById("topStatus");if(t){t.textContent=x.val()?"\u25cf ONLINE":"\u25cb OFFLINE";t.style.color=x.val()?"var(--green)":"var(--red)"}});
 
 
-// GLOBAL 1-ON-1 SIGNAL MATCH (No 100m limit — works worldwide over Firebase RTDB globalChat/ subtree)
-let signalState="idle",signalRoomId=null,signalPartnerUid=null,signalPartnerHandle="";
-let signalInviteRef=null,signalInviteListener=null,signalMsgsRef=null,signalMsgsListener=null,signalRoomOnlineRef=null,signalRoomOnlineListener=null;
+// GLOBAL 1-ON-1 SIGNAL MATCH (Live queue listener + deterministic tie-breaker — zero race conditions)
+let signalState="idle",signalRoomId=null,signalPartnerUid=null,signalPartnerHandle="",signalMatchingBusy=false;
+let signalQueueRef=null,signalQueueListener=null,signalInviteRef=null,signalInviteListener=null,signalMsgsRef=null,signalMsgsListener=null,signalRoomOnlineRef=null,signalRoomOnlineListener=null;
 
 function setSignalUI(mode,statusMsg){
  signalState=mode;
@@ -2088,50 +2089,29 @@ function setSignalUI(mode,statusMsg){
  if(st&&statusMsg!==undefined)st.textContent=statusMsg;
 }
 function clearSignalListeners(){
+ if(signalQueueRef&&signalQueueListener)signalQueueRef.off("value",signalQueueListener);
  if(signalInviteRef&&signalInviteListener)signalInviteRef.off("value",signalInviteListener);
  if(signalMsgsRef&&signalMsgsListener)signalMsgsRef.off("value",signalMsgsListener);
  if(signalRoomOnlineRef&&signalRoomOnlineListener)signalRoomOnlineRef.off("value",signalRoomOnlineListener);
- signalInviteRef=signalInviteListener=signalMsgsRef=signalMsgsListener=signalRoomOnlineRef=signalRoomOnlineListener=null;
+ signalQueueRef=signalQueueListener=signalInviteRef=signalInviteListener=signalMsgsRef=signalMsgsListener=signalRoomOnlineRef=signalRoomOnlineListener=null;
 }
 async function startSignalMatch(){
  if(!currentUser||guestMode){setSignalUI("idle","Please sign in to use Global Signal Match.");return;}
  await stopSignalMatch(true);
- setSignalUI("searching","");
- const myUid=currentUser.uid,myHandle=globalHandle(),now=Date.now();
+ signalMatchingBusy=false;
+ setSignalUI("searching","Joining global queue…");
+ const myUid=currentUser.uid,myHandle=globalHandle();
  try{
-  const qSnap=await rtdb.ref("globalChat/signalQueue").once("value");
-  let candidate=null;
-  qSnap.forEach(child=>{
-   if(candidate)return;
-   const d=child.val()||{};
-   if(child.key!==myUid&&!blockedUids.has(child.key)&&(!d.createdAt||now-Number(d.createdAt)<180000)){
-    candidate={uid:child.key,handle:String(d.handle||handleFor(child.key))};
-   }
-  });
-  if(candidate){
-   const claimRef=rtdb.ref("globalChat/signalQueue/"+candidate.uid);
-   const tx=await claimRef.transaction(cur=>cur?null:undefined);
-   if(tx.committed){
-    const roomId="sig_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
-    await rtdb.ref("globalChat/signalRooms/"+roomId).set({
-     createdAt:firebase.database.ServerValue.TIMESTAMP,
-     online:{[myUid]:true,[candidate.uid]:true}
-    });
-    await rtdb.ref("globalChat/signalInvites/"+candidate.uid).set({
-     roomId,partnerUid:myUid,partnerHandle:myHandle,createdAt:firebase.database.ServerValue.TIMESTAMP
-    });
-    enterSignalRoom(roomId,candidate.uid,candidate.handle);
-    return;
-   }
-  }
-  // Otherwise enter global waiting queue and listen for an invite
+  const myInviteRef=rtdb.ref("globalChat/signalInvites/"+myUid);
+  await myInviteRef.remove().catch(()=>{});
   const myQueueRef=rtdb.ref("globalChat/signalQueue/"+myUid);
   await myQueueRef.onDisconnect().remove();
   await myQueueRef.set({uid:myUid,handle:myHandle,createdAt:firebase.database.ServerValue.TIMESTAMP});
-  const myInviteRef=rtdb.ref("globalChat/signalInvites/"+myUid);
-  await myInviteRef.remove().catch(()=>{});
+
+  // 1. Listen for incoming match invite
   signalInviteRef=myInviteRef;
   signalInviteListener=snap=>{
+   if(signalState!=="searching")return;
    const inv=snap.val();
    if(!inv||!inv.roomId||!inv.partnerUid||blockedUids.has(inv.partnerUid))return;
    myInviteRef.remove().catch(()=>{});
@@ -2140,12 +2120,56 @@ async function startSignalMatch(){
    enterSignalRoom(inv.roomId,inv.partnerUid,String(inv.partnerHandle||handleFor(inv.partnerUid)));
   };
   signalInviteRef.on("value",signalInviteListener);
+
+  // 2. Live queue listener — deterministic tie-breaker (smaller UID initiates)
+  signalQueueRef=rtdb.ref("globalChat/signalQueue");
+  signalQueueListener=async snap=>{
+   if(signalState!=="searching"||signalMatchingBusy)return;
+   const now=Date.now();
+   let waitingCount=0,candidate=null;
+   snap.forEach(child=>{
+    const d=child.val()||{};
+    if(!d.uid)return;
+    const age=d.createdAt?(now-Number(d.createdAt)):0;
+    if(age>180000)return;
+    waitingCount++;
+    if(child.key!==myUid&&!blockedUids.has(child.key)&&!candidate){
+     candidate={uid:child.key,handle:String(d.handle||handleFor(child.key))};
+    }
+   });
+   const st=document.getElementById("signalStatusText");
+   if(st&&signalState==="searching")st.textContent=waitingCount<=1?"Scanning globally… waiting for another member.":"Found "+waitingCount+" live signals — connecting…";
+   if(!candidate)return;
+   // Deterministic initiator: smaller UID creates the room & sends invite to larger UID
+   if(myUid.localeCompare(candidate.uid)>0)return;
+   signalMatchingBusy=true;
+   try{
+    const roomId="sig_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
+    await rtdb.ref("globalChat/signalQueue/"+myUid).remove().catch(()=>{});
+    await rtdb.ref("globalChat/signalQueue/"+candidate.uid).remove().catch(()=>{});
+    await rtdb.ref("globalChat/signalRooms/"+roomId).set({
+     createdAt:firebase.database.ServerValue.TIMESTAMP,
+     online:{[myUid]:true,[candidate.uid]:true}
+    });
+    await rtdb.ref("globalChat/signalInvites/"+candidate.uid).set({
+     roomId,partnerUid:myUid,partnerHandle:myHandle,createdAt:firebase.database.ServerValue.TIMESTAMP
+    });
+    clearSignalListeners();
+    enterSignalRoom(roomId,candidate.uid,candidate.handle);
+   }catch(err){
+    signalMatchingBusy=false;
+    setSignalUI("idle","Match failed: "+err.message);
+   }
+  };
+  signalQueueRef.on("value",signalQueueListener,err=>{
+   setSignalUI("idle","Queue error: "+err.message);
+  });
  }catch(e){
   setSignalUI("idle","Could not start Signal Match: "+e.message);
  }
 }
 async function enterSignalRoom(roomId,partnerUid,partnerHandle){
- signalRoomId=roomId;signalPartnerUid=partnerUid;signalPartnerHandle=partnerHandle;
+ signalRoomId=roomId;signalPartnerUid=partnerUid;signalPartnerHandle=partnerHandle;signalMatchingBusy=false;
  const nameEl=document.getElementById("signalPartnerName"),noteEl=document.getElementById("signalRoomNote"),box=document.getElementById("signalMessages");
  if(nameEl)nameEl.textContent="Connected to "+partnerHandle;
  if(noteEl)noteEl.textContent="Global 1-on-1 · Anonymous session";
@@ -2202,6 +2226,7 @@ async function sendSignalMessage(){
 }
 async function stopSignalMatch(silent=false){
  clearSignalListeners();
+ signalMatchingBusy=false;
  const oldRoom=signalRoomId;
  signalRoomId=null;signalPartnerUid=null;signalPartnerHandle="";
  if(currentUser){
@@ -2254,3 +2279,4 @@ setTimeout(dismissIntroSplash,3200);
 </script>
 </body>
 </html>
+```
