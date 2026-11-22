@@ -858,7 +858,7 @@ nav.bottom-nav{
  <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
  <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global opt-in online list, not a nearby-distance finder.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
- <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat with other opted-in members. This room is not limited by physical distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are hidden.</p></div></div>
+ <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat with other opted-in members. This room is not limited by physical distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are automatically deleted.</p></div></div>
 
  <footer class="note">Privacy: Live Radar uses opt-in online presence only. It does not request GPS, calculate 100m proximity, or reveal physical location. Only signed-in members who turn Radar ON appear. The community chat is shared with opted-in members.</footer>
 </section>
@@ -953,7 +953,7 @@ nav.bottom-nav{
      <div id="globalChatMessages" class="global-chat-messages"><div class="empty">Loading messages...</div></div>
      <div id="globalReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="globalReplyName">Replying</strong><p id="globalReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelGlobalReply()">Cancel</button></div></div>
      <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()">Send</button></div>
-     <p class="comment-note">Messages are shared with all signed-in members. Be respectful; never share personal or location details.</p>
+     <p class="comment-note">Messages are shared with all signed-in members. Messages older than 24 hours are automatically deleted.</p>
     </div>
    </div>
   </div>
@@ -1528,8 +1528,16 @@ function startNearbyTypingListener(){
  };
  nearbyTypingRef.on("value",nearbyTypingListener,error=>console.log("Typing listener:",error.message));
 }
+function purgeExpiredMessages(path){
+ if(!currentUser||guestMode)return;
+ const cutoff=Date.now()-24*60*60*1000;
+ rtdb.ref(path).orderByChild("createdAt").endAt(cutoff).limitToFirst(50).once("value",snap=>{
+  snap.forEach(child=>{child.ref.remove().catch(()=>{});});
+ }).catch(()=>{});
+}
 function startNearbyRoomListeners(){
  stopNearbyRoomListeners();
+ purgeExpiredMessages("nearbyChat/messages");
  startNearbyTypingListener();
  nearbyMembersRef=rtdb.ref("nearbyChat/members");
  nearbyMembersListener=snapshot=>{renderNearbyRoomMembers(snapshot);syncNearbyVoicePeers(snapshot);};
@@ -1645,10 +1653,11 @@ function stopGlobalChatListeners(){
 async function startGlobalChat(){
  if(!currentUser||guestMode)return;
  stopGlobalChatListeners();
+ purgeExpiredMessages("globalChat/messages");
  const uid=currentUser.uid,handle=globalHandle();
  const status=document.getElementById("globalChatStatus");
  if(status)status.textContent="Connecting to shared messages…";
- globalMessagesRef=rtdb.ref("globalChat/messages").limitToLast(100);
+ globalMessagesRef=rtdb.ref("globalChat/messages").orderByChild("createdAt").limitToLast(100);
  globalMessagesListener=snap=>{
   globalMessageCache=[];
   snap.forEach(child=>{globalMessageCache.push({id:child.key,...(child.val()||{})});});
@@ -1696,8 +1705,10 @@ function setGlobalReply(id,handle,text){
 function cancelGlobalReply(){globalReplyTarget=null;const p=document.getElementById("globalReplyPreview");if(p)p.classList.add("hidden")}
 function renderGlobalMessages(){
  const box=document.getElementById("globalChatMessages");if(!box)return;const wasBottom=box.scrollHeight-box.scrollTop-box.clientHeight<70;box.innerHTML="";
- if(!globalMessageCache.length){box.innerHTML='<div class="empty">No messages yet. Start a friendly conversation.</div>';return}
- globalMessageCache.filter(m=>!blockedUids.has(m.uid)).forEach(m=>{
+ const cutoff=Date.now()-24*60*60*1000;
+ const list=globalMessageCache.filter(m=>Number(m.createdAt)>=cutoff&&!blockedUids.has(m.uid));
+ if(!list.length){box.innerHTML='<div class="empty">No messages in the last 24 hours. Start a friendly conversation.</div>';return}
+ list.forEach(m=>{
   const isMine=!!(currentUser&&m.uid===currentUser.uid);
   const row=document.createElement("div");row.className="msg-row"+(isMine?" mine":"");
   if(!isMine){
