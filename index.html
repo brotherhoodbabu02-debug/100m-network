@@ -710,6 +710,26 @@ nav.bottom-nav{
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#27272a;border-radius:3px}
 
+.typing-slot{min-height:24px;display:flex;align-items:center}
+.typing-pill{
+ display:inline-flex;align-items:center;gap:7px;
+ padding:5px 11px;border-radius:999px;
+ background:#18181c;border:1px solid rgba(255,255,255,0.1);
+ color:var(--subtext);font-size:12px;font-weight:600;
+ animation:pageIn .18s ease-out;
+}
+.typing-dots{display:inline-flex;align-items:center;gap:3px;height:10px}
+.typing-dots i{
+ width:5px;height:5px;border-radius:50%;
+ background:var(--cyan);display:block;
+ animation:typingBounce 1.2s ease-in-out infinite;
+}
+.typing-dots i:nth-child(2){animation-delay:.18s}
+.typing-dots i:nth-child(3){animation-delay:.36s}
+@keyframes typingBounce{
+ 0%,60%,100%{transform:translateY(0);opacity:0.4}
+ 30%{transform:translateY(-4px);opacity:1}
+}
 @keyframes radarSpin{to{transform:rotate(360deg)}}
 @keyframes radarStageSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 @keyframes ping{0%{box-shadow:0 0 0 0 rgba(56,189,248,0.45)}70%,100%{box-shadow:0 0 0 16px rgba(56,189,248,0)}}
@@ -864,7 +884,7 @@ nav.bottom-nav{
  <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
  <p id="radarStatusText" class="message muted">Radar is OFF.</p></div>
  <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p class="sub" style="margin:7px 0">Tap a profile icon to see that member’s anonymous handle. This is a global opt-in online list, not a nearby-distance finder.</p><p id="radarRefreshTime" class="message muted" style="margin:5px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
- <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat with other opted-in members. This room is not limited by physical distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><p id="nearbyTypingStatus" class="comment-note" aria-live="polite"></p><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are automatically deleted.</p></div></div>
+ <div class="card" id="nearbyRoomCard"><h3>Nearby Group Chat</h3><p class="sub" style="margin:7px 0">Turn Radar ON to join the shared live chat with other opted-in members. This room is not limited by physical distance.</p><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Shared Radar Chat</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><div id="nearbyTypingStatus" class="typing-slot" aria-live="polite"></div><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Tap Reply under a message. Use reactions to respond. Messages older than 24 hours are automatically deleted.</p></div></div>
 
  <footer class="note">Privacy: Live Radar uses opt-in online presence only. It does not request GPS, calculate 100m proximity, or reveal physical location. Only signed-in members who turn Radar ON appear. The community chat is shared with opted-in members.</footer>
 </section>
@@ -934,9 +954,10 @@ nav.bottom-nav{
      </div>
     </div>
     <div id="signalMessages" class="signal-messages"><div class="empty">Signal locked! Say hello.</div></div>
+    <div id="signalTypingStatus" class="typing-slot" aria-live="polite"></div>
     <div id="signalReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="signalReplyName">Replying</strong><p id="signalReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelSignalReply()">Cancel</button></div></div>
     <div class="global-chat-input">
-     <textarea id="signalMessageInput" maxlength="500" placeholder="Message your random match..."></textarea>
+     <textarea id="signalMessageInput" maxlength="500" placeholder="Message your random match..." oninput="handleGlobalTyping()"></textarea>
      <button type="button" class="primary" style="width:auto;margin:0;padding:12px 16px" id="signalSendBtn" onclick="sendSignalMessage()">Send</button>
     </div>
     <div class="signal-actions">
@@ -956,7 +977,7 @@ nav.bottom-nav{
      <div class="global-chat-header"><h3>● Global Room</h3><span id="globalOnlineCount" class="live-count">0 online</span></div>
      <p id="globalChatStatus" class="message muted">Connecting to Global Chat...</p>
      <div><p class="comment-note">Online members</p><div id="globalOnlineMembers" class="global-online-list"><span class="muted">Loading...</span></div></div>
-     <div id="globalTypingStatus" class="comment-note" aria-live="polite"></div>
+     <div id="globalTypingStatus" class="typing-slot" aria-live="polite"></div>
      <div id="globalChatMessages" class="global-chat-messages"><div class="empty">Loading messages...</div></div>
      <div id="globalReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="globalReplyName">Replying</strong><p id="globalReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelGlobalReply()">Cancel</button></div></div>
      <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()">Send</button></div>
@@ -1594,6 +1615,12 @@ function handleNearbyTyping(){
  setNearbyTyping(true);
  nearbyTypingTimer=setTimeout(()=>setNearbyTyping(false),2200);
 }
+function renderTypingIndicator(box,count){
+ if(!box)return;
+ if(!count){box.innerHTML="";return;}
+ const label=count===1?"Someone is typing":count+" people are typing";
+ box.innerHTML='<span class="typing-pill"><span>'+label+'</span><span class="typing-dots"><i></i><i></i><i></i></span></span>';
+}
 function startNearbyTypingListener(){
  if(nearbyTypingRef&&nearbyTypingListener)nearbyTypingRef.off("value",nearbyTypingListener);
  nearbyTypingRef=rtdb.ref("nearbyChat/typing");
@@ -1604,7 +1631,7 @@ function startNearbyTypingListener(){
    const data=child.val()||{};
    if(child.key!==currentUser?.uid&&data.typing===true&&now-Number(data.updatedAt||0)<6000){names.push(String(data.handle||"Explorer"));}
   });
-  box.textContent=names.length?(names.length===1?names[0]+" is typing...":names.slice(0,-1).join(", ")+" and "+names[names.length-1]+" are typing..."):"";
+  renderTypingIndicator(box,names.length);
  };
  nearbyTypingRef.on("value",nearbyTypingListener,error=>console.log("Typing listener:",error.message));
 }
@@ -1770,7 +1797,12 @@ async function startGlobalChat(){
  globalTypingRef=rtdb.ref("globalChat/typing");
  globalTypingListener=snap=>{
   const names=[],now=Date.now();snap.forEach(child=>{const d=child.val()||{};if(child.key!==uid&&d.typing===true&&now-Number(d.updatedAt||0)<7000)names.push(String(d.handle||"Explorer"))});
-  const box=document.getElementById("globalTypingStatus");if(box)box.textContent=names.length?(names.length===1?names[0]+" is typing...":names.slice(0,-1).join(", ")+" and "+names[names.length-1]+" are typing..."):"";
+  renderTypingIndicator(document.getElementById("globalTypingStatus"),names.length);
+  if(signalState==="matched"&&signalPartnerUid){
+   const partnerTyping=snap.child(signalPartnerUid).val()||{};
+   const active=partnerTyping.typing===true&&(now-Number(partnerTyping.updatedAt||0)<7000);
+   renderTypingIndicator(document.getElementById("signalTypingStatus"),active?1:0);
+  }
  };
  globalTypingRef.on("value",globalTypingListener,()=>{});
 }
@@ -1819,7 +1851,7 @@ function renderGlobalMessages(){
  });if(wasBottom)box.scrollTop=box.scrollHeight;
 }
 async function setGlobalTyping(on){if(!currentUser)return;const ref=rtdb.ref("globalChat/typing/"+currentUser.uid);try{if(on){if(globalTypingActive&&Date.now()-globalTypingLast<3000)return;if(!globalTypingActive)await ref.onDisconnect().remove();globalTypingLast=Date.now();globalTypingActive=true;await ref.set({typing:true,handle:globalHandle(),updatedAt:firebase.database.ServerValue.TIMESTAMP})}else{globalTypingActive=false;await ref.onDisconnect().cancel();await ref.remove()}}catch(e){console.log("Global typing:",e.message)}}
-function handleGlobalTyping(){const input=document.getElementById("globalMessageInput");if(!input||!currentUser)return;if(globalTypingTimer)clearTimeout(globalTypingTimer);if(!input.value.trim()){setGlobalTyping(false);return}setGlobalTyping(true);globalTypingTimer=setTimeout(()=>setGlobalTyping(false),2200)}
+function handleGlobalTyping(){const gIn=document.getElementById("globalMessageInput"),sIn=document.getElementById("signalMessageInput");const hasVal=(gIn&&gIn.value.trim())||(sIn&&sIn.value.trim());if(!currentUser)return;if(globalTypingTimer)clearTimeout(globalTypingTimer);if(!hasVal){setGlobalTyping(false);return}setGlobalTyping(true);globalTypingTimer=setTimeout(()=>setGlobalTyping(false),2200)}
 async function sendGlobalMessage(){
  const input=document.getElementById("globalMessageInput"),value=input.value.trim(),button=document.getElementById("globalSendButton"),status=document.getElementById("globalChatStatus");
  if(!currentUser||guestMode){status.textContent="Please sign in to send a Global Chat message.";return}if(!value)return;
@@ -2328,7 +2360,7 @@ async function sendSignalMessage(){
   const payload={uid:currentUser.uid,handle:globalHandle(),text:val,createdAt:firebase.database.ServerValue.TIMESTAMP};
   if(signalReplyTarget){payload.replyTo=signalReplyTarget.id;payload.replyHandle=signalReplyTarget.handle;payload.replyText=signalReplyTarget.text.slice(0,120);}
   await rtdb.ref("globalChat/signalRooms/"+signalRoomId+"/messages").push(payload);
-  input.value="";cancelSignalReply();
+  input.value="";cancelSignalReply();setGlobalTyping(false);
  }catch(e){setSignalUI("matched","Could not send message: "+e.message);}
  finally{if(btn)btn.disabled=false;}
 }
@@ -2350,6 +2382,7 @@ async function stopSignalMatch(silent=false){
    }
   }catch(e){}
  }
+ renderTypingIndicator(document.getElementById("signalTypingStatus"),0);
  setSignalUI("idle",silent?"":"Signal session ended.");
 }
 async function nextSignalMatch(){
