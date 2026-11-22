@@ -525,6 +525,12 @@ footer.note{font-size:11.5px;color:#636370;line-height:1.65;margin:16px 4px}
 .reaction-popover button.reply-chip{
  font-size:12px;font-weight:700;padding:8px 12px;color:var(--text);background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.35);
 }
+.reaction-popover button.edit-chip{
+ font-size:12px;font-weight:700;padding:8px 12px;color:var(--text);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);
+}
+.reaction-popover button.del-chip{
+ font-size:12px;font-weight:700;padding:8px 12px;color:#fca5a5;background:rgba(248,113,113,0.14);border:1px solid rgba(248,113,113,0.35);
+}
 .chat-msg .row{margin-top:6px;gap:5px}
 .chat-msg .secondary{background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--subtext)}
 
@@ -928,6 +934,7 @@ nav.bottom-nav{
      </div>
     </div>
     <div id="signalMessages" class="signal-messages"><div class="empty">Signal locked! Say hello.</div></div>
+    <div id="signalReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="signalReplyName">Replying</strong><p id="signalReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelSignalReply()">Cancel</button></div></div>
     <div class="global-chat-input">
      <textarea id="signalMessageInput" maxlength="500" placeholder="Message your random match..."></textarea>
      <button type="button" class="primary" style="width:auto;margin:0;padding:12px 16px" id="signalSendBtn" onclick="sendSignalMessage()">Send</button>
@@ -968,6 +975,7 @@ nav.bottom-nav{
    </div>
    <div class="card"><h3 id="activeChatTitle">Select a conversation</h3>
     <div id="privateMessages" class="chat-list"><div class="empty">Your private messages will appear here.</div></div>
+    <div id="privateReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="privateReplyName">Replying</strong><p id="privateReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelPrivateReply()">Cancel</button></div></div>
     <textarea id="privateMessageInput" maxlength="2000" placeholder="Write a message..."></textarea>
     <button class="primary" id="sendPrivateButton" onclick="sendPrivateMessage()" disabled>Send message</button>
     <p class="message muted">Private messages are visible only to you and the other person.</p>
@@ -1178,19 +1186,52 @@ function openPrivateChat(chatId,otherUid){if(blockedUids.has(otherUid))return;sw
  activeChatUnsubscribe=db.collection("chats").doc(chatId).collection("messages").orderBy("createdAt","asc").limitToLast(200).onSnapshot(snapshot=>{
   box.innerHTML="";
   if(snapshot.empty){box.innerHTML='<div class="empty">No messages yet. Say hello respectfully.</div>';return}
-  snapshot.forEach(doc=>{const m=doc.data(),el=document.createElement("div");el.className="chat-msg";
-   const who=document.createElement("strong");who.textContent="";who.style.display="none";el.classList.toggle("mine",m.senderId===currentUser.uid);
-   const body=document.createElement("span");body.textContent=m.text||"";el.append(who,body);box.appendChild(el);
+  snapshot.forEach(doc=>{
+   const m=doc.data(),isMine=m.senderId===currentUser.uid;
+   const el=document.createElement("div");el.className="chat-msg"+(isMine?" mine":"");
+   if(m.replyText){const q=document.createElement("div");q.className="comment-note";q.textContent="↪ "+String(m.replyHandle||"Member")+": "+String(m.replyText);el.appendChild(q);}
+   const body=document.createElement("span");body.textContent=m.text||"";
+   const ts=m.createdAt&&m.createdAt.toDate?m.createdAt.toDate():null;
+   const time=document.createElement("small");time.textContent=(m.edited?"edited · ":"")+(ts?ts.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"");
+   el.append(body,time);
+   attachMessageGestures(el,{
+    onReply:()=>setPrivateReply(doc.id,isMine?"You":handleFor(otherUid),m.text||""),
+    onEdit:isMine?()=>editPrivateMessage(chatId,doc.id,m.text||""):null,
+    onDelete:isMine?()=>deletePrivateMessage(chatId,doc.id):null
+   });
+   box.appendChild(el);
   });box.scrollTop=box.scrollHeight;
  },error=>{box.textContent="Could not load messages: "+error.message});
+}
+let privateReplyTarget=null;
+function setPrivateReply(id,handle,text){
+ privateReplyTarget={id,handle:String(handle||"Member"),text:String(text||"")};
+ document.getElementById("privateReplyPreview").classList.remove("hidden");
+ document.getElementById("privateReplyName").textContent="Replying to "+privateReplyTarget.handle;
+ document.getElementById("privateReplyText").textContent=privateReplyTarget.text.slice(0,120);
+ document.getElementById("privateMessageInput").focus();
+}
+function cancelPrivateReply(){privateReplyTarget=null;const p=document.getElementById("privateReplyPreview");if(p)p.classList.add("hidden");}
+async function editPrivateMessage(chatId,msgId,currentText){
+ const next=await showEditMessageModal(currentText);
+ if(!next||next===currentText)return;
+ try{await db.collection("chats").doc(chatId).collection("messages").doc(msgId).update({text:next,edited:true});}
+ catch(e){document.getElementById("privateChatStatus").textContent="Edit failed: "+e.message;}
+}
+async function deletePrivateMessage(chatId,msgId){
+ if(!(await showConfirmModal("Delete this message?")))return;
+ try{await db.collection("chats").doc(chatId).collection("messages").doc(msgId).delete();}
+ catch(e){document.getElementById("privateChatStatus").textContent="Delete failed: "+e.message;}
 }
 async function sendPrivateMessage(){
  if(!currentUser||!activeChatId)return;
  const input=document.getElementById("privateMessageInput"),value=input.value.trim();if(!value)return;
  const button=document.getElementById("sendPrivateButton");button.disabled=true;
  try{
-  await db.collection("chats").doc(activeChatId).collection("messages").add({senderId:currentUser.uid,text:value,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  input.value="";
+  const payload={senderId:currentUser.uid,text:value,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+  if(privateReplyTarget){payload.replyTo=privateReplyTarget.id;payload.replyHandle=privateReplyTarget.handle;payload.replyText=privateReplyTarget.text.slice(0,120);}
+  await db.collection("chats").doc(activeChatId).collection("messages").add(payload);
+  input.value="";cancelPrivateReply();
  }catch(e){document.getElementById("privateChatStatus").textContent="Message not sent: "+e.message}
  finally{button.disabled=false}
 }
@@ -1405,25 +1446,53 @@ function renderNearbyRoomMembers(snapshot){
  if(!total)box.innerHTML='<div class="empty">No Radar members online.</div>';
  const speakingBox=document.getElementById("nearbySpeakingStatus");if(speakingBox)speakingBox.textContent=speakers.length?(speakers.length===1?speakers[0]+" is speaking...":speakers.join(", ")+" are speaking..."):"Nobody is speaking right now.";
 }
-function showReactionPicker(onReact,onReply){
+function showEditMessageModal(initialText){
+ return new Promise(resolve=>{
+  const old=document.getElementById("editMessageModal");if(old)old.remove();
+  const overlay=document.createElement("div");overlay.id="editMessageModal";overlay.className="profile-action-overlay";
+  const panel=document.createElement("div");panel.className="profile-action-panel";
+  const title=document.createElement("h3");title.textContent="Edit Message";
+  const ta=document.createElement("textarea");ta.maxLength=500;ta.value=String(initialText||"");ta.style.minHeight="90px";
+  const save=document.createElement("button");save.type="button";save.className="primary";save.textContent="Save";
+  const cancel=document.createElement("button");cancel.type="button";cancel.className="secondary";cancel.textContent="Cancel";
+  save.onclick=()=>{const v=ta.value.trim();overlay.remove();resolve(v||null)};
+  cancel.onclick=()=>{overlay.remove();resolve(null)};
+  overlay.addEventListener("click",e=>{if(e.target===overlay){overlay.remove();resolve(null)}});
+  panel.append(title,ta,save,cancel);overlay.appendChild(panel);document.body.appendChild(overlay);
+  ta.focus();
+ });
+}
+function showReactionPicker(opts){
  const old=document.getElementById("msgReactionPopover");if(old)old.remove();
  const overlay=document.createElement("div");overlay.id="msgReactionPopover";overlay.className="reaction-popover-overlay";
  const bar=document.createElement("div");bar.className="reaction-popover";
- ["❤️","😂","👍","🔥"].forEach(emoji=>{
-  const b=document.createElement("button");b.type="button";b.textContent=emoji;
-  b.onclick=()=>{overlay.remove();onReact(emoji)};
-  bar.appendChild(b);
- });
- if(onReply){
+ if(opts.onReact){
+  ["❤️","😂","👍","🔥"].forEach(emoji=>{
+   const b=document.createElement("button");b.type="button";b.textContent=emoji;
+   b.onclick=()=>{overlay.remove();opts.onReact(emoji)};
+   bar.appendChild(b);
+  });
+ }
+ if(opts.onReply){
   const rb=document.createElement("button");rb.type="button";rb.className="reply-chip";rb.textContent="↩ Reply";
-  rb.onclick=()=>{overlay.remove();onReply()};
+  rb.onclick=()=>{overlay.remove();opts.onReply()};
   bar.appendChild(rb);
+ }
+ if(opts.onEdit){
+  const eb=document.createElement("button");eb.type="button";eb.className="edit-chip";eb.textContent="✎ Edit";
+  eb.onclick=()=>{overlay.remove();opts.onEdit()};
+  bar.appendChild(eb);
+ }
+ if(opts.onDelete){
+  const dbBtn=document.createElement("button");dbBtn.type="button";dbBtn.className="del-chip";dbBtn.textContent="🗑 Delete";
+  dbBtn.onclick=()=>{overlay.remove();opts.onDelete()};
+  bar.appendChild(dbBtn);
  }
  overlay.appendChild(bar);
  overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});
  document.body.appendChild(overlay);
 }
-function attachMessageGestures(el,onReact,onReply){
+function attachMessageGestures(el,opts){
  let holdTimer=null,startX=0,startY=0,dx=0,swiping=false;
  const clearHold=()=>{if(holdTimer){clearTimeout(holdTimer);holdTimer=null}};
  el.addEventListener("pointerdown",e=>{
@@ -1431,12 +1500,12 @@ function attachMessageGestures(el,onReact,onReply){
   if(e.pointerType==="mouse"&&e.button!==0)return;
   startX=e.clientX;startY=e.clientY;dx=0;swiping=false;
   clearHold();
-  holdTimer=setTimeout(()=>{clearHold();showReactionPicker(onReact,onReply)},480);
+  holdTimer=setTimeout(()=>{clearHold();showReactionPicker(opts)},480);
  });
  el.addEventListener("pointermove",e=>{
   const mx=e.clientX-startX,my=e.clientY-startY;
   if(Math.abs(mx)>10||Math.abs(my)>10)clearHold();
-  if(mx>8&&Math.abs(my)<36){
+  if(mx>8&&Math.abs(my)<36&&opts.onReply){
    swiping=true;dx=Math.min(mx,64);
    el.style.transition="none";
    el.style.transform="translateX("+dx+"px)";
@@ -1447,12 +1516,23 @@ function attachMessageGestures(el,onReact,onReply){
   if(swiping){
    el.style.transition="transform .16s ease";
    el.style.transform="translateX(0)";
-   if(dx>=46&&onReply)onReply();
+   if(dx>=46&&opts.onReply)opts.onReply();
   }
   swiping=false;dx=0;
  };
  ["pointerup","pointercancel","pointerleave"].forEach(ev=>el.addEventListener(ev,finish));
- el.addEventListener("contextmenu",e=>{e.preventDefault();clearHold();showReactionPicker(onReact,onReply)});
+ el.addEventListener("contextmenu",e=>{e.preventDefault();clearHold();showReactionPicker(opts)});
+}
+async function editRtdbMessage(path,id,currentText,statusElId){
+ const next=await showEditMessageModal(currentText);
+ if(!next||next===currentText)return;
+ try{await rtdb.ref(path+"/"+id).update({text:next,edited:true});}
+ catch(e){const s=document.getElementById(statusElId);if(s)s.textContent="Edit failed: "+e.message;}
+}
+async function deleteRtdbMessage(path,id,statusElId){
+ if(!(await showConfirmModal("Delete this message?")))return;
+ try{await rtdb.ref(path+"/"+id).remove();}
+ catch(e){const s=document.getElementById(statusElId);if(s)s.textContent="Delete failed: "+e.message;}
 }
 function renderNearbyMessages(){
  const box=document.getElementById("nearbyRoomMessages");if(!box)return;const wasBottom=box.scrollHeight-box.scrollTop-box.clientHeight<70;box.innerHTML="";
@@ -1471,7 +1551,7 @@ function renderNearbyMessages(){
   }
   const item=document.createElement("div");item.className="chat-msg"+(isMine?" mine":"");
   const body=document.createElement("span");body.textContent=String(m.text||"");
-  const time=document.createElement("small");time.textContent=new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  const time=document.createElement("small");time.textContent=(m.edited?"edited · ":"")+new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
   if(m.replyText){const quote=document.createElement("div");quote.className="comment-note";quote.textContent="↪ "+String(m.replyHandle||"Member")+": "+String(m.replyText);item.appendChild(quote)}
   item.append(body,time);
   const reactions=(m.reactions||{});const totals={};Object.values(reactions).forEach(v=>{totals[v]=(totals[v]||0)+1});
@@ -1484,7 +1564,7 @@ function renderNearbyMessages(){
    });
    item.appendChild(area);
   }
-  attachMessageGestures(item,emoji=>toggleNearbyReaction(m.id,emoji),()=>setNearbyReply(m.id,m.handle,m.text));
+  attachMessageGestures(item,{onReact:emoji=>toggleNearbyReaction(m.id,emoji),onReply:()=>setNearbyReply(m.id,m.handle,m.text),onEdit:isMine?()=>editRtdbMessage("nearbyChat/messages",m.id,m.text,"nearbyRoomStatus"):null,onDelete:isMine?()=>deleteRtdbMessage("nearbyChat/messages",m.id,"nearbyRoomStatus"):null});
   row.appendChild(item);box.appendChild(row);
  });
  if(wasBottom)box.scrollTop=box.scrollHeight;
@@ -1720,7 +1800,7 @@ function renderGlobalMessages(){
   }
   const item=document.createElement("div");item.className="global-chat-msg"+(isMine?" mine":"");
   const body=document.createElement("span");body.className="body";body.textContent=String(m.text||"");
-  const meta=document.createElement("span");meta.className="meta";meta.textContent=new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  const meta=document.createElement("span");meta.className="meta";meta.textContent=(m.edited?"edited · ":"")+new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
   if(m.replyText){const quote=document.createElement("div");quote.className="comment-note";quote.textContent="↪ "+String(m.replyHandle||"Explorer")+": "+String(m.replyText);item.appendChild(quote)}
   item.append(body,meta);
   const mine=globalReactionCache[m.id]||{};
@@ -1734,7 +1814,7 @@ function renderGlobalMessages(){
    });
    item.appendChild(actions);
   }
-  attachMessageGestures(item,emoji=>toggleGlobalReaction(m.id,emoji),()=>setGlobalReply(m.id,m.handle,m.text));
+  attachMessageGestures(item,{onReact:emoji=>toggleGlobalReaction(m.id,emoji),onReply:()=>setGlobalReply(m.id,m.handle,m.text),onEdit:isMine?()=>editRtdbMessage("globalChat/messages",m.id,m.text,"globalChatStatus"):null,onDelete:isMine?()=>deleteRtdbMessage("globalChat/messages",m.id,"globalChatStatus"):null});
   row.appendChild(item);box.appendChild(row);
  });if(wasBottom)box.scrollTop=box.scrollHeight;
 }
@@ -2214,24 +2294,41 @@ async function enterSignalRoom(roomId,partnerUid,partnerHandle){
     row.appendChild(av);
    }
    const item=document.createElement("div");item.className="chat-msg"+(isMine?" mine":"");
+   if(m.replyText){const q=document.createElement("div");q.className="comment-note";q.textContent="↪ "+String(m.replyHandle||"Match")+": "+String(m.replyText);item.appendChild(q);}
    const body=document.createElement("span");body.textContent=String(m.text||"");
-   const time=document.createElement("small");time.textContent=new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
-   item.append(body,time);row.appendChild(item);msgBox.appendChild(row);
+   const time=document.createElement("small");time.textContent=(m.edited?"edited · ":"")+new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+   item.append(body,time);
+   const msgPath="globalChat/signalRooms/"+roomId+"/messages";
+   attachMessageGestures(item,{
+    onReply:()=>setSignalReply(child.key,isMine?"You":String(m.handle||partnerHandle),m.text||""),
+    onEdit:isMine?()=>editRtdbMessage(msgPath,child.key,m.text||"","signalStatusText"):null,
+    onDelete:isMine?()=>deleteRtdbMessage(msgPath,child.key,"signalStatusText"):null
+   });
+   row.appendChild(item);msgBox.appendChild(row);
   });
   msgBox.scrollTop=msgBox.scrollHeight;
  };
  signalMsgsRef.on("value",signalMsgsListener);
 }
+let signalReplyTarget=null;
+function setSignalReply(id,handle,text){
+ signalReplyTarget={id,handle:String(handle||"Match"),text:String(text||"")};
+ document.getElementById("signalReplyPreview").classList.remove("hidden");
+ document.getElementById("signalReplyName").textContent="Replying to "+signalReplyTarget.handle;
+ document.getElementById("signalReplyText").textContent=signalReplyTarget.text.slice(0,120);
+ document.getElementById("signalMessageInput").focus();
+}
+function cancelSignalReply(){signalReplyTarget=null;const p=document.getElementById("signalReplyPreview");if(p)p.classList.add("hidden");}
 async function sendSignalMessage(){
  if(!currentUser||!signalRoomId||signalState!=="matched")return;
  const input=document.getElementById("signalMessageInput"),val=input.value.trim();
  if(!val)return;
  const btn=document.getElementById("signalSendBtn");if(btn)btn.disabled=true;
  try{
-  await rtdb.ref("globalChat/signalRooms/"+signalRoomId+"/messages").push({
-   uid:currentUser.uid,handle:globalHandle(),text:val,createdAt:firebase.database.ServerValue.TIMESTAMP
-  });
-  input.value="";
+  const payload={uid:currentUser.uid,handle:globalHandle(),text:val,createdAt:firebase.database.ServerValue.TIMESTAMP};
+  if(signalReplyTarget){payload.replyTo=signalReplyTarget.id;payload.replyHandle=signalReplyTarget.handle;payload.replyText=signalReplyTarget.text.slice(0,120);}
+  await rtdb.ref("globalChat/signalRooms/"+signalRoomId+"/messages").push(payload);
+  input.value="";cancelSignalReply();
  }catch(e){setSignalUI("matched","Could not send message: "+e.message);}
  finally{if(btn)btn.disabled=false;}
 }
