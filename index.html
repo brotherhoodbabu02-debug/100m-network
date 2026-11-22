@@ -85,10 +85,33 @@ header{
 main{padding:18px 16px;max-width:740px;margin:auto;transition:max-width .2s ease}
 main:has(#chats.active){max-width:1180px}
 .chat-mode-tabs{
- display:grid;grid-template-columns:1fr 1fr;gap:6px;
+ display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;
  padding:5px;margin-bottom:14px;
  background:#111114;border:1px solid var(--line);border-radius:14px;
 }
+.signal-card{margin-bottom:18px}
+.signal-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.signal-badge{
+ font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:700;
+ padding:4px 9px;border-radius:999px;
+ border:1px solid rgba(56,189,248,0.35);background:rgba(56,189,248,0.1);color:var(--cyan);
+}
+.signal-scanner{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:24px 12px;text-align:center;gap:12px;
+}
+.signal-pulse-ring{
+ width:68px;height:68px;border-radius:50%;
+ border:1.5px solid var(--cyan);background:#111114;
+ display:grid;place-items:center;font-size:24px;
+ animation:ping 1.8s ease-out infinite;
+}
+.signal-messages{
+ display:flex;flex-direction:column;gap:5px;
+ padding:12px;border-radius:16px;border:1px solid var(--line);background:#09090b;
+ height:280px;overflow-y:auto;margin:12px 0;
+}
+.signal-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .chat-mode-tab{
  border:0;background:transparent;color:var(--muted);
  padding:9px 12px;border-radius:10px;font-size:13px;font-weight:700;
@@ -817,6 +840,7 @@ nav.bottom-nav{
   <div class="radar"><div class="center"></div><i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i></div>
   <h3 style="text-align:center">Explore your world</h3><p class="sub" style="text-align:center;margin-top:8px">The markers here are decorative. Live members appear on the Radar page.</p>
   <button class="primary" onclick="go('radar')">Explore Radar</button>
+  <button class="secondary" style="width:100%;margin-top:8px" onclick="go('chats');switchChatTab('signal')">⚡ Find Global Signal (1-on-1)</button>
  </div>
  <div class="card"><h3>Ideas for you</h3><div id="interestRadarSuggestions"><div class="empty">Add interests in Edit Profile to see suggestions.</div></div></div>
  <div class="card"><h3>Welcome to 100m</h3><p class="sub" style="margin:9px 0 0">Meet people. Share ideas. Build connections.</p></div>
@@ -864,10 +888,57 @@ nav.bottom-nav{
 </section>
 
 <section class="page" id="chats">
- <h2>Chats</h2><p class="sub">Global conversations and private messages.</p>
+ <h2>Chats</h2><p class="sub">Global conversations, instant 1-on-1 Signal Match, and private messages.</p>
  <div class="chat-mode-tabs" role="tablist" aria-label="Chat sections">
-  <button type="button" class="chat-mode-tab active" data-chat-tab="global" onclick="switchChatTab('global')">Global Chat</button>
-  <button type="button" class="chat-mode-tab" data-chat-tab="private" onclick="switchChatTab('private')">Private Chat</button>
+  <button type="button" class="chat-mode-tab active" data-chat-tab="global" onclick="switchChatTab('global')">Global</button>
+  <button type="button" class="chat-mode-tab" data-chat-tab="signal" onclick="switchChatTab('signal')">⚡ Signal</button>
+  <button type="button" class="chat-mode-tab" data-chat-tab="private" onclick="switchChatTab('private')">Private</button>
+ </div>
+ <div class="chats-col mobile-hidden" id="signalMatchCol">
+  <div class="card signal-card" id="signalMatchCard">
+   <div class="signal-top">
+    <div>
+     <h2 style="margin-bottom:2px">⚡ Global Signal Match</h2>
+     <p class="sub" style="margin-bottom:0">Instant anonymous 1-on-1 chat with anyone online worldwide.</p>
+    </div>
+    <span id="signalStateBadge" class="signal-badge">GLOBAL · READY</span>
+   </div>
+
+   <div id="signalIdleView" style="margin-top:14px">
+    <button type="button" class="primary" id="findSignalBtn" onclick="startSignalMatch()">Find Random Signal</button>
+    <p class="comment-note">No 100m limit — connects globally with any signed-in member searching right now. Messages auto-clear when the chat ends.</p>
+   </div>
+
+   <div id="signalSearchingView" class="signal-scanner hidden">
+    <div class="signal-pulse-ring">⚡</div>
+    <strong style="font-size:15px">Scanning global network…</strong>
+    <p class="sub" style="margin:0">Waiting for another live member anywhere in the world.</p>
+    <button type="button" class="secondary small" onclick="stopSignalMatch()">Cancel Scan</button>
+   </div>
+
+   <div id="signalActiveView" class="hidden" style="margin-top:12px">
+    <div class="tile" style="margin-top:0">
+     <div class="signal-top">
+      <div><strong id="signalPartnerName" style="color:var(--cyan)">Connected</strong><p id="signalRoomNote" class="comment-note" style="margin-top:2px">Anonymous global 1-on-1 session</p></div>
+      <div class="signal-actions" style="margin-top:0">
+       <button type="button" class="secondary small" onclick="nextSignalMatch()">Next</button>
+       <button type="button" class="danger small" onclick="stopSignalMatch()">End</button>
+      </div>
+     </div>
+    </div>
+    <div id="signalMessages" class="signal-messages"><div class="empty">Signal locked! Say hello.</div></div>
+    <div class="global-chat-input">
+     <textarea id="signalMessageInput" maxlength="500" placeholder="Message your random match..."></textarea>
+     <button type="button" class="primary" style="width:auto;margin:0;padding:12px 16px" id="signalSendBtn" onclick="sendSignalMessage()">Send</button>
+    </div>
+    <div class="signal-actions">
+     <button type="button" class="secondary small" onclick="promoteSignalToPrivate()">Add to Private Chat</button>
+     <button type="button" class="secondary small" onclick="reportSignalPartner()">Report</button>
+     <button type="button" class="danger small" onclick="blockSignalPartner()">Block</button>
+    </div>
+   </div>
+   <p id="signalStatusText" class="message muted"></p>
+  </div>
  </div>
  <div class="chats-split">
   <div class="chats-col" id="globalChatCol">
@@ -1090,11 +1161,10 @@ async function startPrivateChat(){
  }catch(e){status.textContent="Could not open chat: "+e.message}
 }
 function switchChatTab(tab){
- const g=document.getElementById("globalChatCol"),pr=document.getElementById("privateChatCol");
- if(g&&pr){
-  g.classList.toggle("mobile-hidden",tab!=="global");
-  pr.classList.toggle("mobile-hidden",tab!=="private");
- }
+ const g=document.getElementById("globalChatCol"),pr=document.getElementById("privateChatCol"),sg=document.getElementById("signalMatchCol");
+ if(g)g.classList.toggle("mobile-hidden",tab!=="global");
+ if(pr)pr.classList.toggle("mobile-hidden",tab!=="private");
+ if(sg)sg.classList.toggle("mobile-hidden",tab!=="signal");
  document.querySelectorAll(".chat-mode-tab").forEach(b=>b.classList.toggle("active",b.dataset.chatTab===tab));
 }
 function openPrivateChat(chatId,otherUid){if(blockedUids.has(otherUid))return;switchChatTab("private");
@@ -1675,7 +1745,7 @@ function handleSignedIn(user){
  guestMode=false;document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();
 }
 function cleanupSession(){
- stopRadarRoomListener();stopNearbyRoomListeners();stopGlobalChatListeners();stopNearbyVoiceRoom();radarIsOn=false;
+ stopRadarRoomListener();stopNearbyRoomListeners();stopGlobalChatListeners();stopNearbyVoiceRoom();stopSignalMatch(true);radarIsOn=false;
  if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
  activeChatId=null;blockedUids=new Set();
@@ -1999,9 +2069,179 @@ function setupPushToTalk(){
 }
 document.addEventListener("DOMContentLoaded",setupPushToTalk);
 window.addEventListener("beforeunload",()=>{if(pttStream)pttStream.getTracks().forEach(track=>track.stop());stopNearbyVoiceRoom();});
-[["globalMessageInput","sendGlobalMessage"],["nearbyRoomMessageInput","sendNearbyRoomMessage"],["privateMessageInput","sendPrivateMessage"]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el)el.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&matchMedia("(pointer:fine)").matches){e.preventDefault();window[fn]()}})});
+[["globalMessageInput","sendGlobalMessage"],["nearbyRoomMessageInput","sendNearbyRoomMessage"],["privateMessageInput","sendPrivateMessage"],["signalMessageInput","sendSignalMessage"]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el)el.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&matchMedia("(pointer:fine)").matches){e.preventDefault();window[fn]()}})});
 ["email","password","displayName"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("keydown",e=>{if(e.key==="Enter")handleAuth()})});
 rtdb.ref(".info/connected").on("value",x=>{const t=document.getElementById("topStatus");if(t){t.textContent=x.val()?"\u25cf ONLINE":"\u25cb OFFLINE";t.style.color=x.val()?"var(--green)":"var(--red)"}});
+
+
+// GLOBAL 1-ON-1 SIGNAL MATCH (No 100m limit — works worldwide over Firebase RTDB globalChat/ subtree)
+let signalState="idle",signalRoomId=null,signalPartnerUid=null,signalPartnerHandle="";
+let signalInviteRef=null,signalInviteListener=null,signalMsgsRef=null,signalMsgsListener=null,signalRoomOnlineRef=null,signalRoomOnlineListener=null;
+
+function setSignalUI(mode,statusMsg){
+ signalState=mode;
+ const idle=document.getElementById("signalIdleView"),search=document.getElementById("signalSearchingView"),active=document.getElementById("signalActiveView"),badge=document.getElementById("signalStateBadge"),st=document.getElementById("signalStatusText");
+ if(idle)idle.classList.toggle("hidden",mode!=="idle");
+ if(search)search.classList.toggle("hidden",mode!=="searching");
+ if(active)active.classList.toggle("hidden",mode!=="matched");
+ if(badge)badge.textContent=mode==="searching"?"SCANNING GLOBAL…":mode==="matched"?"● LIVE MATCH":"GLOBAL · READY";
+ if(st&&statusMsg!==undefined)st.textContent=statusMsg;
+}
+function clearSignalListeners(){
+ if(signalInviteRef&&signalInviteListener)signalInviteRef.off("value",signalInviteListener);
+ if(signalMsgsRef&&signalMsgsListener)signalMsgsRef.off("value",signalMsgsListener);
+ if(signalRoomOnlineRef&&signalRoomOnlineListener)signalRoomOnlineRef.off("value",signalRoomOnlineListener);
+ signalInviteRef=signalInviteListener=signalMsgsRef=signalMsgsListener=signalRoomOnlineRef=signalRoomOnlineListener=null;
+}
+async function startSignalMatch(){
+ if(!currentUser||guestMode){setSignalUI("idle","Please sign in to use Global Signal Match.");return;}
+ await stopSignalMatch(true);
+ setSignalUI("searching","");
+ const myUid=currentUser.uid,myHandle=globalHandle(),now=Date.now();
+ try{
+  const qSnap=await rtdb.ref("globalChat/signalQueue").once("value");
+  let candidate=null;
+  qSnap.forEach(child=>{
+   if(candidate)return;
+   const d=child.val()||{};
+   if(child.key!==myUid&&!blockedUids.has(child.key)&&(!d.createdAt||now-Number(d.createdAt)<180000)){
+    candidate={uid:child.key,handle:String(d.handle||handleFor(child.key))};
+   }
+  });
+  if(candidate){
+   const claimRef=rtdb.ref("globalChat/signalQueue/"+candidate.uid);
+   const tx=await claimRef.transaction(cur=>cur?null:undefined);
+   if(tx.committed){
+    const roomId="sig_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
+    await rtdb.ref("globalChat/signalRooms/"+roomId).set({
+     createdAt:firebase.database.ServerValue.TIMESTAMP,
+     online:{[myUid]:true,[candidate.uid]:true}
+    });
+    await rtdb.ref("globalChat/signalInvites/"+candidate.uid).set({
+     roomId,partnerUid:myUid,partnerHandle:myHandle,createdAt:firebase.database.ServerValue.TIMESTAMP
+    });
+    enterSignalRoom(roomId,candidate.uid,candidate.handle);
+    return;
+   }
+  }
+  // Otherwise enter global waiting queue and listen for an invite
+  const myQueueRef=rtdb.ref("globalChat/signalQueue/"+myUid);
+  await myQueueRef.onDisconnect().remove();
+  await myQueueRef.set({uid:myUid,handle:myHandle,createdAt:firebase.database.ServerValue.TIMESTAMP});
+  const myInviteRef=rtdb.ref("globalChat/signalInvites/"+myUid);
+  await myInviteRef.remove().catch(()=>{});
+  signalInviteRef=myInviteRef;
+  signalInviteListener=snap=>{
+   const inv=snap.val();
+   if(!inv||!inv.roomId||!inv.partnerUid||blockedUids.has(inv.partnerUid))return;
+   myInviteRef.remove().catch(()=>{});
+   myQueueRef.remove().catch(()=>{});
+   clearSignalListeners();
+   enterSignalRoom(inv.roomId,inv.partnerUid,String(inv.partnerHandle||handleFor(inv.partnerUid)));
+  };
+  signalInviteRef.on("value",signalInviteListener);
+ }catch(e){
+  setSignalUI("idle","Could not start Signal Match: "+e.message);
+ }
+}
+async function enterSignalRoom(roomId,partnerUid,partnerHandle){
+ signalRoomId=roomId;signalPartnerUid=partnerUid;signalPartnerHandle=partnerHandle;
+ const nameEl=document.getElementById("signalPartnerName"),noteEl=document.getElementById("signalRoomNote"),box=document.getElementById("signalMessages");
+ if(nameEl)nameEl.textContent="Connected to "+partnerHandle;
+ if(noteEl)noteEl.textContent="Global 1-on-1 · Anonymous session";
+ if(box)box.innerHTML='<div class="empty">Signal locked with '+partnerHandle+'! Say hello.</div>';
+ setSignalUI("matched","");
+ const myOnlineRef=rtdb.ref("globalChat/signalRooms/"+roomId+"/online/"+currentUser.uid);
+ try{await myOnlineRef.onDisconnect().remove();await myOnlineRef.set(true);}catch(e){}
+ signalRoomOnlineRef=rtdb.ref("globalChat/signalRooms/"+roomId+"/online/"+partnerUid);
+ signalRoomOnlineListener=snap=>{
+  if(signalRoomId!==roomId)return;
+  if(!snap.exists()&&noteEl){
+   noteEl.textContent="Partner disconnected. Tap Next to find a new global signal.";
+   const badge=document.getElementById("signalStateBadge");
+   if(badge)badge.textContent="DISCONNECTED";
+  }
+ };
+ signalRoomOnlineRef.on("value",signalRoomOnlineListener);
+ signalMsgsRef=rtdb.ref("globalChat/signalRooms/"+roomId+"/messages").limitToLast(100);
+ signalMsgsListener=snap=>{
+  const msgBox=document.getElementById("signalMessages");if(!msgBox)return;
+  msgBox.innerHTML="";
+  if(!snap.exists()){msgBox.innerHTML='<div class="empty">Signal locked! Say hello.</div>';return;}
+  snap.forEach(child=>{
+   const m=child.val()||{};
+   const isMine=!!(currentUser&&m.uid===currentUser.uid);
+   const row=document.createElement("div");row.className="msg-row"+(isMine?" mine":"");
+   if(!isMine){
+    const h=String(m.handle||partnerHandle||"E");
+    const badgeTxt=(h.includes("-")?h.split("-")[1]:h).slice(0,2).toUpperCase()||"E";
+    const av=document.createElement("button");av.type="button";av.className="msg-avatar";av.textContent=badgeTxt;av.title=h;
+    row.appendChild(av);
+   }
+   const item=document.createElement("div");item.className="chat-msg"+(isMine?" mine":"");
+   const body=document.createElement("span");body.textContent=String(m.text||"");
+   const time=document.createElement("small");time.textContent=new Date(Number(m.createdAt)||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+   item.append(body,time);row.appendChild(item);msgBox.appendChild(row);
+  });
+  msgBox.scrollTop=msgBox.scrollHeight;
+ };
+ signalMsgsRef.on("value",signalMsgsListener);
+}
+async function sendSignalMessage(){
+ if(!currentUser||!signalRoomId||signalState!=="matched")return;
+ const input=document.getElementById("signalMessageInput"),val=input.value.trim();
+ if(!val)return;
+ const btn=document.getElementById("signalSendBtn");if(btn)btn.disabled=true;
+ try{
+  await rtdb.ref("globalChat/signalRooms/"+signalRoomId+"/messages").push({
+   uid:currentUser.uid,handle:globalHandle(),text:val,createdAt:firebase.database.ServerValue.TIMESTAMP
+  });
+  input.value="";
+ }catch(e){setSignalUI("matched","Could not send message: "+e.message);}
+ finally{if(btn)btn.disabled=false;}
+}
+async function stopSignalMatch(silent=false){
+ clearSignalListeners();
+ const oldRoom=signalRoomId;
+ signalRoomId=null;signalPartnerUid=null;signalPartnerHandle="";
+ if(currentUser){
+  try{
+   const qRef=rtdb.ref("globalChat/signalQueue/"+currentUser.uid);
+   await qRef.onDisconnect().cancel().catch(()=>{});
+   await qRef.remove().catch(()=>{});
+   await rtdb.ref("globalChat/signalInvites/"+currentUser.uid).remove().catch(()=>{});
+   if(oldRoom){
+    const onRef=rtdb.ref("globalChat/signalRooms/"+oldRoom+"/online/"+currentUser.uid);
+    await onRef.onDisconnect().cancel().catch(()=>{});
+    await onRef.remove().catch(()=>{});
+   }
+  }catch(e){}
+ }
+ setSignalUI("idle",silent?"":"Signal session ended.");
+}
+async function nextSignalMatch(){
+ await stopSignalMatch(true);
+ await startSignalMatch();
+}
+async function promoteSignalToPrivate(){
+ if(!signalPartnerUid)return;
+ const uid=signalPartnerUid;
+ await openPrivateChatByUid(uid);
+}
+function reportSignalPartner(){
+ if(!signalPartnerUid)return;
+ reportTarget=signalPartnerUid;
+ const st=document.getElementById("reportStatus");
+ if(st)st.textContent="Reporting "+(signalPartnerHandle||"this member")+".";
+ stopSignalMatch(true);
+ go("safety");
+}
+async function blockSignalPartner(){
+ if(!signalPartnerUid)return;
+ const uid=signalPartnerUid,h=signalPartnerHandle;
+ await blockAccount(uid,h);
+ await stopSignalMatch(true);
+}
 
 function dismissIntroSplash(){
  const el=document.getElementById("introSplash");
