@@ -583,16 +583,36 @@ footer.note{font-size:11.5px;color:#636370;line-height:1.65;margin:16px 4px}
 .walkie-orb small{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:1.2px;color:var(--cyan);margin-top:2px}
 .ptt-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin:20px 0}
 .ptt-button{
- width:118px;height:118px;
+ width:124px;height:124px;
  border-radius:50%;
  padding:0;
  display:grid;place-items:center;
- font-size:40px;
+ font-size:42px;
  background:#18181c;
  border:2px solid rgba(255,255,255,0.28);
  box-shadow:0 12px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15);
- touch-action:none;user-select:none;-webkit-user-select:none;
+ touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
 }
+.ptt-timer{
+ font-family:"JetBrains Mono",monospace;
+ font-size:13px;font-weight:700;
+ color:var(--text);letter-spacing:0.08em;
+ min-height:20px;
+}
+.ptt-timer.live{color:var(--red)}
+.walkie-controls{
+ display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px;
+}
+.walkie-last-clip{
+ margin-top:14px;padding:10px 14px;
+ border:1px solid var(--line);border-radius:14px;
+ background:rgba(255,255,255,0.03);
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ text-align:left;
+}
+.walkie-last-clip.hidden{display:none!important}
+.walkie-clip-meta{font-size:12px;color:var(--subtext);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.walkie-clip-meta strong{color:var(--cyan);font-family:"JetBrains Mono",monospace;font-size:11px}
 .ptt-button:disabled{opacity:0.35}
 .ptt-button.is-live{
  background:#7f1d1d;
@@ -820,18 +840,26 @@ nav.bottom-nav{
 
 <section class="page" id="walkie">
  <h2>Walkie-Talkie</h2>
- <p class="sub">Your shared voice room. Hold the microphone to speak; release to stop.</p>
+ <p class="sub">Universal mobile voice room. Hold the mic to speak and release to broadcast instantly.</p>
  <div class="card walkie-card" id="voiceRoomCard">
   <div class="walkie-orb"><span>100m</span><small>VOICE ROOM</small></div>
   <p id="nearbySpeakingStatus" class="ptt-state speaking-status" aria-live="polite">Nobody is speaking right now.</p>
   <p id="pttStatus" class="ptt-state" aria-live="polite">Turn Radar ON to join the shared voice room.</p>
-  <button type="button" id="pttJoinButton" class="primary" onclick="setRadarStatus(true)">Turn ON Radar &amp; join voice room</button>
+  <button type="button" id="pttJoinButton" class="primary" onclick="unlockWalkieAudio();setRadarStatus(true)">Turn ON Radar &amp; join voice room</button>
   <div class="ptt-wrap">
-   <button type="button" id="pttButton" class="ptt-button" aria-label="Hold microphone to talk, maximum 10 seconds" disabled>🎙️</button>
-   <p class="ptt-hint">HOLD TO TALK · MAX 10 SECONDS</p>
-   <button type="button" id="pttStopButton" class="secondary" onclick="stopPushToTalk()" disabled>Stop microphone</button>
+   <div id="pttTimer" class="ptt-timer">0.0s / 10.0s</div>
+   <button type="button" id="pttButton" class="ptt-button" oncontextmenu="return false" aria-label="Hold microphone to talk, maximum 10 seconds" disabled>🎙️</button>
+   <p class="ptt-hint">HOLD TO TALK · RELEASE TO SEND · MAX 10S</p>
+   <div class="walkie-controls">
+    <button type="button" id="pttSpeakerButton" class="secondary small" onclick="unlockWalkieAudio(true)">🔊 Enable Speaker</button>
+    <button type="button" id="pttStopButton" class="secondary small" onclick="stopPushToTalk()" disabled>Stop &amp; Send</button>
+   </div>
   </div>
-  <p class="comment-note">Your microphone is active only while you hold the button. It stops automatically after 10 seconds. Voice is shared with opted-in members in this room; the room is not yet restricted to 100m.</p>
+  <div id="walkieLastClip" class="walkie-last-clip hidden">
+   <div class="walkie-clip-meta"><strong id="walkieLastSender">Explorer</strong><div id="walkieLastTime">Just now</div></div>
+   <button type="button" id="walkieReplayBtn" class="secondary small fit" onclick="replayLastVoiceClip()">▶ Play</button>
+  </div>
+  <p class="comment-note">Works across mobile 4G/5G and Wi-Fi on Android &amp; iPhone. Microphone stays active only while you hold the button (max 10s).</p>
  </div>
 </section>
 
@@ -1358,7 +1386,7 @@ function attachMessageGestures(el,onReact,onReply){
 function renderNearbyMessages(){
  const box=document.getElementById("nearbyRoomMessages");if(!box)return;const wasBottom=box.scrollHeight-box.scrollTop-box.clientHeight<70;box.innerHTML="";
  const cutoff=Date.now()-24*60*60*1000;
- const list=nearbyMessageCache.filter(m=>Number(m.createdAt)>=cutoff&&!blockedUids.has(m.uid)).sort((a,b)=>Number(a.createdAt)-Number(b.createdAt));
+ const list=nearbyMessageCache.filter(m=>m.type!=="voice"&&Number(m.createdAt)>=cutoff&&!blockedUids.has(m.uid)).sort((a,b)=>Number(a.createdAt)-Number(b.createdAt));
  if(!list.length){box.innerHTML='<div class="empty">No messages in the last 24 hours. Start the conversation.</div>';return}
  list.forEach(m=>{
   const isMine=!!(currentUser&&m.uid===currentUser.uid);
@@ -1437,7 +1465,13 @@ function startNearbyRoomListeners(){
  nearbyMembersRef.on("value",nearbyMembersListener,error=>{const s=document.getElementById("nearbyRoomStatus");if(s)s.textContent="Member list unavailable: "+error.message});
  nearbyMessagesRef=rtdb.ref("nearbyChat/messages").orderByChild("createdAt").limitToLast(100);
  nearbyMessagesListener=snapshot=>{
-  nearbyMessageCache=[];snapshot.forEach(child=>{const m=child.val()||{};nearbyMessageCache.push({id:child.key,...m,reactions:nearbyReactionCache[child.key]||{}})});renderNearbyMessages();
+  nearbyMessageCache=[];
+  snapshot.forEach(child=>{
+   const m=child.val()||{};
+   nearbyMessageCache.push({id:child.key,...m,reactions:nearbyReactionCache[child.key]||{}});
+   if(m.type==="voice"&&m.audioData)handleIncomingVoiceClip(child.key,m);
+  });
+  renderNearbyMessages();
  };
  nearbyMessagesRef.on("value",nearbyMessagesListener,error=>{const s=document.getElementById("nearbyRoomStatus");if(s)s.textContent="Messages unavailable: "+error.message});
  nearbyReactionsRef=rtdb.ref("nearbyChat/reactions");
@@ -1697,202 +1731,271 @@ async function submitReport(){
  catch(e){try{const r=JSON.parse(localStorage.getItem("100m_reports")||"[]");r.push({reason,details,target:reportTarget||"",createdAt:Date.now()});localStorage.setItem("100m_reports",JSON.stringify(r));status.textContent="Could not reach the server. Your report was saved on this device only.";status.className="message warning"}catch(x){status.textContent="Could not save the report."}}
  document.getElementById("reportDetails").value="";reportTarget="";
 }
-// Walkie-Talkie audio: WebRTC carries audio; Firebase RTDB carries signaling only.
-let pttStream=null,pttActive=false,pttPressed=false,pttStarting=false,pttLimitTimer=null;
-const voiceIceServers=[
- {urls:"stun:stun.l.google.com:19302"}
-];
-const voiceIceConfig={iceServers:voiceIceServers,iceCandidatePoolSize:10,bundlePolicy:"max-bundle"};
-const voiceReconnectTimers={};
-function setPttStatus(message,isLive=false){const el=document.getElementById("pttStatus");if(el){el.textContent=message;el.className="ptt-state"+(isLive?" live":"");}}
-function inNearbyVoiceRoom(){const a=document.getElementById("nearbyRoomActive");return !!(currentUser&&!guestMode&&radarIsOn&&a&&!a.classList.contains("hidden"));}
-function voiceSignalPath(peerUid){return "nearbyVoiceSignals/"+peerUid+"/"+currentUser.uid;}
-async function sendNearbyVoiceSignal(peerUid,payload){
- if(!currentUser||!peerUid||peerUid===currentUser.uid||!inNearbyVoiceRoom())return;
- const packet={from:currentUser.uid,to:peerUid,createdAt:firebase.database.ServerValue.TIMESTAMP,...payload};
- await rtdb.ref(voiceSignalPath(peerUid)).push(packet);
+// Walkie-Talkie audio: Universal mobile Push-to-Talk (Android Chrome, iOS Safari, 4G/5G/Wi-Fi).
+// Uses MediaRecorder compressed voice clips over Firebase RTDB so it works behind any mobile NAT/CGNAT without a TURN server.
+let pttStream=null,pttRecorder=null,pttChunks=[],pttActive=false,pttPressed=false,pttStarting=false,pttLimitTimer=null,pttTickTimer=null,pttStartAt=0;
+let walkieAudioCtx=null,walkieAudioUnlocked=false,walkiePlayedIds=new Set(),walkieJoinedAt=0,walkieQueue=[],walkiePlaying=false,walkieLastClipData=null,walkiePlayerEl=null;
+
+function setPttStatus(message,isLive=false){
+ const el=document.getElementById("pttStatus");
+ if(el){el.textContent=message;el.className="ptt-state"+(isLive?" live":"");}
 }
-function attachRemoteVoiceAudio(peerUid,stream){
- let audio=voiceRemoteAudio[peerUid];
- if(!audio){audio=document.createElement("audio");audio.autoplay=true;audio.playsInline=true;audio.volume=1;audio.setAttribute("playsinline","");audio.setAttribute("webkit-playsinline","");audio.style.display="none";audio.id="nearbyVoiceAudio_"+peerUid;document.body.appendChild(audio);voiceRemoteAudio[peerUid]=audio;}
- if(audio.srcObject!==stream)audio.srcObject=stream;
- audio.play().catch(()=>setPttStatus("Incoming audio is ready. Tap the page once to enable sound, then ask the member to speak again."));
+function updatePttTimer(sec,isLive=false){
+ const el=document.getElementById("pttTimer");
+ if(el){el.textContent=sec.toFixed(1)+"s / 10.0s";el.className="ptt-timer"+(isLive?" live":"");}
 }
-function scheduleVoiceReconnect(peerUid){
- if(!inNearbyVoiceRoom()||!currentUser||currentUser.uid.localeCompare(peerUid)>=0||voiceReconnectTimers[peerUid])return;
- voiceReconnectTimers[peerUid]=setTimeout(()=>{
-  delete voiceReconnectTimers[peerUid];
-  if(!inNearbyVoiceRoom())return;
-  const old=voicePeers[peerUid];
-  if(old&&old.pc.connectionState!=="failed"&&old.pc.connectionState!=="disconnected"&&old.pc.iceConnectionState!=="failed"&&old.pc.iceConnectionState!=="disconnected")return;
-  closeNearbyVoicePeer(peerUid);
-  createNearbyVoicePeer(peerUid,true);
-  setPttStatus("Reconnecting voice to a room member…");
- },6000);
+function inNearbyVoiceRoom(){
+ const a=document.getElementById("nearbyRoomActive");
+ return !!(currentUser&&!guestMode&&radarIsOn&&a&&!a.classList.contains("hidden"));
 }
-async function createNearbyVoicePeer(peerUid,shouldOffer){
- if(!currentUser||!peerUid||peerUid===currentUser.uid||!inNearbyVoiceRoom())return null;
- if(voicePeers[peerUid])return voicePeers[peerUid];
- const pc=new RTCPeerConnection(voiceIceConfig);
- const peer={pc,sender:null,remoteSet:false,offerStarted:false};if(shouldOffer)peer.sender=pc.addTransceiver("audio",{direction:"sendrecv"}).sender;
- voicePeers[peerUid]=peer;voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];
- pc.onicecandidate=event=>{if(event.candidate&&inNearbyVoiceRoom())sendNearbyVoiceSignal(peerUid,{type:"ice",candidate:event.candidate.toJSON()}).catch(e=>setPttStatus("Voice signaling failed: "+e.message));};
- pc.ontrack=event=>{const stream=(event.streams&&event.streams[0])||new MediaStream([event.track]);attachRemoteVoiceAudio(peerUid,stream);};
- pc.onconnectionstatechange=()=>{
-  if(pc.connectionState==="connected"){
-   if(voiceReconnectTimers[peerUid]){clearTimeout(voiceReconnectTimers[peerUid]);delete voiceReconnectTimers[peerUid];}
-   setPttStatus("Voice connected. Hold the microphone button to speak.");
-  }else if(pc.connectionState==="failed"||pc.connectionState==="disconnected"){
-   setPttStatus("Voice connection interrupted. Trying to reconnect…");scheduleVoiceReconnect(peerUid);
-  }
- };
- pc.oniceconnectionstatechange=()=>{if(pc.iceConnectionState==="failed"||pc.iceConnectionState==="disconnected")scheduleVoiceReconnect(peerUid);};
- pc.onicecandidateerror=()=>setPttStatus("Network is blocking voice connection. A TURN server may be required.");
- if(pttStream&&peer.sender){const track=pttStream.getAudioTracks()[0];if(track)await peer.sender.replaceTrack(track).catch(()=>{});}
- if(shouldOffer){
-  try{
-   peer.offerStarted=true;
-   const offer=await pc.createOffer();await pc.setLocalDescription(offer);
-   await sendNearbyVoiceSignal(peerUid,{type:"offer",sdp:pc.localDescription.sdp});
-  }catch(e){setPttStatus("Could not start voice connection: "+e.message);}
- }
- return peer;
+function pickVoiceMimeType(){
+ if(typeof MediaRecorder==="undefined")return "";
+ const candidates=["audio/webm;codecs=opus","audio/webm","audio/mp4;codecs=mp4a.40.2","audio/mp4","audio/ogg;codecs=opus"];
+ for(const t of candidates){try{if(MediaRecorder.isTypeSupported(t))return t;}catch(e){}}
+ return "";
 }
-function syncNearbyVoicePeers(snapshot){
- if(!currentUser||!inNearbyVoiceRoom())return;
- const active=new Set();
- snapshot.forEach(child=>{const d=child.val()||{};if(child.key!==currentUser.uid&&d.active===true&&!blockedUids.has(child.key))active.add(child.key);});
- active.forEach(uid=>{if(!voicePeers[uid]&&currentUser.uid.localeCompare(uid)<0)createNearbyVoicePeer(uid,true);});
- Object.keys(voicePeers).forEach(uid=>{if(!active.has(uid))closeNearbyVoicePeer(uid);});
-}
-function closeNearbyVoicePeer(uid){
- if(voiceReconnectTimers[uid]){clearTimeout(voiceReconnectTimers[uid]);delete voiceReconnectTimers[uid];}
- const peer=voicePeers[uid];
- if(peer){try{peer.pc.onicecandidate=null;peer.pc.ontrack=null;peer.pc.onconnectionstatechange=null;peer.pc.oniceconnectionstatechange=null;peer.pc.close();}catch(e){}delete voicePeers[uid];}
- delete voicePendingCandidates[uid];
- const audio=voiceRemoteAudio[uid];if(audio){audio.pause();audio.srcObject=null;audio.remove();delete voiceRemoteAudio[uid];}
-}
-async function flushNearbyVoiceCandidates(peerUid,peer){
- const queued=voicePendingCandidates[peerUid]||[];voicePendingCandidates[peerUid]=[];
- for(const candidate of queued){try{await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));}catch(e){console.log("Skipped stale ICE candidate:",e.message);}}
-}
-async function handleNearbyVoiceSignal(snapshot){
- const data=snapshot.val()||{};
+function playWalkieBeep(freq=780,dur=0.07){
  try{
-  if(!currentUser||!inNearbyVoiceRoom()||data.to!==currentUser.uid||!data.from||data.from===currentUser.uid)return;
-  if(Number(data.createdAt||0)&&Date.now()-Number(data.createdAt)>120000)return;
-  const peerUid=data.from;if(blockedUids.has(peerUid))return;
-  if(data.type==="offer"){
-   if(currentUser.uid.localeCompare(peerUid)<0)return;
-   let peer=voicePeers[peerUid];
-   if(peer&&peer.pc.signalingState!=="stable"){closeNearbyVoicePeer(peerUid);peer=null;}
-   if(!peer)peer=await createNearbyVoicePeer(peerUid,false);if(!peer)return;
-   await peer.pc.setRemoteDescription({type:"offer",sdp:data.sdp});peer.remoteSet=true;
-   {const tr=peer.pc.getTransceivers()[0];if(tr){try{tr.direction="sendrecv"}catch(e){}peer.sender=tr.sender;if(pttStream){const tk=pttStream.getAudioTracks()[0];if(tk)await tr.sender.replaceTrack(tk).catch(()=>{})}}}
-   await flushNearbyVoiceCandidates(peerUid,peer);
-   const answer=await peer.pc.createAnswer();await peer.pc.setLocalDescription(answer);
-   await sendNearbyVoiceSignal(peerUid,{type:"answer",sdp:peer.pc.localDescription.sdp});
-  }else if(data.type==="answer"){
-   const peer=voicePeers[peerUid];
-   if(peer&&peer.pc.signalingState==="have-local-offer"){
-    await peer.pc.setRemoteDescription({type:"answer",sdp:data.sdp});peer.remoteSet=true;
-    await flushNearbyVoiceCandidates(peerUid,peer);
-   }
-  }else if(data.type==="ice"&&data.candidate){
-   const candidate=typeof data.candidate==="string"?JSON.parse(data.candidate):data.candidate;
-   const peer=voicePeers[peerUid];
-   if(peer&&peer.pc.remoteDescription)await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));
-   else{voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];voicePendingCandidates[peerUid].push(candidate);}
-  }
- }catch(e){console.log("Nearby voice signaling:",e.message);setPttStatus("Voice setup failed: "+e.message);}
- finally{
-  if(snapshot&&snapshot.ref)snapshot.ref.remove().catch(()=>{});
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return;
+  if(!walkieAudioCtx)walkieAudioCtx=new AC();
+  if(walkieAudioCtx.state==="suspended")walkieAudioCtx.resume().catch(()=>{});
+  const osc=walkieAudioCtx.createOscillator(),gain=walkieAudioCtx.createGain();
+  osc.type="sine";osc.frequency.value=freq;
+  gain.gain.setValueAtTime(0.06,walkieAudioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,walkieAudioCtx.currentTime+dur);
+  osc.connect(gain);gain.connect(walkieAudioCtx.destination);
+  osc.start();osc.stop(walkieAudioCtx.currentTime+dur);
+ }catch(e){}
+}
+function ensureWalkiePlayer(){
+ if(!walkiePlayerEl){
+  walkiePlayerEl=document.createElement("audio");
+  walkiePlayerEl.playsInline=true;
+  walkiePlayerEl.setAttribute("playsinline","");
+  walkiePlayerEl.setAttribute("webkit-playsinline","");
+  walkiePlayerEl.preload="auto";
+  walkiePlayerEl.style.display="none";
+  document.body.appendChild(walkiePlayerEl);
  }
+ return walkiePlayerEl;
 }
-function attachNearbyVoiceSenderListener(senderUid){
- if(!currentUser||!senderUid||senderUid===currentUser.uid||voiceSignalSenderListeners[senderUid])return;
- const senderRef=rtdb.ref("nearbyVoiceSignals/"+currentUser.uid+"/"+senderUid);
- const packetListener=packetSnapshot=>handleNearbyVoiceSignal(packetSnapshot);
- senderRef.on("child_added",packetListener,error=>setPttStatus("Incoming voice signal unavailable: "+error.message));
- voiceSignalSenderListeners[senderUid]={ref:senderRef,listener:packetListener};
+function unlockWalkieAudio(showFeedback=false){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(AC){
+   if(!walkieAudioCtx)walkieAudioCtx=new AC();
+   if(walkieAudioCtx.state==="suspended")walkieAudioCtx.resume().catch(()=>{});
+  }
+  const el=ensureWalkiePlayer();
+  el.muted=false;el.volume=1;
+  walkieAudioUnlocked=true;
+  const btn=document.getElementById("pttSpeakerButton");
+  if(btn){btn.textContent="🔊 Speaker ON";btn.style.borderColor="rgba(52,211,153,0.45)";btn.style.color="var(--green)";}
+  if(showFeedback){playWalkieBeep(880,0.06);setPttStatus("Speaker enabled. Incoming voice will play automatically.");}
+ }catch(e){}
 }
-function detachNearbyVoiceSenderListener(senderUid){
- const entry=voiceSignalSenderListeners[senderUid];
- if(entry){entry.ref.off("child_added",entry.listener);delete voiceSignalSenderListeners[senderUid];}
-}
-function stopNearbyVoiceSignalListeners(){
- if(voiceSignalRef&&voiceSignalListener)voiceSignalRef.off("child_added",voiceSignalListener);
- if(voiceSignalRef&&voiceSignalRemovedListener)voiceSignalRef.off("child_removed",voiceSignalRemovedListener);
- Object.keys(voiceSignalSenderListeners).forEach(detachNearbyVoiceSenderListener);
- voiceSignalRef=null;voiceSignalListener=null;voiceSignalRemovedListener=null;
-}
+function syncNearbyVoicePeers(){}
 function startNearbyVoiceRoom(){
- if(!currentUser||!inNearbyVoiceRoom()||voiceSessionStarted)return;
- stopNearbyVoiceSignalListeners();
- voiceSignalRef=rtdb.ref("nearbyVoiceSignals/"+currentUser.uid);
- voiceSignalListener=snapshot=>attachNearbyVoiceSenderListener(snapshot.key);
- voiceSignalRemovedListener=snapshot=>detachNearbyVoiceSenderListener(snapshot.key);
- voiceSignalRef.on("child_added",voiceSignalListener,error=>setPttStatus("Voice signaling unavailable: "+error.message));
- voiceSignalRef.on("child_removed",voiceSignalRemovedListener);
+ if(!currentUser||!inNearbyVoiceRoom())return;
+ walkieJoinedAt=Date.now()-3000;
  voiceSessionStarted=true;
- const membersRef=rtdb.ref("nearbyChat/members");
- membersRef.once("value").then(syncNearbyVoicePeers).catch(e=>setPttStatus("Could not load voice room members: "+e.message));
- setPttStatus("Walkie-Talkie ready. Hold the button to speak to members in this room.");
+ setPttStatus("Walkie-Talkie ready. Hold the mic button to speak.");
+ updatePttTimer(0,false);
 }
 function stopNearbyVoiceRoom(){
- if(pttActive||pttStarting||pttPressed)stopPushToTalk();
- Object.keys(voiceReconnectTimers).forEach(uid=>{clearTimeout(voiceReconnectTimers[uid]);delete voiceReconnectTimers[uid];});
- stopNearbyVoiceSignalListeners();voiceSessionStarted=false;voicePendingCandidates={};
- Object.keys(voicePeers).forEach(closeNearbyVoicePeer);
- Object.keys(voiceRemoteAudio).forEach(uid=>{const a=voiceRemoteAudio[uid];if(a){a.pause();a.srcObject=null;a.remove();}delete voiceRemoteAudio[uid];});
+ if(pttActive||pttStarting||pttPressed)stopPushToTalk(false,true);
+ voiceSessionStarted=false;
+ walkieQueue=[];walkiePlaying=false;
+ if(walkiePlayerEl){try{walkiePlayerEl.pause();walkiePlayerEl.src="";}catch(e){}}
+}
+function handleIncomingVoiceClip(id,m){
+ if(!currentUser||!inNearbyVoiceRoom())return;
+ if(!id||walkiePlayedIds.has(id))return;
+ walkiePlayedIds.add(id);
+ if(m.uid===currentUser.uid||blockedUids.has(m.uid))return;
+ const ts=Number(m.createdAt||0);
+ if(ts&&ts<walkieJoinedAt)return;
+ walkieLastClipData={handle:String(m.handle||"Explorer"),audioData:String(m.audioData||""),createdAt:ts||Date.now()};
+ updateLastClipUI(walkieLastClipData);
+ walkieQueue.push(walkieLastClipData);
+ processWalkieQueue();
+}
+function updateLastClipUI(clip){
+ const box=document.getElementById("walkieLastClip"),sender=document.getElementById("walkieLastSender"),timeEl=document.getElementById("walkieLastTime");
+ if(!box||!clip)return;
+ box.classList.remove("hidden");
+ if(sender)sender.textContent=clip.handle;
+ if(timeEl)timeEl.textContent="Voice · "+new Date(clip.createdAt).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+}
+function processWalkieQueue(){
+ if(walkiePlaying||!walkieQueue.length)return;
+ const clip=walkieQueue.shift();
+ if(!clip||!clip.audioData){processWalkieQueue();return;}
+ walkiePlaying=true;
+ const sp=document.getElementById("nearbySpeakingStatus");
+ if(sp)sp.textContent=clip.handle+" is speaking…";
+ playWalkieBeep(640,0.05);
+ const el=ensureWalkiePlayer();
+ el.onended=()=>{
+  walkiePlaying=false;
+  if(sp)sp.textContent="Nobody is speaking right now.";
+  playWalkieBeep(520,0.05);
+  processWalkieQueue();
+ };
+ el.onerror=()=>{
+  walkiePlaying=false;
+  if(sp)sp.textContent="Nobody is speaking right now.";
+  processWalkieQueue();
+ };
+ el.src=clip.audioData;
+ const playPromise=el.play();
+ if(playPromise&&playPromise.catch){
+  playPromise.catch(()=>{
+   walkiePlaying=false;
+   setPttStatus("Incoming voice from "+clip.handle+". Tap Play or Enable Speaker to listen.");
+   if(sp)sp.textContent="Voice received from "+clip.handle+".";
+  });
+ }
+}
+function replayLastVoiceClip(){
+ unlockWalkieAudio(false);
+ if(!walkieLastClipData||!walkieLastClipData.audioData)return;
+ const el=ensureWalkiePlayer();
+ el.src=walkieLastClipData.audioData;
+ el.play().catch(()=>setPttStatus("Tap Enable Speaker first, then press Play."));
 }
 async function startPushToTalk(){
  if(pttActive||pttStarting)return;
- if(!inNearbyVoiceRoom()){setPttStatus("Sign in, turn Radar ON, and join the shared Radar Chat first.");return;}
- if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){setPttStatus("Microphone is unavailable. Open this site in a supported browser over HTTPS.");return;}
- const button=document.getElementById("pttButton"),stop=document.getElementById("pttStopButton");
- if(button)button.disabled=true;pttStarting=true;
+ unlockWalkieAudio(false);
+ if(!inNearbyVoiceRoom()){setPttStatus("Turn Radar ON first to use Walkie-Talkie.");return;}
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+  setPttStatus("Microphone unavailable. Open this site over HTTPS in Chrome or Safari.");
+  return;
+ }
+ if(typeof MediaRecorder==="undefined"){
+  setPttStatus("Your browser does not support voice recording. Please update Chrome or Safari.");
+  return;
+ }
+ const button=document.getElementById("pttButton"),stopBtn=document.getElementById("pttStopButton");
+ pttStarting=true;
  try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
-  if(!pttPressed||!inNearbyVoiceRoom()){stream.getTracks().forEach(t=>t.stop());return;}
-  pttStream=stream;pttActive=true;
-  const track=stream.getAudioTracks()[0];
-  await Promise.all(Object.values(voicePeers).map(peer=>peer.sender?peer.sender.replaceTrack(track).catch(e=>console.log("Audio sender:",e.message)):null));
-  await rtdb.ref("nearbyChat/members/"+currentUser.uid).update({speaking:true,speakingUntil:Date.now()+10000});
-  if(button){button.classList.add("is-live");button.textContent="🎙️";button.setAttribute("aria-label","Transmitting. Microphone stops after 10 seconds.");button.disabled=false;}
-  if(stop)stop.disabled=false;
-  setPttStatus("LIVE — speaking. Microphone stops automatically after 10 seconds.",true);
+  const stream=await navigator.mediaDevices.getUserMedia({
+   audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},
+   video:false
+  });
+  if(!pttPressed||!inNearbyVoiceRoom()){
+   stream.getTracks().forEach(t=>t.stop());
+   pttStarting=false;
+   setPttStatus("Microphone ready! Now press and HOLD the button to speak.");
+   return;
+  }
+  pttStream=stream;
+  pttChunks=[];
+  const mimeType=pickVoiceMimeType();
+  const opts={audioBitsPerSecond:24000};
+  if(mimeType)opts.mimeType=mimeType;
+  try{pttRecorder=new MediaRecorder(stream,opts);}catch(err){pttRecorder=new MediaRecorder(stream);}
+  pttRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)pttChunks.push(e.data);};
+  pttRecorder.start(200);
+  pttActive=true;
+  pttStartAt=Date.now();
+  if(navigator.vibrate)try{navigator.vibrate(25);}catch(e){}
+  playWalkieBeep(920,0.06);
+  rtdb.ref("nearbyChat/members/"+currentUser.uid).update({speaking:true,speakingUntil:Date.now()+10500}).catch(()=>{});
+  if(button){button.classList.add("is-live");button.setAttribute("aria-label","Recording voice. Release to send.");}
+  if(stopBtn)stopBtn.disabled=false;
+  setPttStatus("LIVE — Recording… release button to send.",true);
+  if(pttTickTimer)clearInterval(pttTickTimer);
+  pttTickTimer=setInterval(()=>{
+   const elapsed=Math.min((Date.now()-pttStartAt)/1000,10);
+   updatePttTimer(elapsed,true);
+  },100);
   if(pttLimitTimer)clearTimeout(pttLimitTimer);
-  pttLimitTimer=setTimeout(()=>{pttPressed=false;stopPushToTalk(true);},10000);
+  pttLimitTimer=setTimeout(()=>{pttPressed=false;stopPushToTalk(true,false);},10000);
  }catch(e){
-  if(e.name==="NotAllowedError")setPttStatus("Microphone permission denied. Allow microphone access in your browser settings.");
-  else if(e.name==="NotFoundError")setPttStatus("No microphone was found on this device.");
+  if(e.name==="NotAllowedError"||e.name==="PermissionDeniedError")setPttStatus("Microphone permission denied. Allow mic in browser settings and try again.");
+  else if(e.name==="NotFoundError")setPttStatus("No microphone found on this device.");
   else setPttStatus("Could not start microphone: "+e.message);
-  if(pttStream){pttStream.getTracks().forEach(t=>t.stop());pttStream=null;}pttActive=false;
- }finally{pttStarting=false;if(!pttActive&&button)button.disabled=!inNearbyVoiceRoom();}
+  if(pttStream){pttStream.getTracks().forEach(t=>t.stop());pttStream=null;}
+  pttActive=false;
+ }finally{
+  pttStarting=false;
+ }
 }
-async function stopPushToTalk(autoStopped=false){
+async function stopPushToTalk(autoStopped=false,discard=false){
  pttPressed=false;
  if(pttLimitTimer){clearTimeout(pttLimitTimer);pttLimitTimer=null;}
- const stream=pttStream;pttStream=null;pttActive=false;
- if(stream){const silence=Object.values(voicePeers).map(peer=>peer.sender?peer.sender.replaceTrack(null).catch(()=>{}):null);await Promise.all(silence);stream.getTracks().forEach(track=>track.stop());}
+ if(pttTickTimer){clearInterval(pttTickTimer);pttTickTimer=null;}
+ const wasActive=pttActive,elapsedMs=Date.now()-pttStartAt;
+ pttActive=false;
+ const recorder=pttRecorder,stream=pttStream;
+ pttRecorder=null;pttStream=null;
+ const button=document.getElementById("pttButton"),stopBtn=document.getElementById("pttStopButton");
+ if(button){button.disabled=!inNearbyVoiceRoom();button.classList.remove("is-live");button.setAttribute("aria-label","Hold microphone to talk, maximum 10 seconds");}
+ if(stopBtn)stopBtn.disabled=true;
+ updatePttTimer(0,false);
  if(currentUser)rtdb.ref("nearbyChat/members/"+currentUser.uid).update({speaking:false,speakingUntil:0}).catch(()=>{});
- const button=document.getElementById("pttButton"),stop=document.getElementById("pttStopButton");
- if(button){button.disabled=!inNearbyVoiceRoom();button.classList.remove("is-live");button.textContent="🎙️";button.setAttribute("aria-label","Hold microphone to talk, maximum 10 seconds");}
- if(stop)stop.disabled=true;
- setPttStatus(autoStopped?"10 seconds reached. Microphone stopped automatically.":"Microphone OFF. Hold the button when you are ready to speak.");
+ if(!wasActive||!recorder){
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  return;
+ }
+ playWalkieBeep(540,0.06);
+ const audioBlob=await new Promise(resolve=>{
+  const finalize=()=>{
+   if(stream)stream.getTracks().forEach(t=>t.stop());
+   const type=(recorder.mimeType||pickVoiceMimeType()||"audio/webm");
+   resolve(new Blob(pttChunks,{type}));
+  };
+  if(recorder.state==="inactive"){finalize();return;}
+  recorder.onstop=finalize;
+  try{recorder.stop();}catch(e){finalize();}
+ });
+ pttChunks=[];
+ if(discard||!inNearbyVoiceRoom())return;
+ if(elapsedMs<350||audioBlob.size<400){
+  setPttStatus("Hold the button a bit longer to send voice.");
+  return;
+ }
+ setPttStatus("Sending voice…");
+ try{
+  const dataUrl=await new Promise((res,rej)=>{
+   const r=new FileReader();
+   r.onload=()=>res(r.result);
+   r.onerror=()=>rej(new Error("Read failed"));
+   r.readAsDataURL(audioBlob);
+  });
+  const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
+  await rtdb.ref("nearbyChat/messages").push({
+   type:"voice",
+   uid:currentUser.uid,
+   handle,
+   text:"[Voice]",
+   audioData:dataUrl,
+   createdAt:firebase.database.ServerValue.TIMESTAMP
+  });
+  setPttStatus(autoStopped?"10s limit reached — voice sent!":"Voice sent! Hold button to speak again.");
+ }catch(e){
+  setPttStatus("Could not send voice: "+e.message);
+ }
 }
 function setupPushToTalk(){
- const button=document.getElementById("pttButton");if(!button||button.dataset.pttReady==="1")return;
+ const button=document.getElementById("pttButton");
+ if(!button||button.dataset.pttReady==="1")return;
  button.dataset.pttReady="1";
- button.addEventListener("pointerdown",e=>{
-  e.preventDefault();if(!inNearbyVoiceRoom()||pttStarting||pttActive)return;
+ const onStart=e=>{
+  if(e.type==="touchstart")e.preventDefault();
+  else if(e.pointerType==="mouse"&&e.button!==0)return;
+  if(!inNearbyVoiceRoom()||pttStarting||pttActive)return;
   pttPressed=true;
-  try{button.setPointerCapture(e.pointerId);}catch(err){}
+  if(e.pointerId!==undefined){try{button.setPointerCapture(e.pointerId);}catch(err){}}
   startPushToTalk();
- });
- ["pointerup","pointercancel","lostpointercapture"].forEach(name=>button.addEventListener(name,()=>{if(pttPressed||pttActive)stopPushToTalk();}));
- document.addEventListener("visibilitychange",()=>{if(document.hidden)stopPushToTalk();});
+ };
+ const onEnd=()=>{if(pttPressed||pttActive)stopPushToTalk(false,false);};
+ button.addEventListener("pointerdown",onStart);
+ ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>button.addEventListener(ev,onEnd));
+ button.addEventListener("contextmenu",e=>e.preventDefault());
+ document.addEventListener("visibilitychange",()=>{if(document.hidden&&(pttPressed||pttActive))stopPushToTalk(false,false);});
 }
 document.addEventListener("DOMContentLoaded",setupPushToTalk);
 window.addEventListener("beforeunload",()=>{if(pttStream)pttStream.getTracks().forEach(track=>track.stop());stopNearbyVoiceRoom();});
