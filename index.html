@@ -827,6 +827,102 @@ nav.bottom-nav{
  from{transform:scaleX(0)}
  to{transform:scaleX(1)}
 }
+
+/* ---------- UPGRADED AUTH & LANDING ---------- */
+.auth-page{max-width:960px;margin:28px auto 12px;padding:16px}
+.auth-title{text-align:center;margin-bottom:26px}
+.auth-badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.auth-badge{
+ font-family:"JetBrains Mono",monospace;
+ font-size:10.5px;font-weight:600;
+ padding:4px 10px;border-radius:999px;
+ border:1px solid rgba(56,189,248,0.26);
+ background:rgba(56,189,248,0.08);
+ color:var(--cyan);
+}
+.auth-grid{
+ display:grid;
+ grid-template-columns:1fr;
+ gap:20px;
+ align-items:start;
+}
+@media(min-width:820px){
+ .auth-grid{grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:24px}
+}
+.password-wrap{position:relative;margin:7px 0}
+.password-wrap input{margin:0;padding-right:46px}
+.password-toggle{
+ position:absolute;right:8px;top:50%;transform:translateY(-50%);
+ width:34px;height:34px;padding:0;
+ display:grid;place-items:center;
+ border:0;background:transparent;color:var(--muted);border-radius:8px;
+}
+.password-toggle:hover:not(:disabled){background:rgba(255,255,255,0.08);color:var(--text)}
+.password-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.strength-wrap{margin:6px 2px 4px}
+.strength-bars{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:5px}
+.strength-bar{height:4px;border-radius:999px;background:rgba(255,255,255,0.1);transition:background .2s ease}
+.strength-label{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted)}
+.auth-divider{
+ display:flex;align-items:center;gap:10px;
+ margin:14px 0 10px;color:var(--muted);
+ font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:0.06em;
+}
+.auth-divider:before,.auth-divider:after{content:"";flex:1;height:1px;background:var(--line)}
+.google-btn{
+ width:100%;display:flex;align-items:center;justify-content:center;gap:9px;
+ background:rgba(255,255,255,0.05);color:var(--text);border:1px solid var(--line-strong);
+ margin-top:4px;
+}
+.google-btn svg{width:17px;height:17px;flex:0 0 17px}
+.guest-btn{
+ width:100%;margin-top:8px;
+ background:rgba(56,189,248,0.08);
+ border:1px solid rgba(56,189,248,0.28);
+ color:var(--cyan);
+}
+.guest-btn:hover:not(:disabled){background:rgba(56,189,248,0.15);border-color:rgba(56,189,248,0.45)}
+.features-card{padding:22px}
+.features-eyebrow{
+ font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;
+ letter-spacing:0.08em;color:var(--cyan);margin-bottom:6px;
+}
+.feature-list{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}
+.feature-item{
+ display:flex;gap:12px;align-items:flex-start;
+ padding:13px 14px;border-radius:14px;
+ border:1px solid var(--line);background:rgba(255,255,255,0.025);
+}
+.feature-icon{
+ width:36px;height:36px;border-radius:10px;flex:0 0 36px;
+ display:grid;place-items:center;font-size:17px;
+ background:#18181c;border:1px solid rgba(255,255,255,0.12);
+}
+.feature-item h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.feature-item p{font-size:12.5px;color:var(--subtext);line-height:1.5;margin:0}
+.auth-footer{
+ margin-top:26px;padding-top:16px;border-top:1px solid var(--line);
+ display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;
+ font-size:12px;color:var(--muted);
+}
+.auth-footer-links{display:flex;flex-wrap:wrap;gap:6px}
+.auth-footer-links button{
+ border:0;background:transparent;color:var(--muted);
+ padding:5px 8px;font-size:12px;font-weight:600;border-radius:8px;
+}
+.auth-footer-links button:hover:not(:disabled){color:var(--text);background:rgba(255,255,255,0.06)}
+.guest-banner{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+ padding:11px 14px;margin-bottom:14px;border-radius:14px;
+ border:1px solid rgba(56,189,248,0.32);
+ background:rgba(56,189,248,0.09);
+ font-size:12.5px;color:var(--text);
+}
+.guest-banner strong{color:var(--cyan)}
+.info-modal-body{font-size:13.5px;color:var(--subtext);line-height:1.6;margin-bottom:14px}
+.info-modal-body p{margin-bottom:10px}
+.info-modal-body p:last-child{margin-bottom:0}
+
 </style>
 </head>
 <body>
@@ -871,20 +967,101 @@ nav.bottom-nav{
 <header><div class="logo">100m<span>.</span></div><div class="status" id="topStatus">● NETWORK</div></header>
 
 <section id="authPage" class="auth-page">
- <div class="auth-title"><h1>100m Network</h1><p>Meet people. Share ideas. Build connections.</p></div>
- <div class="card">
-  <h2 id="authHeading">Create Account</h2><p class="sub" id="authSub">Join the global community.</p>
-  <div id="nameField"><input id="displayName" type="text" placeholder="Your username" maxlength="25"></div>
-  <input id="email" type="email" placeholder="Email address" autocomplete="email">
-  <input id="password" type="password" placeholder="Password (minimum 6 characters)" autocomplete="current-password">
-  <button class="primary" id="authButton" onclick="handleAuth()">Create Account</button>
-  <p id="authMessage"></p><p class="auth-switch" id="forgotRow" style="display:none;margin-top:8px"><span onclick="resetPassword()">Forgot password?</span></p>
-  <p class="auth-switch"><span id="switchText">Already have an account?</span><span onclick="toggleAuth()" id="switchButton">Login</span></p>
+ <div class="auth-title">
+  <h1>100m Network</h1>
+  <p>Meet people. Share ideas. Build connections.</p>
+  <div class="auth-badges">
+   <span class="auth-badge">PRIVACY-FIRST</span>
+   <span class="auth-badge">NO GPS STORED</span>
+   <span class="auth-badge">24H AUTO-DELETE</span>
+  </div>
  </div>
- <p class="sub" style="text-align:center">Use a username instead of sharing your full name.</p>
+ <div class="auth-grid">
+  <div>
+   <div class="card">
+    <h2 id="authHeading">Create Account</h2><p class="sub" id="authSub">Join the global community.</p>
+    <div id="nameField"><input id="displayName" type="text" placeholder="Your username" maxlength="25" autocomplete="username"></div>
+    <input id="email" type="email" placeholder="Email address" autocomplete="email">
+    <div class="password-wrap">
+     <input id="password" type="password" placeholder="Password (minimum 6 characters)" autocomplete="new-password" oninput="updatePasswordStrength()">
+     <button type="button" class="password-toggle" id="passwordToggleBtn" onclick="togglePasswordVisibility()" aria-label="Show password" title="Show or hide password">
+      <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+     </button>
+    </div>
+    <div id="passwordStrengthWrap" class="strength-wrap">
+     <div class="strength-bars">
+      <div class="strength-bar" id="strBar1"></div>
+      <div class="strength-bar" id="strBar2"></div>
+      <div class="strength-bar" id="strBar3"></div>
+      <div class="strength-bar" id="strBar4"></div>
+     </div>
+     <div id="passwordStrengthLabel" class="strength-label">Use 6+ characters for a stronger password</div>
+    </div>
+    <button class="primary" id="authButton" onclick="handleAuth()">Create Account</button>
+    <div class="auth-divider"><span>OR</span></div>
+    <button type="button" class="google-btn" id="googleAuthBtn" onclick="handleGoogleAuth()">
+     <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.5 3.8-5.5 3.8-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.9 1.5l2.7-2.6C16.9 3.2 14.7 2.2 12 2.2 6.6 2.2 2.2 6.6 2.2 12s4.4 9.8 9.8 9.8c5.7 0 9.4-4 9.4-9.6 0-.6-.1-1.1-.2-1.6H12z"/></svg>
+     <span>Continue with Google</span>
+    </button>
+    <button type="button" class="guest-btn" onclick="enterGuestPreview()">Explore Preview (No Sign-Up)</button>
+    <p id="authMessage"></p>
+    <p class="auth-switch" id="forgotRow" style="display:none;margin-top:8px"><span onclick="resetPassword()">Forgot password?</span></p>
+    <p class="auth-switch"><span id="switchText">Already have an account?</span><span onclick="toggleAuth()" id="switchButton">Login</span></p>
+   </div>
+   <p class="sub" id="usernameNote" style="text-align:center">Use a username instead of sharing your full name.</p>
+  </div>
+  <div class="card features-card">
+   <div class="features-eyebrow">WHAT'S INSIDE 100M</div>
+   <h3 style="font-size:20px">Real-time anonymous channels — zero noise</h3>
+   <p class="sub" style="margin:6px 0 0">See what you unlock inside 100m Network before creating an account.</p>
+   <div class="feature-list">
+    <div class="feature-item">
+     <div class="feature-icon">📡</div>
+     <div>
+      <h4>~100m Privacy Radar</h4>
+      <p>Discover opted-in members in your ~100m zone using on-device zone hashing. Exact GPS and distance are never stored.</p>
+     </div>
+    </div>
+    <div class="feature-item">
+     <div class="feature-icon">⚡</div>
+     <div>
+      <h4>Global Signal Match</h4>
+      <p>Instant anonymous 1-on-1 chat with anyone online worldwide. Tap Next anytime — sessions auto-clear when ended.</p>
+     </div>
+    </div>
+    <div class="feature-item">
+     <div class="feature-icon">🎙️</div>
+     <div>
+      <h4>Live Voice Room</h4>
+      <p>Hands-free real-time WebRTC audio for up to 8 speakers with echo cancellation and one-tap mute.</p>
+     </div>
+    </div>
+    <div class="feature-item">
+     <div class="feature-icon">💬</div>
+     <div>
+      <h4>Global &amp; Private Chats</h4>
+      <p>Join the 24-hour auto-deleting community room or start private 1-on-1 chats with your shareable 100m Chat ID.</p>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+ <footer class="auth-footer">
+  <span>&copy; 100m Network · Anonymous real-time community</span>
+  <div class="auth-footer-links">
+   <button type="button" onclick="openInfoModal('about')">About</button>
+   <button type="button" onclick="openInfoModal('privacy')">Privacy Policy</button>
+   <button type="button" onclick="openInfoModal('terms')">Terms</button>
+   <button type="button" onclick="openInfoModal('safety')">Safety</button>
+  </div>
+ </footer>
 </section>
 
 <div id="app"><main>
+<div id="guestBanner" class="guest-banner hidden">
+ <div><strong>Preview Mode:</strong> Exploring 100m Network as a guest. Sign in to chat, join Radar, or talk live.</div>
+ <button type="button" class="primary small fit" style="width:auto;margin:0" onclick="exitGuestPreview()">Sign Up / Login</button>
+</div>
 <section class="page active" id="home">
  <h2>100m Network</h2><p class="sub">Real-time anonymous communication — zero noise.</p>
  <div class="card">
@@ -1085,8 +1262,9 @@ const firebaseConfig={
  appId:"1:244502104934:web:82c5990cf4324a352e16a7",
  measurementId:"G-M03JYRG2XD"
 };
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(),db=firebase.firestore(),rtdb=firebase.database();
+const hasFirebase=typeof firebase!=="undefined"&&typeof firebase.initializeApp==="function";
+if(hasFirebase&&!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const auth=hasFirebase?firebase.auth():null,db=hasFirebase?firebase.firestore():null,rtdb=hasFirebase?firebase.database():null;
 let isLogin=false,currentUser=null,guestMode=false,radarIsOn=false;
 let radarPublicRef=null,radarPublicListener=null;
 let nearbyMembersRef=null,nearbyMembersListener=null,nearbyMessagesRef=null,nearbyMessagesListener=null,nearbyReactionsRef=null,nearbyReactionsListener=null,nearbyReplyTarget=null,nearbyMessageCache=[],nearbyReactionCache={};
@@ -1104,13 +1282,111 @@ function toggleAuth(){
  document.getElementById("authButton").textContent=isLogin?"Login":"Create Account";
  document.getElementById("switchText").textContent=isLogin?"Don't have an account?":"Already have an account?";
  document.getElementById("switchButton").textContent=isLogin?"Sign Up":"Login";
- document.getElementById("password").autocomplete=isLogin?"current-password":"new-password";document.getElementById("forgotRow").style.display=isLogin?"block":"none";
+ document.getElementById("password").autocomplete=isLogin?"current-password":"new-password";
+ document.getElementById("forgotRow").style.display=isLogin?"block":"none";
+ const note=document.getElementById("usernameNote");if(note)note.style.display=isLogin?"none":"block";
+ const sw=document.getElementById("passwordStrengthWrap");if(sw)sw.style.display=isLogin?"none":"block";
  document.getElementById("authMessage").textContent="";
 }
+function togglePasswordVisibility(){
+ const input=document.getElementById("password"),btn=document.getElementById("passwordToggleBtn"),icon=document.getElementById("eyeIcon");
+ if(!input)return;
+ const showing=input.type==="text";
+ input.type=showing?"password":"text";
+ if(btn)btn.setAttribute("aria-label",showing?"Show password":"Hide password");
+ if(icon)icon.innerHTML=showing
+  ?'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>'
+  :'<path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-6.5 0-10-7-10-7a20.6 20.6 0 0 1 5.06-5.94"/><path d="M9.9 4.24A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a20.7 20.7 0 0 1-3.17 4.49"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}
+function updatePasswordStrength(){
+ const val=(document.getElementById("password")?.value)||"";
+ const bars=[1,2,3,4].map(i=>document.getElementById("strBar"+i));
+ const lbl=document.getElementById("passwordStrengthLabel");
+ if(!lbl)return;
+ let score=0;
+ if(val.length>=6)score++;
+ if(val.length>=10)score++;
+ if(/[A-Z]/.test(val)&&/[a-z]/.test(val))score++;
+ if(/[0-9]/.test(val)||/[^A-Za-z0-9]/.test(val))score++;
+ const colors=["rgba(255,255,255,0.1)","var(--red)","var(--amber)","var(--cyan)","var(--green)"];
+ const texts=["Use 6+ characters for a stronger password","Weak — add numbers or uppercase letters","Fair — getting better","Good password","Strong password"];
+ bars.forEach((b,idx)=>{if(b)b.style.background=(val&&idx<score)?colors[score]:"rgba(255,255,255,0.1)";});
+ lbl.textContent=val?texts[score]:texts[0];
+ lbl.style.color=val?colors[score]:"var(--muted)";
+}
+async function ensureGoogleUserDoc(u){
+ if(!u||!db)return;
+ const ref=db.collection("users").doc(u.uid),snap=await ref.get();
+ if(!snap.exists){
+  await ref.set({uid:u.uid,username:(u.displayName||"Explorer").slice(0,25),email:u.email||"",bio:"",country:"",interests:"",createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+ }
+}
+async function handleGoogleAuth(){
+ if(!auth){showMessage("Network service is unavailable right now. Try Explore Preview or open on your live site.");return}
+ const btn=document.getElementById("googleAuthBtn");
+ if(btn)btn.disabled=true;
+ showMessage("",true);
+ const provider=new firebase.auth.GoogleAuthProvider();
+ try{
+  const result=await auth.signInWithPopup(provider);
+  if(result&&result.user)await ensureGoogleUserDoc(result.user);
+ }catch(e){
+  if(e&&e.code==="auth/popup-blocked"&&/^https?:/i.test(window.location.protocol)){
+   try{await auth.signInWithRedirect(provider);return;}catch(re){showMessage(friendlyAuthError(re));}
+  }else{showMessage(friendlyAuthError(e));}
+ }
+ finally{if(btn)btn.disabled=false;}
+}
+if(auth&&/^https?:/i.test(window.location.protocol)){
+ auth.getRedirectResult().then(r=>{if(r&&r.user)ensureGoogleUserDoc(r.user);}).catch(e=>{if(e&&e.code)showMessage(friendlyAuthError(e));});
+}
+function enterGuestPreview(){
+ guestMode=true;
+ document.getElementById("authPage").style.display="none";
+ document.getElementById("app").style.display="block";
+ const gb=document.getElementById("guestBanner");if(gb)gb.classList.remove("hidden");
+ document.getElementById("profileName").textContent="Guest Preview";
+ document.getElementById("profileEmail").textContent="Not signed in";
+ document.getElementById("profileAvatar").textContent="G";
+ document.getElementById("myPublicChatId").textContent="Sign in to generate your Chat ID";
+ document.getElementById("editProfileButton").classList.add("hidden");
+ document.getElementById("globalChatStatus").textContent="Preview Mode — sign in to read and send live messages.";
+ document.getElementById("globalOnlineMembers").innerHTML='<span class="global-online-chip">Explorer-a4f1</span><span class="global-online-chip">Explorer-9c2d</span><span class="global-online-chip">Explorer-7b0e</span>';
+ document.getElementById("globalOnlineCount").textContent="Preview";
+ document.getElementById("globalChatMessages").innerHTML='<div class="empty">Sign in with a free account to join the live Global Chat room.</div>';
+ updateRadarStatusUI(false,"Preview Mode — sign in to turn ON 100m Live Radar.");
+ go("home");
+}
+function exitGuestPreview(){
+ guestMode=false;
+ const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");
+ document.getElementById("app").style.display="none";
+ document.getElementById("authPage").style.display="block";
+ window.scrollTo(0,0);
+}
+function openInfoModal(topic){
+ const old=document.getElementById("infoModalOverlay");if(old)old.remove();
+ const content={
+  about:{title:"About 100m Network",paragraphs:["100m Network is a real-time, username-first communication web app built for fast, low-noise conversations.","It brings together a privacy-safe ~100m Zone Radar, Global 1-on-1 Signal Match, hands-free Live Voice rooms (up to 8 speakers), and 24-hour auto-deleting community chats."]},
+  privacy:{title:"Privacy Policy",paragraphs:["Your exact GPS coordinates, compass direction, and meter distance are never stored or shared. When Radar is ON, your browser hashes an approximate ~100m zone cell locally on-device.","Global and Radar group messages older than 24 hours are automatically cleared, and Global Signal Match sessions clear when ended. You can use any username instead of your real name."]},
+  terms:{title:"Terms of Use",paragraphs:["Be respectful in chats and voice rooms. Harassment, spam, bullying, impersonation, or sharing private personal details is not allowed.","Accounts reported for unsafe behavior may be reviewed or restricted. You can block any member at any time from their avatar menu."]},
+  safety:{title:"Community Safety",paragraphs:["Never share personal phone numbers, home addresses, or financial details in public or anonymous chats.","Tap or long-press any member avatar in Radar, Voice, or Chats to instantly Report or Block them."]}
+ }[topic]||{title:"100m Network",paragraphs:["Anonymous real-time community."]};
+ const overlay=document.createElement("div");overlay.id="infoModalOverlay";overlay.className="profile-action-overlay";
+ const panel=document.createElement("div");panel.className="profile-action-panel";panel.style.maxWidth="420px";
+ const h=document.createElement("h3");h.textContent=content.title;
+ const body=document.createElement("div");body.className="info-modal-body";
+ content.paragraphs.forEach(t=>{const p=document.createElement("p");p.textContent=t;body.appendChild(p);});
+ const close=document.createElement("button");close.type="button";close.className="primary";close.textContent="Got it";close.onclick=()=>overlay.remove();
+ panel.append(h,body,close);overlay.appendChild(panel);
+ overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove();});
+ document.body.appendChild(overlay);
+}
 function showMessage(m,ok){const el=document.getElementById("authMessage");el.textContent=m;el.style.color=ok?"var(--green)":"var(--red)"}
-function friendlyAuthError(e){const map={"auth/email-already-in-use":"This email is already registered. Try logging in.","auth/invalid-email":"Please enter a valid email address.","auth/weak-password":"Password is too weak. Use at least 6 characters.","auth/user-not-found":"Incorrect email or password.","auth/wrong-password":"Incorrect email or password.","auth/invalid-credential":"Incorrect email or password.","auth/too-many-requests":"Too many attempts. Please wait a moment and try again.","auth/network-request-failed":"Network error. Check your connection."};return map[e&&e.code]||"Something went wrong. Please try again."}
-async function resetPassword(){const email=document.getElementById("email").value.trim();if(!email){showMessage("Enter your email above first.");return}try{await auth.sendPasswordResetEmail(email);showMessage("Password reset email sent. Check your inbox.",true)}catch(e){showMessage(friendlyAuthError(e))}}
+function friendlyAuthError(e){const map={"auth/email-already-in-use":"This email is already registered. Try logging in.","auth/invalid-email":"Please enter a valid email address.","auth/weak-password":"Password is too weak. Use at least 6 characters.","auth/user-not-found":"Incorrect email or password.","auth/wrong-password":"Incorrect email or password.","auth/invalid-credential":"Incorrect email or password.","auth/too-many-requests":"Too many attempts. Please wait a moment and try again.","auth/network-request-failed":"Network error. Check your connection.","auth/operation-not-allowed":"Google sign-in is not enabled yet in Firebase Console. Use Email & Password above.","auth/unauthorized-domain":"This domain is not authorized for Google sign-in yet. Use Email & Password above.","auth/popup-closed-by-user":"Sign-in popup was closed before completing.","auth/cancelled-popup-request":"Another sign-in popup is already open.","auth/popup-blocked":"Browser blocked the Google popup. Allow popups or try again.","auth/operation-not-supported-in-this-environment":"Google popup sign-in only works on your live HTTPS site (not inside preview windows).","auth/account-exists-with-different-credential":"An account already exists with this email. Try logging in with Email & Password."};return map[e&&e.code]||("Sign-in error ("+(e&&e.code?e.code:"unknown")+"). Please try again.")}
+async function resetPassword(){if(!auth){showMessage("Network service is unavailable right now. Open on your live HTTPS site.");return}const email=document.getElementById("email").value.trim();if(!email){showMessage("Enter your email above first.");return}try{await auth.sendPasswordResetEmail(email);showMessage("Password reset email sent. Check your inbox.",true)}catch(e){showMessage(friendlyAuthError(e))}}
 async function handleAuth(){
+ if(!auth){showMessage("Network service is unavailable right now. Try Explore Preview or open on your live site.");return}
  const email=document.getElementById("email").value.trim(),password=document.getElementById("password").value,name=document.getElementById("displayName").value.trim();
  if(!email||!password){showMessage("Please enter your email and password.");return}
  if(password.length<6){showMessage("Password must have at least 6 characters.");return}
@@ -1179,10 +1455,11 @@ async function saveProfile(){
  finally{b.disabled=false;b.textContent="Save Changes"}
 }
 async function logout(){
+ if(guestMode){exitGuestPreview();return;}
  if(currentUser){try{await setRadarStatus(false)}catch(e){}}
  stopRadarRoomListener();if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
- activeChatId=null;try{await stopGlobalChat(true)}catch(e){}auth.signOut();
+ activeChatId=null;try{await stopGlobalChat(true)}catch(e){}if(auth)auth.signOut();
 }
 function chatDocumentId(uidA,uidB){return [uidA,uidB].sort().join("__")}
 function loadConversations(){}
@@ -1197,7 +1474,7 @@ async function ensurePublicChatId(user,profile){
  }
  throw new Error("Could not create a unique Chat ID. Please try again.");
 }
-async function copyMyChatId(){if(!myPublicChatId)return;try{await navigator.clipboard.writeText(myPublicChatId);document.getElementById("profileMessage").textContent="Chat ID copied."}catch(e){document.getElementById("profileMessage").textContent="Copy not available. Please select and copy the ID."}}
+async function copyMyChatId(){if(!myPublicChatId)return;try{await navigator.clipboard.writeText(myPublicChatId);document.getElementById("profileMessage").textContent="Chat ID copied.";return;}catch(e){}try{const ta=document.createElement("textarea");ta.value=myPublicChatId;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();document.getElementById("profileMessage").textContent="Chat ID copied.";}catch(e){document.getElementById("profileMessage").textContent="Copy not available. Please select and copy the ID.";}}
 async function startPrivateChat(){
  const status=document.getElementById("privateChatStatus");
  if(!currentUser||guestMode){status.textContent="Please sign in with an account to use private messages.";return}
@@ -1955,7 +2232,7 @@ async function stopGlobalChat(silent=false){
 }
 
 function handleSignedIn(user){
- guestMode=false;document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();
+ guestMode=false;const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();
 }
 function cleanupSession(){
  stopRadarGeoWatch();stopRadarRoomListener();stopNearbyRoomListeners();stopGlobalChatListeners();stopNearbyVoiceRoom();stopSignalMatch(true);radarIsOn=false;
@@ -1965,10 +2242,10 @@ function cleanupSession(){
  ["globalChatMessages","privateMessages"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=""});
  closeEditProfile();go("home");
 }
-auth.onAuthStateChanged(user=>{
+if(auth)auth.onAuthStateChanged(user=>{
  if(signupInProgress)return;
  if(user){if(!currentUser||currentUser.uid!==user.uid)handleSignedIn(user)}
- else{currentUser=null;cleanupSession();updateRadarStatusUI(false,"Sign in to control your private status.");document.getElementById("authPage").style.display="block";document.getElementById("app").style.display="none"}
+ else{currentUser=null;if(guestMode)return;cleanupSession();updateRadarStatusUI(false,"Sign in to control your private status.");document.getElementById("authPage").style.display="block";document.getElementById("app").style.display="none"}
 });
 function go(id,btn){
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
@@ -2346,7 +2623,7 @@ document.addEventListener("DOMContentLoaded",setupPushToTalk);
 window.addEventListener("beforeunload",()=>{if(pttStream)pttStream.getTracks().forEach(track=>track.stop());stopNearbyVoiceRoom();});
 [["globalMessageInput","sendGlobalMessage"],["nearbyRoomMessageInput","sendNearbyRoomMessage"],["privateMessageInput","sendPrivateMessage"],["signalMessageInput","sendSignalMessage"]].forEach(([id,fn])=>{const el=document.getElementById(id);if(el)el.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&matchMedia("(pointer:fine)").matches){e.preventDefault();window[fn]()}})});
 ["email","password","displayName"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("keydown",e=>{if(e.key==="Enter")handleAuth()})});
-rtdb.ref(".info/connected").on("value",x=>{const t=document.getElementById("topStatus");if(t){t.textContent=x.val()?"\u25cf ONLINE":"\u25cb OFFLINE";t.style.color=x.val()?"var(--green)":"var(--red)"}});
+if(rtdb){rtdb.ref(".info/connected").on("value",x=>{const t=document.getElementById("topStatus");if(t){t.textContent=x.val()?"\u25cf ONLINE":"\u25cb OFFLINE";t.style.color=x.val()?"var(--green)":"var(--red)"}});}else{const t=document.getElementById("topStatus");if(t){t.textContent="\u25cf PREVIEW";t.style.color="var(--cyan)";}}
 
 
 // GLOBAL 1-ON-1 SIGNAL MATCH (Live queue listener + deterministic tie-breaker — zero race conditions)
