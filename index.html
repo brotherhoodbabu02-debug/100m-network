@@ -983,7 +983,7 @@ nav.bottom-nav{
     <div id="nameField"><input id="displayName" type="text" placeholder="Your username" maxlength="25" autocomplete="username"></div>
     <input id="email" type="email" placeholder="Email address" autocomplete="email">
     <div class="password-wrap">
-     <input id="password" type="password" placeholder="Password (minimum 6 characters)" autocomplete="new-password" oninput="updatePasswordStrength()">
+     <input id="password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password" oninput="updatePasswordStrength()">
      <button type="button" class="password-toggle" id="passwordToggleBtn" onclick="togglePasswordVisibility()" aria-label="Show password" title="Show or hide password">
       <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
      </button>
@@ -1059,7 +1059,7 @@ nav.bottom-nav{
 
 <div id="app"><main>
 <div id="guestBanner" class="guest-banner hidden">
- <div><strong>Preview Mode:</strong> Exploring 100m Network as a guest. Sign in to chat, join Radar, or talk live.</div>
+ <div><strong>Interactive Preview:</strong> Try Radar, Signal Match, Voice &amp; Chats locally. Sign in to connect live.</div>
  <button type="button" class="primary small fit" style="width:auto;margin:0" onclick="exitGuestPreview()">Sign Up / Login</button>
 </div>
 <section class="page active" id="home">
@@ -1340,26 +1340,282 @@ async function handleGoogleAuth(){
 if(auth&&/^https?:/i.test(window.location.protocol)){
  auth.getRedirectResult().then(r=>{if(r&&r.user)ensureGoogleUserDoc(r.user);}).catch(e=>{if(e&&e.code)showMessage(friendlyAuthError(e));});
 }
+const DEMO_UID="demo_guest_me";
+const DEMO_EXPLORERS=[
+ {uid:"demo_a4f1",handle:"Explorer-a4f1",chatId:"100m-DEMO01"},
+ {uid:"demo_9c2d",handle:"Explorer-9c2d",chatId:"100m-DEMO02"},
+ {uid:"demo_7b0e",handle:"Explorer-7b0e",chatId:"100m-DEMO03"},
+ {uid:"demo_3f8a",handle:"Explorer-3f8a",chatId:"100m-DEMO04"}
+];
+let demoGlobalMsgs=[],demoNearbyMsgs=[],demoPrivateStore={},demoSignalMsgs=[],demoSignalTimer=null,demoVoiceTimer=null,demoVoiceSpeakerIdx=0,demoSignalIdx=0,demoBlockedList=[];
+
+function resetDemoState(){
+ const now=Date.now();
+ demoGlobalMsgs=[
+  {id:"dg1",uid:"demo_a4f1",handle:"Explorer-a4f1",text:"Welcome to 100m Network! Try Radar, Signal Match, or Live Voice.",createdAt:now-240000,reactions:{demo_9c2d:"🔥"}},
+  {id:"dg2",uid:"demo_9c2d",handle:"Explorer-9c2d",text:"Zero GPS stored — only anonymous ~100m zone hashes.",createdAt:now-120000,reactions:{demo_7b0e:"👍"}},
+  {id:"dg3",uid:"demo_7b0e",handle:"Explorer-7b0e",text:"Send a message below or long-press any bubble to react or reply!",createdAt:now-45000,reactions:{}}
+ ];
+ demoNearbyMsgs=[
+  {id:"dn1",uid:"demo_a4f1",handle:"Explorer-a4f1",text:"Hey! Anyone nearby in this ~100m zone?",createdAt:now-150000,reactions:{demo_3f8a:"👋"}},
+  {id:"dn2",uid:"demo_3f8a",handle:"Explorer-3f8a",text:"Yep, Radar is super smooth here. Messages auto-clear in 24h.",createdAt:now-60000,reactions:{}}
+ ];
+ demoPrivateStore={
+  "demo_a4f1":[
+   {id:"dp1",senderId:"demo_a4f1",text:"Hey! This is a preview private chat. Try sending a message or reacting.",createdAt:now-90000,reactions:{}}
+  ]
+ };
+ demoSignalMsgs=[];demoBlockedList=[];blockedUids=new Set();
+}
+function demoRenderRadarStage(){
+ const box=document.getElementById("liveMembersList"),count=document.getElementById("liveMemberCount"),refreshed=document.getElementById("radarRefreshTime");
+ const members=DEMO_EXPLORERS.filter(m=>!blockedUids.has(m.uid));
+ if(count)count.textContent=(radarIsOn?members.length:0)+" in ~100m zone (Preview)";
+ if(refreshed)refreshed.textContent="Preview ~100m zone · updated "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+ if(!box)return;
+ box.innerHTML='<div class="radar-center">100M</div><div class="radar-sweep"></div>';
+ if(!radarIsOn){
+  const empty=document.createElement("div");empty.className="radar-empty";
+  empty.textContent="Tap Turn ON Radar above to preview nearby opted-in explorers.";
+  box.appendChild(empty);return;
+ }
+ members.forEach((member,index)=>{
+  const angle=(-90+(360*index/members.length))*Math.PI/180,radius=34;
+  const profile=document.createElement("button");
+  profile.type="button";profile.className="radar-profile-button";
+  profile.style.left=(50+Math.cos(angle)*radius)+"%";profile.style.top=(50+Math.sin(angle)*radius)+"%";
+  profile.textContent="👤";profile.setAttribute("aria-label","Open member profile");
+  profile.title=member.handle+" · Same ~100m zone (Preview)";
+  profile.addEventListener("click",()=>{if(!profile.dataset.longPressed)showProfileActionMenu(member.uid,member.handle);profile.dataset.longPressed="";});
+  attachProfileAction(profile,member.uid,member.handle);
+  box.appendChild(profile);
+ });
+}
+function demoRenderNearbyRoom(){
+ const membersBox=document.getElementById("nearbyRoomMembers"),countEl=document.getElementById("nearbyRoomMemberCount");
+ const activeMembers=[{uid:DEMO_UID,handle:"You (Guest)"},...DEMO_EXPLORERS.filter(m=>!blockedUids.has(m.uid))];
+ if(countEl)countEl.textContent=activeMembers.length+" members online (Preview)";
+ if(membersBox){
+  membersBox.innerHTML="";
+  activeMembers.forEach(m=>{
+   const item=document.createElement("div");item.className="live-member";
+   item.textContent="👤  "+m.handle;
+   if(m.uid!==DEMO_UID)attachProfileAction(item,m.uid,m.handle);
+   membersBox.appendChild(item);
+  });
+ }
+ const box=document.getElementById("nearbyRoomMessages");if(!box)return;
+ box.innerHTML="";
+ const list=demoNearbyMsgs.filter(m=>!blockedUids.has(m.uid));
+ if(!list.length){box.innerHTML='<div class="empty">No messages yet. Say hello!</div>';return;}
+ list.forEach(m=>{
+  const isMine=m.uid===DEMO_UID;
+  const row=document.createElement("div");row.className="msg-row"+(isMine?" mine":"");
+  if(!isMine){
+   const badge=(m.handle.includes("-")?m.handle.split("-")[1]:m.handle).slice(0,2).toUpperCase()||"E";
+   const av=document.createElement("button");av.type="button";av.className="msg-avatar";av.textContent=badge;av.title=m.handle;
+   av.onclick=()=>showProfileActionMenu(m.uid,m.handle);row.appendChild(av);
+  }
+  const item=document.createElement("div");item.className="chat-msg"+(isMine?" mine":"");
+  if(m.replyText){const q=document.createElement("div");q.className="comment-note";q.textContent="↪ "+m.replyHandle+": "+m.replyText;item.appendChild(q);}
+  const body=document.createElement("span");body.textContent=m.text;
+  const time=document.createElement("small");time.textContent=(m.edited?"edited · ":"")+new Date(m.createdAt).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  item.append(body,time);
+  const totals={};Object.values(m.reactions||{}).forEach(v=>{totals[v]=(totals[v]||0)+1;});
+  const activeEmojis=["❤️","😂","👍","🔥"].filter(em=>totals[em]>0);
+  if(activeEmojis.length){
+   const area=document.createElement("div");area.className="reaction-area";
+   activeEmojis.forEach(emoji=>{
+    const b=document.createElement("button");b.className="reaction-btn"+(m.reactions[DEMO_UID]===emoji?" active":"");
+    b.textContent=emoji+" "+totals[emoji];b.onclick=()=>demoToggleReaction(demoNearbyMsgs,m.id,emoji,demoRenderNearbyRoom);area.appendChild(b);
+   });
+   item.appendChild(area);
+  }
+  attachMessageGestures(item,{
+   onReact:emoji=>demoToggleReaction(demoNearbyMsgs,m.id,emoji,demoRenderNearbyRoom),
+   onReply:()=>setNearbyReply(m.id,isMine?"You":m.handle,m.text),
+   onEdit:isMine?async()=>{const nxt=await showEditMessageModal(m.text);if(nxt){m.text=nxt;m.edited=true;demoRenderNearbyRoom();}}:null,
+   onDelete:isMine?async()=>{if(await showConfirmModal("Delete this preview message?")){demoNearbyMsgs=demoNearbyMsgs.filter(x=>x.id!==m.id);demoRenderNearbyRoom();}}:null
+  });
+  row.appendChild(item);box.appendChild(row);
+ });
+ box.scrollTop=box.scrollHeight;
+}
+function demoRenderGlobalChat(){
+ const membersBox=document.getElementById("globalOnlineMembers"),countEl=document.getElementById("globalOnlineCount");
+ const online=DEMO_EXPLORERS.filter(m=>!blockedUids.has(m.uid));
+ if(countEl)countEl.textContent=(online.length+1)+" online (Preview)";
+ if(membersBox){
+  membersBox.innerHTML="";
+  online.forEach(m=>{
+   const chip=document.createElement("button");chip.type="button";chip.className="global-online-chip";chip.textContent=m.handle;
+   chip.onclick=()=>showProfileActionMenu(m.uid,m.handle);membersBox.appendChild(chip);
+  });
+ }
+ const box=document.getElementById("globalChatMessages");if(!box)return;
+ box.innerHTML="";
+ const list=demoGlobalMsgs.filter(m=>!blockedUids.has(m.uid));
+ if(!list.length){box.innerHTML='<div class="empty">No messages yet. Say hello!</div>';return;}
+ list.forEach(m=>{
+  const isMine=m.uid===DEMO_UID;
+  const row=document.createElement("div");row.className="msg-row"+(isMine?" mine":"");
+  if(!isMine){
+   const badge=(m.handle.includes("-")?m.handle.split("-")[1]:m.handle).slice(0,2).toUpperCase()||"E";
+   const av=document.createElement("button");av.type="button";av.className="msg-avatar";av.textContent=badge;av.title=m.handle;
+   av.onclick=()=>showProfileActionMenu(m.uid,m.handle);row.appendChild(av);
+  }
+  const item=document.createElement("div");item.className="global-chat-msg"+(isMine?" mine":"");
+  if(m.replyText){const q=document.createElement("div");q.className="comment-note";q.textContent="↪ "+m.replyHandle+": "+m.replyText;item.appendChild(q);}
+  const body=document.createElement("span");body.className="body";body.textContent=m.text;
+  const meta=document.createElement("span");meta.className="meta";meta.textContent=(m.edited?"edited · ":"")+new Date(m.createdAt).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  item.append(body,meta);
+  const totals={};Object.values(m.reactions||{}).forEach(v=>{totals[v]=(totals[v]||0)+1;});
+  const activeEmojis=["❤️","😂","👍","🔥"].filter(em=>totals[em]>0);
+  if(activeEmojis.length){
+   const area=document.createElement("div");area.className="reaction-area";
+   activeEmojis.forEach(emoji=>{
+    const b=document.createElement("button");b.className="reaction-btn"+(m.reactions[DEMO_UID]===emoji?" active":"");
+    b.textContent=emoji+" "+totals[emoji];b.onclick=()=>demoToggleReaction(demoGlobalMsgs,m.id,emoji,demoRenderGlobalChat);area.appendChild(b);
+   });
+   item.appendChild(area);
+  }
+  attachMessageGestures(item,{
+   onReact:emoji=>demoToggleReaction(demoGlobalMsgs,m.id,emoji,demoRenderGlobalChat),
+   onReply:()=>setGlobalReply(m.id,isMine?"You":m.handle,m.text),
+   onEdit:isMine?async()=>{const nxt=await showEditMessageModal(m.text);if(nxt){m.text=nxt;m.edited=true;demoRenderGlobalChat();}}:null,
+   onDelete:isMine?async()=>{if(await showConfirmModal("Delete this preview message?")){demoGlobalMsgs=demoGlobalMsgs.filter(x=>x.id!==m.id);demoRenderGlobalChat();}}:null
+  });
+  row.appendChild(item);box.appendChild(row);
+ });
+ box.scrollTop=box.scrollHeight;
+}
+function demoToggleReaction(list,id,emoji,rerender){
+ const msg=list.find(x=>x.id===id);if(!msg)return;
+ msg.reactions=msg.reactions||{};
+ if(msg.reactions[DEMO_UID]===emoji)delete msg.reactions[DEMO_UID];else msg.reactions[DEMO_UID]=emoji;
+ rerender();
+}
+function demoRenderPrivateChat(otherUid){
+ const box=document.getElementById("privateMessages");if(!box)return;
+ const list=demoPrivateStore[otherUid]||[];
+ const other=DEMO_EXPLORERS.find(e=>e.uid===otherUid)||{handle:handleFor(otherUid)};
+ box.innerHTML="";
+ if(!list.length){box.innerHTML='<div class="empty">No messages yet. Say hello!</div>';return;}
+ list.forEach(m=>{
+  const isMine=m.senderId===DEMO_UID;
+  const el=document.createElement("div");el.className="chat-msg"+(isMine?" mine":"");
+  if(m.replyText){const q=document.createElement("div");q.className="comment-note";q.textContent="↪ "+m.replyHandle+": "+m.replyText;el.appendChild(q);}
+  const body=document.createElement("span");body.textContent=m.text;
+  const time=document.createElement("small");time.textContent=(m.edited?"edited · ":"")+new Date(m.createdAt).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  el.append(body,time);
+  const totals={};Object.values(m.reactions||{}).forEach(v=>{totals[v]=(totals[v]||0)+1;});
+  const activeEmojis=["❤️","😂","👍","🔥"].filter(em=>totals[em]>0);
+  if(activeEmojis.length){
+   const area=document.createElement("div");area.className="reaction-area";
+   activeEmojis.forEach(emoji=>{
+    const b=document.createElement("button");b.className="reaction-btn"+(m.reactions[DEMO_UID]===emoji?" active":"");
+    b.textContent=emoji+" "+totals[emoji];b.onclick=()=>demoToggleReaction(list,m.id,emoji,()=>demoRenderPrivateChat(otherUid));area.appendChild(b);
+   });
+   el.appendChild(area);
+  }
+  attachMessageGestures(el,{
+   onReact:emoji=>demoToggleReaction(list,m.id,emoji,()=>demoRenderPrivateChat(otherUid)),
+   onReply:()=>setPrivateReply(m.id,isMine?"You":other.handle,m.text),
+   onEdit:isMine?async()=>{const nxt=await showEditMessageModal(m.text);if(nxt){m.text=nxt;m.edited=true;demoRenderPrivateChat(otherUid);}}:null,
+   onDelete:isMine?async()=>{if(await showConfirmModal("Delete this preview message?")){demoPrivateStore[otherUid]=list.filter(x=>x.id!==m.id);demoRenderPrivateChat(otherUid);}}:null
+  });
+  box.appendChild(el);
+ });
+ box.scrollTop=box.scrollHeight;
+}
+function demoRenderSignalMsgs(){
+ const box=document.getElementById("signalMessages");if(!box)return;
+ box.innerHTML="";
+ if(!demoSignalMsgs.length){box.innerHTML='<div class="empty">Signal locked! Say hello.</div>';return;}
+ demoSignalMsgs.forEach(m=>{
+  const isMine=m.uid===DEMO_UID;
+  const row=document.createElement("div");row.className="msg-row"+(isMine?" mine":"");
+  if(!isMine){
+   const badge=(m.handle.includes("-")?m.handle.split("-")[1]:m.handle).slice(0,2).toUpperCase()||"E";
+   const av=document.createElement("button");av.type="button";av.className="msg-avatar";av.textContent=badge;av.title=m.handle;
+   row.appendChild(av);
+  }
+  const item=document.createElement("div");item.className="chat-msg"+(isMine?" mine":"");
+  if(m.replyText){const q=document.createElement("div");q.className="comment-note";q.textContent="↪ "+m.replyHandle+": "+m.replyText;item.appendChild(q);}
+  const body=document.createElement("span");body.textContent=m.text;
+  const time=document.createElement("small");time.textContent=(m.edited?"edited · ":"")+new Date(m.createdAt).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  item.append(body,time);
+  attachMessageGestures(item,{
+   onReply:()=>setSignalReply(m.id,isMine?"You":m.handle,m.text),
+   onEdit:isMine?async()=>{const nxt=await showEditMessageModal(m.text);if(nxt){m.text=nxt;m.edited=true;demoRenderSignalMsgs();}}:null,
+   onDelete:isMine?async()=>{if(await showConfirmModal("Delete this preview message?")){demoSignalMsgs=demoSignalMsgs.filter(x=>x.id!==m.id);demoRenderSignalMsgs();}}:null
+  });
+  row.appendChild(item);box.appendChild(row);
+ });
+ box.scrollTop=box.scrollHeight;
+}
+function demoRenderVoiceSeats(){
+ const grid=document.getElementById("voiceRoomGrid"),badge=document.getElementById("voiceRoomCountBadge"),spStatus=document.getElementById("nearbySpeakingStatus");
+ if(!grid)return;
+ const seats=liveVoiceJoined
+  ?[{uid:DEMO_UID,handle:"You",speaking:!liveVoiceMuted&&demoVoiceSpeakerIdx===0},
+    {uid:"demo_a4f1",handle:"Explorer-a4f1",speaking:demoVoiceSpeakerIdx===1},
+    {uid:"demo_9c2d",handle:"Explorer-9c2d",speaking:demoVoiceSpeakerIdx===2},
+    {uid:"demo_7b0e",handle:"Explorer-7b0e",speaking:false}]
+  :[];
+ if(badge)badge.textContent=seats.length+"/"+LIVE_VOICE_MAX+" PREVIEW";
+ if(!seats.length){
+  grid.innerHTML='<span class="muted" style="font-size:12px">Tap Join Live Voice Room to preview live speakers</span>';
+  if(spStatus)spStatus.textContent="Nobody is speaking right now.";
+  return;
+ }
+ grid.innerHTML="";
+ const activeSpeakers=[];
+ seats.forEach(st=>{
+  if(st.speaking)activeSpeakers.push(st.handle);
+  const wrap=document.createElement("div");wrap.className="voice-seat"+(st.speaking?" speaking":"");
+  const av=document.createElement("div");av.className="voice-seat-av";
+  av.textContent=st.uid===DEMO_UID?"ME":st.handle.split("-")[1].slice(0,2).toUpperCase();
+  const lbl=document.createElement("small");lbl.textContent=st.handle;
+  if(st.uid!==DEMO_UID){wrap.style.cursor="pointer";wrap.onclick=()=>showProfileActionMenu(st.uid,st.handle);}
+  wrap.append(av,lbl);grid.appendChild(wrap);
+ });
+ if(spStatus)spStatus.textContent=activeSpeakers.length?activeSpeakers[0]+" is speaking… (Preview)":"Listening quietly… (Preview)";
+}
+function demoStopVoice(){
+ if(demoVoiceTimer){clearInterval(demoVoiceTimer);demoVoiceTimer=null;}
+ liveVoiceJoined=false;liveVoiceMuted=false;
+ updateLiveVoiceControlsUI();demoRenderVoiceSeats();
+}
 function enterGuestPreview(){
- guestMode=true;
+ guestMode=true;radarIsOn=false;
+ resetDemoState();
  document.getElementById("authPage").style.display="none";
  document.getElementById("app").style.display="block";
  const gb=document.getElementById("guestBanner");if(gb)gb.classList.remove("hidden");
- document.getElementById("profileName").textContent="Guest Preview";
- document.getElementById("profileEmail").textContent="Not signed in";
+ myPublicChatId="100m-DEMO01";
+ document.getElementById("profileName").textContent="Guest Explorer";
+ document.getElementById("profileEmail").textContent="Interactive Preview Mode";
  document.getElementById("profileAvatar").textContent="G";
- document.getElementById("myPublicChatId").textContent="Sign in to generate your Chat ID";
- document.getElementById("editProfileButton").classList.add("hidden");
- document.getElementById("globalChatStatus").textContent="Preview Mode — sign in to read and send live messages.";
- document.getElementById("globalOnlineMembers").innerHTML='<span class="global-online-chip">Explorer-a4f1</span><span class="global-online-chip">Explorer-9c2d</span><span class="global-online-chip">Explorer-7b0e</span>';
- document.getElementById("globalOnlineCount").textContent="Preview";
- document.getElementById("globalChatMessages").innerHTML='<div class="empty">Sign in with a free account to join the live Global Chat room.</div>';
- updateRadarStatusUI(false,"Preview Mode — sign in to turn ON 100m Live Radar.");
+ document.getElementById("myPublicChatId").textContent=myPublicChatId;
+ document.getElementById("editProfileButton").classList.remove("hidden");
+ document.getElementById("radarAnonymousHandle").textContent="Explorer-demo";
+ document.getElementById("globalChatStatus").textContent="Interactive Preview — try sending messages, reactions & replies.";
+ document.getElementById("privateChatStatus").textContent="Preview tip: try 100m-DEMO01 or tap any explorer avatar.";
+ demoRenderGlobalChat();
+ demoRenderRadarStage();
+ demoRenderVoiceSeats();
+ loadBlockedAccounts();
+ updateRadarStatusUI(false,"Preview Mode ready — tap Turn ON Radar to test ~100m Radar & group chat.");
  go("home");
 }
 function exitGuestPreview(){
- guestMode=false;
+ demoStopVoice();
+ if(demoSignalTimer){clearTimeout(demoSignalTimer);demoSignalTimer=null;}
+ radarIsOn=false;guestMode=false;activeChatId=null;
+ const nr=document.getElementById("nearbyRoomActive");if(nr)nr.classList.add("hidden");
  const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");
+ setSignalUI("idle","");
  document.getElementById("app").style.display="none";
  document.getElementById("authPage").style.display="block";
  window.scrollTo(0,0);
@@ -1433,7 +1689,7 @@ function displayProfile(data){
  document.getElementById("profileAvatar").textContent=username.trim().charAt(0).toUpperCase()||"U";
 }
 function openEditProfile(){
- if(!currentUser||guestMode)return;
+ if(!currentUser&&!guestMode)return;
  document.getElementById("editUsername").value=document.getElementById("profileName").textContent;
  document.getElementById("editBio").value=document.getElementById("profileBio").textContent==="No bio added yet."?"":document.getElementById("profileBio").textContent;
  document.getElementById("editCountry").value=document.getElementById("profileCountry").textContent==="Not added"?"":document.getElementById("profileCountry").textContent;
@@ -1443,6 +1699,12 @@ function openEditProfile(){
 }
 function closeEditProfile(){document.getElementById("editProfileCard").classList.add("hidden");document.getElementById("editProfileCard").style.display="none"}
 async function saveProfile(){
+ if(guestMode){
+  const username=document.getElementById("editUsername").value.trim(),bio=document.getElementById("editBio").value.trim(),country=document.getElementById("editCountry").value.trim(),interests=document.getElementById("editInterests").value.trim();
+  if(!username){document.getElementById("editMessage").textContent="Please enter a username.";return;}
+  displayProfile({username,bio,country,interests});
+  document.getElementById("profileMessage").textContent="Preview profile updated locally!";closeEditProfile();return;
+ }
  if(!currentUser)return;
  const username=document.getElementById("editUsername").value.trim(),bio=document.getElementById("editBio").value.trim(),country=document.getElementById("editCountry").value.trim(),interests=document.getElementById("editInterests").value.trim();
  if(!username){document.getElementById("editMessage").textContent="Please enter a username.";return}
@@ -1477,7 +1739,14 @@ async function ensurePublicChatId(user,profile){
 async function copyMyChatId(){if(!myPublicChatId)return;try{await navigator.clipboard.writeText(myPublicChatId);document.getElementById("profileMessage").textContent="Chat ID copied.";return;}catch(e){}try{const ta=document.createElement("textarea");ta.value=myPublicChatId;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();document.getElementById("profileMessage").textContent="Chat ID copied.";}catch(e){document.getElementById("profileMessage").textContent="Copy not available. Please select and copy the ID.";}}
 async function startPrivateChat(){
  const status=document.getElementById("privateChatStatus");
- if(!currentUser||guestMode){status.textContent="Please sign in with an account to use private messages.";return}
+ if(guestMode){
+  const enteredId=document.getElementById("recipientUid").value.trim().toUpperCase();
+  const found=DEMO_EXPLORERS.find(e=>e.chatId===enteredId)||DEMO_EXPLORERS[0];
+  if(!/^100M-[A-Z0-9]{6}$/i.test(enteredId)){status.textContent="Preview tip: enter 100m-DEMO01 (or any 100m-XXXXXX ID).";return;}
+  status.textContent="Preview private chat opened with "+found.handle+".";
+  openPrivateChatByUid(found.uid);return;
+ }
+ if(!currentUser){status.textContent="Please sign in with an account to use private messages.";return}
  const enteredId=document.getElementById("recipientUid").value.trim();
  if(!/^100m-[A-Z0-9]{6}$/i.test(enteredId)){status.textContent="Enter a valid 100m Chat ID, for example 100m-A1B2C3.";return}
  const publicId="100m-"+enteredId.slice(5).toUpperCase();
@@ -1567,6 +1836,13 @@ async function deletePrivateMessage(chatId,msgId){
  catch(e){document.getElementById("privateChatStatus").textContent="Delete failed: "+e.message;}
 }
 async function sendPrivateMessage(){
+ if(guestMode&&activeChatId){
+  const input=document.getElementById("privateMessageInput"),val=input.value.trim();if(!val)return;
+  demoPrivateStore[activeChatId]=demoPrivateStore[activeChatId]||[];
+  const msg={id:"dp_"+Date.now(),senderId:DEMO_UID,text:val,createdAt:Date.now(),reactions:{}};
+  if(privateReplyTarget){msg.replyHandle=privateReplyTarget.handle;msg.replyText=privateReplyTarget.text.slice(0,120);}
+  demoPrivateStore[activeChatId].push(msg);input.value="";cancelPrivateReply();demoRenderPrivateChat(activeChatId);return;
+ }
  if(!currentUser||!activeChatId)return;
  const input=document.getElementById("privateMessageInput"),value=input.value.trim();if(!value)return;
  const button=document.getElementById("sendPrivateButton");button.disabled=true;
@@ -1588,7 +1864,7 @@ function showRadarUsername(username){
  panel.append(name,close);overlay.appendChild(panel);overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});document.body.appendChild(overlay);
 }
 function showProfileActionMenu(uid,handle){
- if(!currentUser||guestMode||!uid||uid===currentUser.uid)return;
+ if((!currentUser&&!guestMode)||!uid||(currentUser&&uid===currentUser.uid))return;
  const old=document.getElementById("profileActionMenu");if(old)old.remove();
  const overlay=document.createElement("div");overlay.id="profileActionMenu";overlay.className="profile-action-overlay";
  const panel=document.createElement("div");panel.className="profile-action-panel";
@@ -1623,7 +1899,16 @@ function attachProfileAction(element,uid,handle){
  });
 }
 async function openPrivateChatByUid(otherUid){
- if(!currentUser||guestMode||!otherUid||otherUid===currentUser.uid)return;
+ if(guestMode&&otherUid){
+  if(blockedUids.has(otherUid)){const s=document.getElementById("privateChatStatus");if(s)s.textContent="Unblock this account before starting a chat.";return;}
+  activeChatId=otherUid;switchChatTab("private");
+  const ex=DEMO_EXPLORERS.find(e=>e.uid===otherUid)||{handle:handleFor(otherUid)};
+  const chatTitle=document.getElementById("activeChatTitle");chatTitle.textContent="Chat with "+ex.handle+" (Preview)";
+  document.getElementById("sendPrivateButton").disabled=false;
+  demoPrivateStore[otherUid]=demoPrivateStore[otherUid]||[{id:"dp_init",senderId:otherUid,text:"Hey! This is a preview private chat with "+ex.handle+".",createdAt:Date.now(),reactions:{}}];
+  demoRenderPrivateChat(otherUid);go("chats");return;
+ }
+ if(!currentUser||!otherUid||otherUid===currentUser.uid)return;
  const status=document.getElementById("privateChatStatus");
  try{
   const blocked=await db.collection("users").doc(currentUser.uid).collection("blocked").doc(otherUid).get();
@@ -1651,7 +1936,14 @@ function showConfirmModal(message){
  });
 }
 async function blockAccount(uid,handle){
- if(!currentUser||guestMode||!uid||uid===currentUser.uid)return;
+ if(guestMode&&uid){
+  if(!(await showConfirmModal("Block "+(handle||"this explorer")+" in Preview Mode?")))return;
+  blockedUids.add(uid);
+  if(!demoBlockedList.some(b=>b.uid===uid))demoBlockedList.push({uid,username:handle||"Explorer"});
+  demoRenderRadarStage();demoRenderNearbyRoom();demoRenderGlobalChat();loadBlockedAccounts();
+  const st=document.getElementById("blockStatus");if(st)st.textContent="Blocked in Preview Mode (you can unblock below).";return;
+ }
+ if(!currentUser||!uid||uid===currentUser.uid)return;
  if(!(await showConfirmModal("Block "+(handle||"this account")+"? This saves the block to your account.")))return;
  const status=document.getElementById("blockStatus");
  try{
@@ -1669,8 +1961,8 @@ async function blockAccount(uid,handle){
 function updateRadarStatusUI(isOnline,message){
  const text=document.getElementById("radarStatusText"),on=document.getElementById("radarOnButton"),off=document.getElementById("radarOffButton");
  if(text){text.textContent=message||(isOnline?"Radar is ON.":"Radar is OFF.");text.className="message "+(isOnline?"good":"muted");}
- if(on)on.disabled=!!isOnline||!currentUser||guestMode;
- if(off)off.disabled=!isOnline||!currentUser||guestMode;
+ if(on)on.disabled=!!isOnline||(!currentUser&&!guestMode);
+ if(off)off.disabled=!isOnline||(!currentUser&&!guestMode);
  {const jb=document.getElementById("pttJoinButton");if(jb&&liveVoiceJoined)jb.classList.add("hidden");else if(jb&&!liveVoiceJoined)jb.classList.remove("hidden");}document.querySelectorAll(".radar").forEach(el=>el.classList.toggle("scanning",!!isOnline));
  const stage=document.getElementById("liveMembersList");
  if(stage)stage.classList.toggle("scanning",!!isOnline);
@@ -1788,7 +2080,8 @@ function startRadarRoomListener(){
 }
 function refreshRadarList(){
  const button=document.getElementById("refreshRadarButton");
- if(!currentUser||guestMode){
+ if(guestMode){demoRenderRadarStage();return;}
+ if(!currentUser){
   const box=document.getElementById("liveMembersList");
   if(box)box.innerHTML='<div class="empty">Sign in to refresh the 100m Radar.</div>';
   return;
@@ -1798,7 +2091,16 @@ function refreshRadarList(){
  window.setTimeout(()=>{if(button){button.disabled=false;button.textContent="Refresh";}},900);
 }
 async function setRadarStatus(isOnline){
- if(!currentUser||guestMode){updateRadarStatusUI(false,"Please sign in to use 100m Radar.");return;}
+ if(guestMode){
+  radarIsOn=!!isOnline;
+  updateRadarStatusUI(radarIsOn,radarIsOn?"Preview Radar is LIVE! Tap any explorer on the ring or try the shared chat below.":"Preview Radar is OFF.");
+  demoRenderRadarStage();
+  const act=document.getElementById("nearbyRoomActive"),st=document.getElementById("nearbyRoomStatus");
+  if(radarIsOn){if(act)act.classList.remove("hidden");if(st)st.textContent="Preview Mode: Joined the shared Radar group chat.";demoRenderNearbyRoom();}
+  else{if(act)act.classList.add("hidden");if(st)st.textContent="Turn Radar ON to join the shared group chat.";}
+  return;
+ }
+ if(!currentUser){updateRadarStatusUI(false,"Please sign in to use 100m Radar.");return;}
  const on=document.getElementById("radarOnButton"),off=document.getElementById("radarOffButton");
  if(on)on.disabled=true;if(off)off.disabled=true;
  const publicRef=rtdb.ref("radarPublic/"+currentUser.uid);
@@ -2079,6 +2381,12 @@ function checkMessageCooldown(statusId){
 }
 async function sendNearbyRoomMessage(){
  const input=document.getElementById("nearbyRoomMessageInput"),textValue=input.value.trim();
+ if(guestMode){
+  if(!radarIsOn||!textValue)return;
+  const msg={id:"dn_"+Date.now(),uid:DEMO_UID,handle:"You",text:textValue,createdAt:Date.now(),reactions:{}};
+  if(nearbyReplyTarget){msg.replyHandle=nearbyReplyTarget.handle;msg.replyText=nearbyReplyTarget.text.slice(0,120);}
+  demoNearbyMsgs.push(msg);input.value="";cancelNearbyReply();demoRenderNearbyRoom();return;
+ }
  if(!currentUser||!radarIsOn){document.getElementById("nearbyRoomStatus").textContent="Sign in and turn Radar ON before sending.";return}
  if(!textValue||!checkMessageCooldown("nearbyRoomStatus"))return;
  try{
@@ -2220,7 +2528,13 @@ async function setGlobalTyping(on){if(!currentUser)return;const ref=rtdb.ref("gl
 function handleGlobalTyping(){const gIn=document.getElementById("globalMessageInput"),sIn=document.getElementById("signalMessageInput");const hasVal=(gIn&&gIn.value.trim())||(sIn&&sIn.value.trim());if(!currentUser)return;if(globalTypingTimer)clearTimeout(globalTypingTimer);if(!hasVal){setGlobalTyping(false);return}setGlobalTyping(true);globalTypingTimer=setTimeout(()=>setGlobalTyping(false),2200)}
 async function sendGlobalMessage(){
  const input=document.getElementById("globalMessageInput"),value=input.value.trim(),button=document.getElementById("globalSendButton"),status=document.getElementById("globalChatStatus");
- if(!currentUser||guestMode){status.textContent="Please sign in to send a Global Chat message.";return}if(!value||!checkMessageCooldown("globalChatStatus"))return;
+ if(guestMode){
+  if(!value)return;
+  const msg={id:"dg_"+Date.now(),uid:DEMO_UID,handle:"You",text:value,createdAt:Date.now(),reactions:{}};
+  if(globalReplyTarget){msg.replyHandle=globalReplyTarget.handle;msg.replyText=globalReplyTarget.text.slice(0,120);}
+  demoGlobalMsgs.push(msg);input.value="";cancelGlobalReply();demoRenderGlobalChat();return;
+ }
+ if(!currentUser){status.textContent="Please sign in to send a Global Chat message.";return}if(!value||!checkMessageCooldown("globalChatStatus"))return;
  button.disabled=true;
  try{const payload={uid:currentUser.uid,handle:globalHandle(),text:value,createdAt:firebase.database.ServerValue.TIMESTAMP};if(globalReplyTarget){payload.replyTo=globalReplyTarget.id;payload.replyHandle=globalReplyTarget.handle;payload.replyText=globalReplyTarget.text.slice(0,120)}await rtdb.ref("globalChat/messages").push(payload);input.value="";await setGlobalTyping(false);cancelGlobalReply()}
  catch(e){status.textContent="Message not sent: "+e.message}finally{button.disabled=false}
@@ -2258,7 +2572,20 @@ function go(id,btn){
 async function loadBlockedAccounts(){
  const box=document.getElementById("blockedAccountsList");
  if(!box)return;
- if(!currentUser||guestMode){box.textContent="Sign in to view blocked accounts.";return}
+ if(guestMode){
+  box.innerHTML="";
+  if(!demoBlockedList.length){box.textContent="No blocked accounts in Preview Mode.";box.className="empty";return;}
+  box.className="";
+  demoBlockedList.forEach(item=>{
+   const row=document.createElement("div");row.className="tile";
+   const name=document.createElement("strong");name.textContent=item.username;
+   const btn=document.createElement("button");btn.className="secondary small";btn.textContent="Unblock";
+   btn.onclick=()=>{blockedUids.delete(item.uid);demoBlockedList=demoBlockedList.filter(x=>x.uid!==item.uid);demoRenderRadarStage();demoRenderNearbyRoom();demoRenderGlobalChat();loadBlockedAccounts();};
+   row.append(name,btn);box.appendChild(row);
+  });
+  return;
+ }
+ if(!currentUser){box.textContent="Sign in to view blocked accounts.";return}
  box.textContent="Loading blocked accounts…";
  try{
   const snap=await db.collection("users").doc(currentUser.uid).collection("blocked").get();
@@ -2286,6 +2613,10 @@ async function unblockAccount(uid,button){
 }
 async function submitReport(){
  const status=document.getElementById("reportStatus"),reason=document.getElementById("reportReason").value,details=document.getElementById("reportDetails").value.trim().slice(0,300);
+ if(guestMode){
+  status.textContent="Preview Mode: Report flow tested ("+reason+"). Sign in to submit real reports.";status.className="message good";
+  document.getElementById("reportDetails").value="";reportTarget="";return;
+ }
  if(!currentUser){status.textContent="Please sign in first.";return}
  if(!reportTarget){status.textContent="Tap a member avatar and choose Report so we know which account to review.";status.className="message warning";return}
  const payload={
@@ -2409,7 +2740,15 @@ function updateLiveVoiceControlsUI(){
  if(hint)hint.textContent=liveVoiceMuted?"MUTED · TAP TO UNMUTE":"MIC LIVE · TAP TO MUTE";
 }
 async function joinLiveVoiceCall(){
- if(!currentUser||guestMode){setPttStatus("Please sign in to join Live Voice.");return;}
+ if(guestMode){
+  liveVoiceJoined=true;liveVoiceMuted=false;demoVoiceSpeakerIdx=1;
+  updateLiveVoiceControlsUI();demoRenderVoiceSeats();
+  setPttStatus("Preview Voice Room connected! Test mute/unmute or tap any speaker avatar.");
+  if(demoVoiceTimer)clearInterval(demoVoiceTimer);
+  demoVoiceTimer=setInterval(()=>{demoVoiceSpeakerIdx=(demoVoiceSpeakerIdx+1)%3;demoRenderVoiceSeats();},2400);
+  return;
+ }
+ if(!currentUser){setPttStatus("Please sign in to join Live Voice.");return;}
  unlockWalkieAudio(false);
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
   setPttStatus("Microphone unavailable. Open this site over HTTPS in Chrome or Safari.");return;
@@ -2443,6 +2782,10 @@ async function joinLiveVoiceCall(){
  }
 }
 function toggleVoiceMute(){
+ if(guestMode&&liveVoiceJoined){
+  liveVoiceMuted=!liveVoiceMuted;updateLiveVoiceControlsUI();demoRenderVoiceSeats();
+  setPttStatus(liveVoiceMuted?"Preview mic muted.":"Preview mic live — speaking indicator active.");return;
+ }
  if(!liveVoiceJoined||!pttStream)return;
  liveVoiceMuted=!liveVoiceMuted;
  pttStream.getAudioTracks().forEach(t=>{t.enabled=!liveVoiceMuted;});
@@ -2453,6 +2796,7 @@ function toggleVoiceMute(){
  }
 }
 function leaveLiveVoiceCall(){
+ if(guestMode){demoStopVoice();setPttStatus("Left Preview Voice Room. Tap Join anytime to test again.");return;}
  stopNearbyVoiceRoom();
  setPttStatus("Left Live Voice Room. Tap Join anytime to talk again.");
 }
@@ -2647,7 +2991,24 @@ function clearSignalListeners(){
  signalQueueRef=signalQueueListener=signalInviteRef=signalInviteListener=signalMsgsRef=signalMsgsListener=signalRoomOnlineRef=signalRoomOnlineListener=null;
 }
 async function startSignalMatch(){
- if(!currentUser||guestMode){setSignalUI("idle","Please sign in to use Global Signal Match.");return;}
+ if(guestMode){
+  if(demoSignalTimer){clearTimeout(demoSignalTimer);demoSignalTimer=null;}
+  setSignalUI("searching","Preview Mode: scanning for a sample global match…");
+  demoSignalTimer=setTimeout(()=>{
+   if(!guestMode)return;
+   const pool=DEMO_EXPLORERS.filter(m=>!blockedUids.has(m.uid));
+   const match=pool[demoSignalIdx%Math.max(pool.length,1)]||DEMO_EXPLORERS[0];
+   demoSignalIdx++;
+   signalRoomId="demo_sig";signalPartnerUid=match.uid;signalPartnerHandle=match.handle;
+   const nameEl=document.getElementById("signalPartnerName"),noteEl=document.getElementById("signalRoomNote");
+   if(nameEl)nameEl.textContent="Connected to "+match.handle;
+   if(noteEl)noteEl.textContent="Preview 1-on-1 · Anonymous session";
+   demoSignalMsgs=[{id:"ds0",uid:match.uid,handle:match.handle,text:"Hey! Signal locked. Say hi or tap Next to test matching!",createdAt:Date.now()}];
+   setSignalUI("matched","");demoRenderSignalMsgs();
+  },1200);
+  return;
+ }
+ if(!currentUser){setSignalUI("idle","Please sign in to use Global Signal Match.");return;}
  await stopSignalMatch(true);
  signalMatchingBusy=false;
  setSignalUI("searching","Joining global queue…");
@@ -2780,6 +3141,20 @@ function setSignalReply(id,handle,text){
 }
 function cancelSignalReply(){signalReplyTarget=null;const p=document.getElementById("signalReplyPreview");if(p)p.classList.add("hidden");}
 async function sendSignalMessage(){
+ if(guestMode&&signalState==="matched"){
+  const input=document.getElementById("signalMessageInput"),val=input.value.trim();if(!val)return;
+  const msg={id:"ds_"+Date.now(),uid:DEMO_UID,handle:"You",text:val,createdAt:Date.now()};
+  if(signalReplyTarget){msg.replyHandle=signalReplyTarget.handle;msg.replyText=signalReplyTarget.text.slice(0,120);}
+  demoSignalMsgs.push(msg);input.value="";cancelSignalReply();demoRenderSignalMsgs();
+  const pUid=signalPartnerUid,pHandle=signalPartnerHandle;
+  setTimeout(()=>{
+   if(!guestMode||signalState!=="matched"||signalPartnerUid!==pUid)return;
+   const replies=["Nice! You can also tap Add to Private Chat or Next anytime.","Cool — in a signed-in account this connects live worldwide!","Got it! Long-press messages to reply, edit, or delete."];
+   demoSignalMsgs.push({id:"dsr_"+Date.now(),uid:pUid,handle:pHandle,text:replies[demoSignalMsgs.length%replies.length],createdAt:Date.now()});
+   demoRenderSignalMsgs();
+  },750);
+  return;
+ }
  if(!currentUser||!signalRoomId||signalState!=="matched")return;
  const input=document.getElementById("signalMessageInput"),val=input.value.trim();
  if(!val||!checkMessageCooldown("signalStatusText"))return;
@@ -2793,6 +3168,7 @@ async function sendSignalMessage(){
  finally{if(btn)btn.disabled=false;}
 }
 async function stopSignalMatch(silent=false){
+ if(demoSignalTimer){clearTimeout(demoSignalTimer);demoSignalTimer=null;}
  clearSignalListeners();
  signalMatchingBusy=false;
  const oldRoom=signalRoomId;
