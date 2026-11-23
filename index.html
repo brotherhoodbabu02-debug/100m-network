@@ -2299,15 +2299,25 @@ function stopRadarRoomListener(){
  }
  radarPublicRef=null;radarPublicListener=null;
 }
-let myRadarZone=null,radarGeoWatchId=null,radarLastSnapshot=null;
-async function hashZoneCell(lat,lng){
- // Quantize to ~100m grid cell on-device and one-way SHA-256 hash it — exact GPS NEVER leaves the phone
- const gx=Math.floor(lat*1000);
- const gy=Math.floor(lng*1000);
+let myRadarZone=null,myRadarZones=new Set(),radarGeoWatchId=null,radarLastSnapshot=null;
+async function hashGridCoord(gx,gy){
  const raw="100m-zone-v1:"+gx+":"+gy;
  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(raw));
  const hex=Array.from(new Uint8Array(buf)).slice(0,8).map(b=>b.toString(16).padStart(2,"0")).join("");
  return "z_"+hex;
+}
+async function computePrivacyZones(lat,lng){
+ // Quantize to ~100m grid cell on-device & compute 3x3 neighbor hashes locally so border blind spots never happen
+ const gx=Math.floor(lat*1000),gy=Math.floor(lng*1000);
+ const center=await hashGridCoord(gx,gy);
+ const neighbors=new Set([center]);
+ for(let dx=-1;dx<=1;dx++){
+  for(let dy=-1;dy<=1;dy++){
+   if(dx===0&&dy===0)continue;
+   neighbors.add(await hashGridCoord(gx+dx,gy+dy));
+  }
+ }
+ return {center,neighbors};
 }
 function stopRadarGeoWatch(){
  if(radarGeoWatchId!==null&&navigator.geolocation){
@@ -2320,7 +2330,7 @@ function requestPrivacyZone(){
   if(!navigator.geolocation){reject(new Error("Location is not supported on this browser."));return;}
   navigator.geolocation.getCurrentPosition(
    async pos=>{
-    try{resolve(await hashZoneCell(pos.coords.latitude,pos.coords.longitude));}
+    try{resolve(await computePrivacyZones(pos.coords.latitude,pos.coords.longitude));}
     catch(e){reject(new Error("Could not compute privacy zone."));}
    },
    err=>reject(new Error(err.code===1?"Location permission denied. Allow location to use 100m Radar.":"Could not detect your ~100m zone. Turn on phone Location and try again.")),
@@ -2345,9 +2355,9 @@ function startRadarGeoWatch(){
  if(!navigator.geolocation)return;
  radarGeoWatchId=navigator.geolocation.watchPosition(async pos=>{
   try{
-   const nextZone=await hashZoneCell(pos.coords.latitude,pos.coords.longitude);
-   if(nextZone!==myRadarZone){
-    myRadarZone=nextZone;
+   const res=await computePrivacyZones(pos.coords.latitude,pos.coords.longitude);
+   if(res.center!==myRadarZone){
+    myRadarZone=res.center;myRadarZones=res.neighbors;
     if(radarIsOn&&currentUser)publishRadarPresence().catch(()=>{});
     if(radarLastSnapshot)renderRadarMembers(radarLastSnapshot);
    }
@@ -2360,7 +2370,9 @@ function renderRadarMembers(snapshot){
  snapshot.forEach(child=>{
   const data=child.val()||{};
   if(child.key!==currentUser.uid&&data.online===true&&!blockedUids.has(child.key)){
-   if(myRadarZone&&myRadarZone!=="z_global"&&data.zone&&data.zone!==myRadarZone)return;
+   if(myRadarZone&&myRadarZone!=="z_global"){
+    if(!data.zone||!myRadarZones.has(data.zone))return;
+   }
    members.push({uid:child.key,username:String(data.anonymousHandle||"Explorer")});
   }
  });
@@ -2437,8 +2449,8 @@ async function setRadarStatus(isOnline){
   if(isOnline){
    updateRadarStatusUI(false,"Creating anonymous ~100m privacy zone…");
    let usedZone=true;
-   try{myRadarZone=await requestPrivacyZone();}
-   catch(geoErr){myRadarZone="z_global";usedZone=false;}
+   try{const z=await requestPrivacyZone();myRadarZone=z.center;myRadarZones=z.neighbors;}
+   catch(geoErr){myRadarZone="z_global";myRadarZones=new Set();usedZone=false;}
    await publishRadarPresence();
    if(usedZone)startRadarGeoWatch();
    radarIsOn=true;
@@ -2449,7 +2461,7 @@ async function setRadarStatus(isOnline){
    await joinNearbyRoom();
   }else{
    stopRadarGeoWatch();
-   myRadarZone=null;
+   myRadarZone=null;myRadarZones=new Set();
    await leaveNearbyRoom(true);
    await publicRef.onDisconnect().cancel();
    await publicRef.remove();
