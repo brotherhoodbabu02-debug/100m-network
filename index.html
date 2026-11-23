@@ -1458,6 +1458,10 @@ button{font-size:14.5px}
     <input id="recipientUid" maxlength="20" placeholder="Example: 100m-A1B2C3">
     <button class="primary" onclick="startPrivateChat()">Open private chat</button>
     <p id="privateChatStatus" class="message muted"></p>
+    <div style="margin-top:14px">
+     <p class="form-label" style="margin-top:0;margin-bottom:8px">Recent Private Chats</p>
+     <div id="conversationList" style="display:flex;flex-direction:column;gap:8px"><div class="empty" style="padding:12px">No private conversations yet.</div></div>
+    </div>
    </div>
    <div class="card"><div class="row" style="align-items:center;justify-content:space-between;margin-bottom:8px"><h3 id="activeChatTitle" style="margin:0">Select a conversation</h3><button type="button" id="privateCallBtn" class="call-btn small fit hidden" onclick="startDirectCallFromPrivate()">📞 Call</button></div>
     <div id="privateMessages" class="chat-list"><div class="empty">Your private messages will appear here.</div></div>
@@ -1876,6 +1880,7 @@ function enterGuestPreview(){
  demoRenderGlobalChat();
  demoRenderRadarStage();
  demoRenderVoiceSeats();
+ renderDemoConversations();
  loadBlockedAccounts();
  initDropNotes();initDirectCallInbox();
  updateRadarStatusUI(false,"Preview Mode ready — tap Turn ON Radar to test ~100m Radar & group chat.");
@@ -1997,7 +2002,53 @@ async function logout(){
  activeChatId=null;try{await stopGlobalChat(true)}catch(e){}if(auth)auth.signOut();
 }
 function chatDocumentId(uidA,uidB){return [uidA,uidB].sort().join("__")}
-function loadConversations(){}
+function renderDemoConversations(){
+ const listEl=document.getElementById("conversationList");if(!listEl)return;
+ const uids=Object.keys(demoPrivateStore).filter(u=>!blockedUids.has(u));
+ listEl.innerHTML="";
+ if(!uids.length){listEl.innerHTML='<div class="empty" style="padding:12px">No private chats yet. Enter 100m-DEMO01 above.</div>';return;}
+ uids.forEach(uid=>{
+  const ex=DEMO_EXPLORERS.find(e=>e.uid===uid)||{handle:handleFor(uid)};
+  const msgs=demoPrivateStore[uid]||[],last=msgs[msgs.length-1];
+  const btn=document.createElement("button");btn.type="button";btn.className="secondary";btn.style.width="100%";
+  const wrap=document.createElement("span");wrap.style.display="flex";wrap.style.flexDirection="column";wrap.style.minWidth="0";
+  const nm=document.createElement("strong");nm.textContent=ex.handle;nm.style.fontSize="14px";
+  const sn=document.createElement("small");sn.style.color="var(--muted)";sn.style.fontWeight="500";sn.style.overflow="hidden";sn.style.textOverflow="ellipsis";sn.style.whiteSpace="nowrap";
+  sn.textContent=last?String(last.text||"").slice(0,48):"Tap to open chat";
+  wrap.append(nm,sn);btn.appendChild(wrap);
+  btn.onclick=()=>openPrivateChatByUid(uid);
+  listEl.appendChild(btn);
+ });
+}
+function loadConversations(user){
+ const listEl=document.getElementById("conversationList");if(!listEl)return;
+ if(guestMode){renderDemoConversations();return;}
+ if(!user||!db){listEl.innerHTML='<div class="empty" style="padding:12px">Sign in to view recent private chats.</div>';return;}
+ if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null;}
+ conversationsUnsubscribe=db.collection("chats").where("participantsList","array-contains",user.uid).onSnapshot(snap=>{
+  listEl.innerHTML="";
+  const docs=[];
+  snap.forEach(doc=>{
+   const d=doc.data()||{};
+   const other=(d.participantsList||[]).find(id=>id!==user.uid);
+   if(!other||blockedUids.has(other))return;
+   const ts=d.updatedAt&&d.updatedAt.toMillis?d.updatedAt.toMillis():(d.createdAt&&d.createdAt.toMillis?d.createdAt.toMillis():0);
+   docs.push({id:doc.id,other,lastMessage:d.lastMessage||"",ts});
+  });
+  docs.sort((a,b)=>b.ts-a.ts);
+  if(!docs.length){listEl.innerHTML='<div class="empty" style="padding:12px">No private chats yet. Enter a 100m Chat ID above.</div>';return;}
+  docs.forEach(item=>{
+   const btn=document.createElement("button");btn.type="button";btn.className="secondary";btn.style.width="100%";
+   const wrap=document.createElement("span");wrap.style.display="flex";wrap.style.flexDirection="column";wrap.style.minWidth="0";
+   const nm=document.createElement("strong");nm.textContent=handleFor(item.other);nm.style.fontSize="14px";
+   const sn=document.createElement("small");sn.style.color="var(--muted)";sn.style.fontWeight="500";sn.style.overflow="hidden";sn.style.textOverflow="ellipsis";sn.style.whiteSpace="nowrap";
+   sn.textContent=item.lastMessage?String(item.lastMessage).slice(0,48):"Tap to continue chat";
+   wrap.append(nm,sn);btn.appendChild(wrap);
+   btn.onclick=()=>openPrivateChat(item.id,item.other);
+   listEl.appendChild(btn);
+  });
+ },err=>{listEl.innerHTML='<div class="empty" style="padding:12px">Could not load recent chats.</div>';});
+}
 function makePublicChatId(){const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=new Uint32Array(6);crypto.getRandomValues(r);return "100m-"+Array.from(r,n=>a[n%a.length]).join("")}
 async function ensurePublicChatId(user,profile){
  let id=profile.publicChatId||"";
@@ -2115,7 +2166,7 @@ async function sendPrivateMessage(){
   demoPrivateStore[activeChatId]=demoPrivateStore[activeChatId]||[];
   const msg={id:"dp_"+Date.now(),senderId:DEMO_UID,text:val,createdAt:Date.now(),reactions:{}};
   if(privateReplyTarget){msg.replyHandle=privateReplyTarget.handle;msg.replyText=privateReplyTarget.text.slice(0,120);}
-  demoPrivateStore[activeChatId].push(msg);input.value="";cancelPrivateReply();demoRenderPrivateChat(activeChatId);return;
+  demoPrivateStore[activeChatId].push(msg);input.value="";cancelPrivateReply();demoRenderPrivateChat(activeChatId);renderDemoConversations();return;
  }
  if(!currentUser||!activeChatId)return;
  const input=document.getElementById("privateMessageInput"),value=input.value.trim();if(!value)return;
@@ -2124,6 +2175,7 @@ async function sendPrivateMessage(){
   const payload={senderId:currentUser.uid,text:value,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
   if(privateReplyTarget){payload.replyTo=privateReplyTarget.id;payload.replyHandle=privateReplyTarget.handle;payload.replyText=privateReplyTarget.text.slice(0,120);}
   await db.collection("chats").doc(activeChatId).collection("messages").add(payload);
+  db.collection("chats").doc(activeChatId).set({lastMessage:value.slice(0,80),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
   input.value="";cancelPrivateReply();
  }catch(e){document.getElementById("privateChatStatus").textContent="Message not sent: "+e.message}
  finally{button.disabled=false}
@@ -2180,7 +2232,7 @@ async function openPrivateChatByUid(otherUid){
   const chatTitle=document.getElementById("activeChatTitle");chatTitle.textContent="Chat with "+ex.handle+" (Preview)";
   document.getElementById("sendPrivateButton").disabled=false;
   demoPrivateStore[otherUid]=demoPrivateStore[otherUid]||[{id:"dp_init",senderId:otherUid,text:"Hey! This is a preview private chat with "+ex.handle+".",createdAt:Date.now(),reactions:{}}];
-  demoRenderPrivateChat(otherUid);go("chats");return;
+  demoRenderPrivateChat(otherUid);renderDemoConversations();go("chats");return;
  }
  if(!currentUser||!otherUid||otherUid===currentUser.uid)return;
  const status=document.getElementById("privateChatStatus");
