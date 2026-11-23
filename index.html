@@ -923,6 +923,58 @@ nav.bottom-nav{
 .info-modal-body p{margin-bottom:10px}
 .info-modal-body p:last-child{margin-bottom:0}
 
+
+/* ---------- COLD-START & ENGAGEMENT FEATURES ---------- */
+.live-hour-card{
+ border-color:rgba(56,189,248,0.28);
+ background:linear-gradient(135deg, rgba(56,189,248,0.1) 0%, rgba(17,17,20,0.94) 65%);
+}
+.live-hour-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.live-hour-pill{
+ font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:700;
+ padding:4px 10px;border-radius:999px;
+ border:1px solid rgba(52,211,153,0.35);background:rgba(52,211,153,0.12);color:var(--green);
+}
+.live-hour-pill.upcoming{
+ border-color:rgba(56,189,248,0.35);background:rgba(56,189,248,0.12);color:var(--cyan);
+}
+.note-tag-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px}
+.note-tag-btn{
+ padding:5px 10px;font-size:11.5px;border-radius:999px;
+ background:rgba(255,255,255,0.04);border:1px solid var(--line);color:var(--subtext);
+}
+.note-tag-btn.active{
+ background:rgba(56,189,248,0.16);border-color:rgba(56,189,248,0.45);color:var(--cyan);
+}
+.drop-notes-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:280px;overflow-y:auto}
+.drop-note-item{
+ padding:12px 14px;border-radius:14px;
+ border:1px solid var(--line);background:rgba(255,255,255,0.025);
+}
+.drop-note-head{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;
+ font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+}
+.drop-note-tag{color:var(--cyan);font-weight:600}
+.drop-note-text{font-size:13.5px;color:var(--text);line-height:1.45;overflow-wrap:anywhere}
+.drop-note-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.upvote-btn{
+ padding:3px 9px;font-size:11.5px;border-radius:999px;
+ background:rgba(255,255,255,0.04);border:1px solid var(--line);color:var(--subtext);
+}
+.upvote-btn.active{background:rgba(56,189,248,0.16);border-color:rgba(56,189,248,0.45);color:var(--cyan)}
+.empty-cta-box{
+ margin-top:10px;padding:12px 14px;border-radius:14px;
+ border:1px dashed rgba(56,189,248,0.28);background:rgba(56,189,248,0.05);
+ text-align:center;
+}
+.empty-cta-box p{font-size:12.5px;color:var(--subtext);margin-bottom:10px}
+.empty-cta-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.whatsapp-btn{
+ background:rgba(52,211,153,0.14);border-color:rgba(52,211,153,0.38);color:var(--green);
+}
+.whatsapp-btn:hover:not(:disabled){background:rgba(52,211,153,0.22);border-color:rgba(52,211,153,0.55)}
+
 </style>
 </head>
 <body>
@@ -1074,6 +1126,41 @@ nav.bottom-nav{
    <button class="secondary" onclick="go('walkie')">🎙️ Live Voice</button>
   </div>
  </div>
+ <div class="card live-hour-card" id="liveHourCard">
+  <div class="live-hour-top">
+   <span style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.06em">DAILY LIVE HOUR</span>
+   <span id="liveHourBadge" class="live-hour-pill upcoming">9:00 PM IST</span>
+  </div>
+  <h3 style="margin-top:8px;font-size:18px" id="liveHourHeadline">Evening Live Voice &amp; Signal Jam</h3>
+  <p class="sub" id="liveHourCountdown" style="margin:4px 0 12px">Everyone gathers daily at 9:00 PM IST so rooms stay buzzing.</p>
+  <div class="row">
+   <button type="button" class="secondary small" onclick="go('walkie')">🎙️ Open Voice</button>
+   <button type="button" class="whatsapp-btn small" onclick="openInviteModal('home')">📲 Invite Friends</button>
+  </div>
+ </div>
+
+ <div class="card" id="dropNotesCard">
+  <div class="live-hour-top">
+   <div>
+    <h3 style="margin:0">📌 24h Drop Notes</h3>
+    <p class="sub" style="margin:3px 0 0">Even when nobody is live, leave a 24h note for the next explorer.</p>
+   </div>
+   <span id="dropNotesCount" class="live-count">0 notes</span>
+  </div>
+  <div class="note-tag-row" role="group" aria-label="Note tag">
+   <button type="button" class="note-tag-btn active" data-note-tag="Thought" onclick="selectNoteTag(this)">💭 Thought</button>
+   <button type="button" class="note-tag-btn" data-note-tag="Say Hi" onclick="selectNoteTag(this)">👋 Say Hi</button>
+   <button type="button" class="note-tag-btn" data-note-tag="Question" onclick="selectNoteTag(this)">❓ Question</button>
+   <button type="button" class="note-tag-btn" data-note-tag="Local" onclick="selectNoteTag(this)">📍 Local</button>
+  </div>
+  <div class="global-chat-input" style="margin-top:6px">
+   <textarea id="dropNoteInput" maxlength="180" style="min-height:46px" placeholder="Leave a 24h note for the next person who visits…"></textarea>
+   <button type="button" class="primary" style="width:auto;margin:0;padding:12px 16px" onclick="postDropNote()">Drop</button>
+  </div>
+  <p id="dropNoteStatus" class="comment-note" style="margin-top:6px"></p>
+  <div id="dropNotesList" class="drop-notes-list"><div class="empty">Loading recent 24h notes…</div></div>
+ </div>
+
  <div class="card">
   <h3>Community Safety</h3>
   <p class="sub" style="margin:6px 0 0">Keep personal details private. No GPS or location is ever collected — tap any member avatar to Report or Block instantly.</p>
@@ -1092,7 +1179,15 @@ nav.bottom-nav{
   <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
   <p id="radarStatusText" class="message muted">Radar is OFF.</p>
  </div>
- <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small fit" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p id="radarRefreshTime" class="message muted" style="margin:6px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div></div>
+ <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small fit" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p id="radarRefreshTime" class="message muted" style="margin:6px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div>
+  <div id="radarEmptyCta" class="empty-cta-box hidden">
+   <p>Quiet in your ~100m zone right now? Invite nearby friends or jump into Global Chat!</p>
+   <div class="empty-cta-actions">
+    <button type="button" class="whatsapp-btn small" onclick="openInviteModal('radar')">📲 Invite on WhatsApp</button>
+    <button type="button" class="secondary small" onclick="go('chats');switchChatTab('global')">💬 Global Chat</button>
+   </div>
+  </div>
+ </div>
  <div class="card" id="nearbyRoomCard"><h3>Shared Radar Chat</h3><p id="nearbyRoomStatus" class="message muted">Turn Radar ON to join the shared group chat.</p><div id="nearbyRoomActive" class="hidden"><div class="tile"><strong style="color:var(--cyan)">● Online in Room</strong><p id="nearbyRoomMemberCount">0 members online</p><div id="nearbyRoomMembers" class="chat-list"></div></div><div id="nearbyTypingStatus" class="typing-slot" aria-live="polite"></div><div id="nearbyRoomMessages" class="chat-list"><div class="empty">No messages yet. Start a respectful conversation.</div></div><div id="nearbyReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="nearbyReplyName">Replying</strong><p id="nearbyReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelNearbyReply()">Cancel</button></div></div><textarea id="nearbyRoomMessageInput" maxlength="500" placeholder="Write a group message..." oninput="handleNearbyTyping()"></textarea><button class="primary" id="sendNearbyRoomButton" onclick="sendNearbyRoomMessage()">Send to group</button><p class="comment-note">Long-press for reactions/edit/delete · swipe right to reply · auto-deletes after 24h.</p></div></div>
 </section>
 
@@ -1143,7 +1238,17 @@ nav.bottom-nav{
     <div class="signal-pulse-ring">⚡</div>
     <strong style="font-size:15px">Scanning global network…</strong>
     <p class="sub" style="margin:0">Waiting for another live member anywhere in the world.</p>
-    <button type="button" class="secondary small" onclick="stopSignalMatch()">Cancel Scan</button>
+    <div class="empty-cta-actions">
+     <button type="button" id="signalPingToggle" class="secondary small" onclick="toggleSignalPing()">🔔 Sound Ping: ON</button>
+     <button type="button" class="secondary small" onclick="stopSignalMatch()">Cancel Scan</button>
+    </div>
+    <div id="signalFallbackCta" class="empty-cta-box hidden" style="width:100%">
+     <p>Quiet right now — invite a friend to match instantly or hang out in Global Chat.</p>
+     <div class="empty-cta-actions">
+      <button type="button" class="whatsapp-btn small" onclick="openInviteModal('signal')">📲 Invite a Friend</button>
+      <button type="button" class="secondary small" onclick="stopSignalMatch(true);switchChatTab('global')">💬 Global Chat</button>
+     </div>
+    </div>
    </div>
 
    <div id="signalActiveView" class="hidden" style="margin-top:12px">
@@ -1377,8 +1482,9 @@ function demoRenderRadarStage(){
  if(!radarIsOn){
   const empty=document.createElement("div");empty.className="radar-empty";
   empty.textContent="Tap Turn ON Radar above to preview nearby opted-in explorers.";
-  box.appendChild(empty);return;
+  box.appendChild(empty);const cta=document.getElementById("radarEmptyCta");if(cta)cta.classList.remove("hidden");return;
  }
+ const ctaD=document.getElementById("radarEmptyCta");if(ctaD)ctaD.classList.toggle("hidden",members.length>0);
  members.forEach((member,index)=>{
   const angle=(-90+(360*index/members.length))*Math.PI/180,radius=34;
   const profile=document.createElement("button");
@@ -1606,6 +1712,7 @@ function enterGuestPreview(){
  demoRenderRadarStage();
  demoRenderVoiceSeats();
  loadBlockedAccounts();
+ initDropNotes();
  updateRadarStatusUI(false,"Preview Mode ready — tap Turn ON Radar to test ~100m Radar & group chat.");
  go("home");
 }
@@ -2049,8 +2156,10 @@ function renderRadarMembers(snapshot){
    ?"Turn ON Radar to check for opted-in members in your ~100m zone."
    :"No other opted-in members in your ~100m zone right now.";
   box.appendChild(empty);
+  const cta=document.getElementById("radarEmptyCta");if(cta)cta.classList.remove("hidden");
   return;
  }
+ const ctaHide=document.getElementById("radarEmptyCta");if(ctaHide)ctaHide.classList.add("hidden");
  // Neutral evenly-spaced ring — NEVER exposes exact distance or compass direction
  members.forEach((member,index)=>{
   const angle=(-90+(360*index/members.length))*Math.PI/180;
@@ -2546,7 +2655,7 @@ async function stopGlobalChat(silent=false){
 }
 
 function handleSignedIn(user){
- guestMode=false;const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();
+ guestMode=false;const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();initDropNotes();
 }
 function cleanupSession(){
  stopRadarGeoWatch();stopRadarRoomListener();stopNearbyRoomListeners();stopGlobalChatListeners();stopNearbyVoiceRoom();stopSignalMatch(true);radarIsOn=false;
@@ -2979,6 +3088,9 @@ function setSignalUI(mode,statusMsg){
  const idle=document.getElementById("signalIdleView"),search=document.getElementById("signalSearchingView"),active=document.getElementById("signalActiveView"),badge=document.getElementById("signalStateBadge"),st=document.getElementById("signalStatusText");
  if(idle)idle.classList.toggle("hidden",mode!=="idle");
  if(search)search.classList.toggle("hidden",mode!=="searching");
+ const fb=document.getElementById("signalFallbackCta");
+ if(mode==="searching"){if(fb)fb.classList.add("hidden");if(signalFallbackTimer)clearTimeout(signalFallbackTimer);signalFallbackTimer=setTimeout(()=>{if(signalState==="searching"&&fb)fb.classList.remove("hidden");},10000);}
+ else{if(signalFallbackTimer){clearTimeout(signalFallbackTimer);signalFallbackTimer=null;}if(fb)fb.classList.add("hidden");}
  if(active)active.classList.toggle("hidden",mode!=="matched");
  if(badge)badge.textContent=mode==="searching"?"SCANNING GLOBAL…":mode==="matched"?"● LIVE MATCH":"GLOBAL · READY";
  if(st&&statusMsg!==undefined)st.textContent=statusMsg;
@@ -3004,7 +3116,7 @@ async function startSignalMatch(){
    if(nameEl)nameEl.textContent="Connected to "+match.handle;
    if(noteEl)noteEl.textContent="Preview 1-on-1 · Anonymous session";
    demoSignalMsgs=[{id:"ds0",uid:match.uid,handle:match.handle,text:"Hey! Signal locked. Say hi or tap Next to test matching!",createdAt:Date.now()}];
-   setSignalUI("matched","");demoRenderSignalMsgs();
+   setSignalUI("matched","");playMatchChime();demoRenderSignalMsgs();
   },1200);
   return;
  }
@@ -3081,6 +3193,8 @@ async function startSignalMatch(){
  }
 }
 async function enterSignalRoom(roomId,partnerUid,partnerHandle){
+ if(signalFallbackTimer){clearTimeout(signalFallbackTimer);signalFallbackTimer=null;}
+ playMatchChime();
  signalRoomId=roomId;signalPartnerUid=partnerUid;signalPartnerHandle=partnerHandle;signalMatchingBusy=false;
  const nameEl=document.getElementById("signalPartnerName"),noteEl=document.getElementById("signalRoomNote"),box=document.getElementById("signalMessages");
  if(nameEl)nameEl.textContent="Connected to "+partnerHandle;
@@ -3212,6 +3326,200 @@ async function blockSignalPartner(){
  await blockAccount(uid,h);
  await stopSignalMatch(true);
 }
+
+
+// ---------- COLD-START SOLUTIONS: LIVE HOUR, WHATSAPP INVITE, SOUND PING, 24H DROP NOTES ----------
+let signalPingEnabled=true,signalFallbackTimer=null,selectedNoteTag="Thought";
+let dropNotesRef=null,dropNotesListener=null,dropNotesCache=[],liveHourInterval=null;
+const DROP_NOTES_STORAGE_KEY="100m_drop_notes_v1";
+
+function toggleSignalPing(){
+ signalPingEnabled=!signalPingEnabled;
+ const btn=document.getElementById("signalPingToggle");
+ if(btn)btn.textContent=signalPingEnabled?"🔔 Sound Ping: ON":"🔕 Sound Ping: OFF";
+ if(signalPingEnabled)playMatchChime();
+}
+function playMatchChime(){
+ if(!signalPingEnabled)return;
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return;
+  const ctx=walkieAudioCtx||new AC();
+  walkieAudioCtx=ctx;
+  if(ctx.state==="suspended")ctx.resume().catch(()=>{});
+  const now=ctx.currentTime;
+  [523.25,659.25,783.99].forEach((freq,i)=>{
+   const osc=ctx.createOscillator(),gain=ctx.createGain();
+   osc.type="sine";osc.frequency.setValueAtTime(freq,now+i*0.09);
+   gain.gain.setValueAtTime(0.001,now+i*0.09);
+   gain.gain.exponentialRampToValueAtTime(0.12,now+i*0.09+0.02);
+   gain.gain.exponentialRampToValueAtTime(0.001,now+i*0.09+0.24);
+   osc.connect(gain);gain.connect(ctx.destination);
+   osc.start(now+i*0.09);osc.stop(now+i*0.09+0.25);
+  });
+ }catch(e){}
+}
+function getInviteUrl(){
+ return /^https?:/i.test(window.location.protocol)
+  ?(window.location.origin+window.location.pathname)
+  :"https://brotherhoodbabu02-debug.github.io/100m-network/";
+}
+function openInviteModal(source){
+ const url=getInviteUrl();
+ const textMap={
+  radar:"I'm on 100m Network Radar right now — join my ~100m zone anonymously: "+url,
+  signal:"Come match with me on 100m Network Global Signal right now: "+url,
+  home:"Check out 100m Network — anonymous ~100m Radar, Live Voice & Global Signal Match: "+url
+ };
+ const shareText=textMap[source]||textMap.home;
+ const old=document.getElementById("inviteShareModal");if(old)old.remove();
+ const overlay=document.createElement("div");overlay.id="inviteShareModal";overlay.className="profile-action-overlay";
+ const panel=document.createElement("div");panel.className="profile-action-panel";
+ const h=document.createElement("h3");h.textContent="Invite a Friend";
+ const p=document.createElement("p");p.className="sub";p.style.marginBottom="12px";
+ p.textContent="Rooms come alive fastest with 2-3 friends nearby or online together.";
+ const wa=document.createElement("button");wa.type="button";wa.className="whatsapp-btn";wa.textContent="📲 Share on WhatsApp";
+ wa.onclick=()=>{window.open("https://wa.me/?text="+encodeURIComponent(shareText),"_blank","noopener,noreferrer");overlay.remove();};
+ const copyBtn=document.createElement("button");copyBtn.type="button";copyBtn.className="primary";copyBtn.textContent="📋 Copy Invite Link";
+ copyBtn.onclick=async()=>{
+  try{await navigator.clipboard.writeText(shareText);copyBtn.textContent="✓ Copied!";}
+  catch(e){try{const ta=document.createElement("textarea");ta.value=shareText;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();copyBtn.textContent="✓ Copied!";}catch(err){copyBtn.textContent="Copy unavailable";}}
+ };
+ const close=document.createElement("button");close.type="button";close.className="secondary";close.textContent="Close";
+ close.onclick=()=>overlay.remove();
+ panel.append(h,p,wa,copyBtn);
+ if(navigator.share){
+  const nat=document.createElement("button");nat.type="button";nat.className="secondary";nat.textContent="↗ More Share Options";
+  nat.onclick=()=>{navigator.share({title:"100m Network",text:shareText,url}).catch(()=>{});overlay.remove();};
+  panel.appendChild(nat);
+ }
+ panel.appendChild(close);overlay.appendChild(panel);
+ overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove();});
+ document.body.appendChild(overlay);
+}
+function updateLiveHourBanner(){
+ const badge=document.getElementById("liveHourBadge"),cd=document.getElementById("liveHourCountdown"),hl=document.getElementById("liveHourHeadline");
+ if(!badge||!cd||!hl)return;
+ // Compute current time in IST (UTC+5:30)
+ const now=new Date();
+ const istOffsetMin=330;
+ const utcMs=now.getTime()+now.getTimezoneOffset()*60000;
+ const ist=new Date(utcMs+istOffsetMin*60000);
+ const h=ist.getHours(),m=ist.getMinutes();
+ if(h===21){
+  badge.textContent="● LIVE NOW";badge.className="live-hour-pill";
+  hl.textContent="Daily Live Hour is ON right now!";
+  cd.textContent=(60-m)+" min left in tonight's Voice & Signal Jam — jump in!";
+ }else{
+  badge.textContent="9:00 PM IST";badge.className="live-hour-pill upcoming";
+  hl.textContent="Evening Live Voice & Signal Jam";
+  let minsLeft=(21*60)-(h*60+m);
+  if(minsLeft<=0)minsLeft+=24*60;
+  const hrs=Math.floor(minsLeft/60),mins=minsLeft%60;
+  cd.textContent="Next daily gather starts in "+hrs+"h "+mins+"m — invite friends to join at 9 PM IST.";
+ }
+}
+function selectNoteTag(btn){
+ selectedNoteTag=btn.dataset.noteTag||"Thought";
+ document.querySelectorAll(".note-tag-btn").forEach(b=>b.classList.toggle("active",b===btn));
+}
+function loadLocalDropNotes(){
+ const cutoff=Date.now()-24*60*60*1000;
+ try{
+  const raw=localStorage.getItem(DROP_NOTES_STORAGE_KEY);
+  const parsed=raw?JSON.parse(raw):null;
+  if(Array.isArray(parsed)&&parsed.length)return parsed.filter(n=>Number(n.createdAt)>=cutoff);
+ }catch(e){}
+ const now=Date.now();
+ return [
+  {id:"dn_seed1",handle:"Explorer-a4f1",tag:"Say Hi",text:"First time here — love the clean dark UI and privacy-first ~100m Radar!",createdAt:now-3600000,votes:3,voted:false},
+  {id:"dn_seed2",handle:"Explorer-9c2d",tag:"Question",text:"Who's joining tonight's 9 PM IST Live Voice Jam?",createdAt:now-1500000,votes:2,voted:false}
+ ];
+}
+function saveLocalDropNotes(list){
+ try{localStorage.setItem(DROP_NOTES_STORAGE_KEY,JSON.stringify(list.slice(0,40)));}catch(e){}
+}
+function renderDropNotes(){
+ const box=document.getElementById("dropNotesList"),cnt=document.getElementById("dropNotesCount");
+ if(!box)return;
+ const cutoff=Date.now()-24*60*60*1000;
+ const list=dropNotesCache.filter(n=>Number(n.createdAt)>=cutoff).sort((a,b)=>Number(b.createdAt)-Number(a.createdAt));
+ if(cnt)cnt.textContent=list.length+" note"+(list.length===1?"":"s");
+ box.innerHTML="";
+ if(!list.length){box.innerHTML='<div class="empty">No 24h notes yet. Be the first to drop a note!</div>';return;}
+ list.forEach(n=>{
+  const card=document.createElement("div");card.className="drop-note-item";
+  const head=document.createElement("div");head.className="drop-note-head";
+  const left=document.createElement("span");
+  left.innerHTML='<span class="drop-note-tag">#'+String(n.tag||"Thought").replace(/</g,"&lt;")+'</span> · '+String(n.handle||"Explorer").replace(/</g,"&lt;");
+  const agoMin=Math.max(1,Math.round((Date.now()-Number(n.createdAt||Date.now()))/60000));
+  const timeTxt=agoMin<60?(agoMin+"m ago"):(Math.floor(agoMin/60)+"h ago");
+  const right=document.createElement("span");right.textContent=timeTxt;
+  head.append(left,right);
+  const body=document.createElement("div");body.className="drop-note-text";body.textContent=String(n.text||"");
+  const foot=document.createElement("div");foot.className="drop-note-foot";
+  const up=document.createElement("button");up.type="button";up.className="upvote-btn"+(n.voted?" active":"");
+  up.textContent="▲ "+(Number(n.votes)||0);
+  up.onclick=()=>toggleDropNoteVote(n.id);
+  foot.appendChild(up);
+  card.append(head,body,foot);
+  box.appendChild(card);
+ });
+}
+function initDropNotes(){
+ if(dropNotesRef&&dropNotesListener){dropNotesRef.off("value",dropNotesListener);dropNotesRef=null;dropNotesListener=null;}
+ if(guestMode||!rtdb||!currentUser){
+  dropNotesCache=loadLocalDropNotes();renderDropNotes();return;
+ }
+ dropNotesRef=rtdb.ref("globalChat/dropNotes").orderByChild("createdAt").limitToLast(30);
+ dropNotesListener=snap=>{
+  const arr=[];
+  snap.forEach(c=>{const v=c.val()||{};arr.push({id:c.key,handle:v.handle||"Explorer",tag:v.tag||"Thought",text:v.text||"",createdAt:Number(v.createdAt||Date.now()),votes:Number(v.votes||0),voted:!!(v.voters&&currentUser&&v.voters[currentUser.uid])});});
+  dropNotesCache=arr.length?arr:loadLocalDropNotes();
+  renderDropNotes();
+ };
+ dropNotesRef.on("value",dropNotesListener,()=>{
+  dropNotesCache=loadLocalDropNotes();renderDropNotes();
+ });
+}
+async function postDropNote(){
+ const input=document.getElementById("dropNoteInput"),st=document.getElementById("dropNoteStatus");
+ const val=(input&&input.value||"").trim();
+ if(!val)return;
+ const handle=(currentUser&&!guestMode)?globalHandle():"Guest-demo";
+ if(!guestMode&&rtdb&&currentUser){
+  try{
+   await rtdb.ref("globalChat/dropNotes").push({uid:currentUser.uid,handle,tag:selectedNoteTag,text:val,votes:1,voters:{[currentUser.uid]:true},createdAt:firebase.database.ServerValue.TIMESTAMP});
+   input.value="";if(st)st.textContent="Dropped! Visible for 24 hours.";return;
+  }catch(e){}
+ }
+ const note={id:"dn_"+Date.now(),handle,tag:selectedNoteTag,text:val,createdAt:Date.now(),votes:1,voted:true};
+ dropNotesCache=[note,...dropNotesCache];
+ saveLocalDropNotes(dropNotesCache);
+ input.value="";if(st)st.textContent=guestMode?"Dropped in Preview Mode (visible for 24h locally).":"Dropped locally (visible for 24h).";
+ renderDropNotes();
+}
+async function toggleDropNoteVote(id){
+ const item=dropNotesCache.find(x=>x.id===id);if(!item)return;
+ if(!guestMode&&rtdb&&currentUser&&!String(id).startsWith("dn_")){
+  try{
+   const ref=rtdb.ref("globalChat/dropNotes/"+id);
+   await ref.transaction(cur=>{
+    if(!cur)return cur;
+    cur.voters=cur.voters||{};
+    if(cur.voters[currentUser.uid]){delete cur.voters[currentUser.uid];cur.votes=Math.max(0,Number(cur.votes||1)-1);}
+    else{cur.voters[currentUser.uid]=true;cur.votes=Number(cur.votes||0)+1;}
+    return cur;
+   });
+   return;
+  }catch(e){}
+ }
+ item.voted=!item.voted;item.votes=Math.max(0,(Number(item.votes)||0)+(item.voted?1:-1));
+ saveLocalDropNotes(dropNotesCache);renderDropNotes();
+}
+updateLiveHourBanner();
+if(liveHourInterval)clearInterval(liveHourInterval);
+liveHourInterval=setInterval(updateLiveHourBanner,30000);
 
 function dismissIntroSplash(){
  const el=document.getElementById("introSplash");
