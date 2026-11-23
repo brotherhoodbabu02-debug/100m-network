@@ -1315,7 +1315,7 @@ button{font-size:14.5px}
   <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:12px">
    <div style="display:flex;align-items:center;gap:12px">
     <div class="avatar" style="margin:0;width:48px;height:48px;font-size:20px">👤</div>
-    <div><h3 id="radarAnonymousHandle" style="color:var(--cyan);margin:0">Explorer</h3><p class="sub" style="margin:2px 0 0;font-size:12px">Anonymous Radar handle</p></div>
+    <div><h3 id="radarAnonymousHandle" style="color:var(--cyan);margin:0">SpicyPotato</h3><p class="sub" style="margin:2px 0 0;font-size:12px">Anonymous Radar handle</p></div>
    </div>
   </div>
   <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
@@ -1535,7 +1535,15 @@ let nearbyTypingRef=null,nearbyTypingListener=null,nearbyTypingTimer=null,nearby
 let globalMembersRef=null,globalMembersListener=null,globalMessagesRef=null,globalMessagesListener=null,globalTypingRef=null,globalTypingListener=null,globalTypingTimer=null,globalTypingActive=false,globalReactionRef=null,globalReactionListener=null,globalReplyTarget=null,globalMessageCache=[],globalReactionCache={};
 let activeChatId=null,activeChatUnsubscribe=null,conversationsUnsubscribe=null,myPublicChatId="";
 let blockedUids=new Set(),signupInProgress=false,reportTarget="",nearbyTypingLast=0,globalTypingLast=0;
-function handleFor(uid){return "Explorer-"+String(uid||"").slice(0,4).toLowerCase()}
+const CRAZY_ADJ=["Spicy","Chill","Happy","Sleepy","Crazy","Crispy","Sneaky","Jolly","Turbo","Wild","Tiny","Mighty","Lucky","Bouncy","Funky","Witty"];
+const CRAZY_NOUN=["Potato","Tomato","Carrot","Onion","Brinjal","Chilli","Broccoli","Pumpkin","Panda","Koala","Tiger","Capybara","Dolphin","Otter","Sloth","Fox","Penguin","Peacock","Owl","Parrot","Flamingo","Eagle","Pigeon","Sparrow","Japan","Brazil","Iceland","Egypt","Norway","Mexico","Greece","Canada"];
+function handleFor(uid){
+ const s=String(uid||"guest");
+ let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0;}
+ const a=Math.abs(h)%CRAZY_ADJ.length,n=Math.abs(h>>4)%CRAZY_NOUN.length;
+ const tag=s.slice(-2).toLowerCase().replace(/[^a-z0-9]/g,"x")||"99";
+ return CRAZY_ADJ[a]+CRAZY_NOUN[n]+"-"+tag;
+}
 function toggleAuth(){
  isLogin=!isLogin;
  document.getElementById("authHeading").textContent=isLogin?"Welcome Back":"Create Account";
@@ -1604,23 +1612,23 @@ if(auth&&/^https?:/i.test(window.location.protocol)){
 }
 const DEMO_UID="demo_guest_me";
 const DEMO_EXPLORERS=[
- {uid:"demo_a4f1",handle:"Explorer-a4f1",chatId:"100m-DEMO01"},
- {uid:"demo_9c2d",handle:"Explorer-9c2d",chatId:"100m-DEMO02"},
- {uid:"demo_7b0e",handle:"Explorer-7b0e",chatId:"100m-DEMO03"},
- {uid:"demo_3f8a",handle:"Explorer-3f8a",chatId:"100m-DEMO04"}
+ {uid:"demo_a4f1",handle:"SpicyPotato-a4",chatId:"100m-DEMO01"},
+ {uid:"demo_9c2d",handle:"ChillPenguin-9c",chatId:"100m-DEMO02"},
+ {uid:"demo_7b0e",handle:"FunkyJapan-7b",chatId:"100m-DEMO03"},
+ {uid:"demo_3f8a",handle:"SleepyKoala-3f",chatId:"100m-DEMO04"}
 ];
 let demoGlobalMsgs=[],demoNearbyMsgs=[],demoPrivateStore={},demoSignalMsgs=[],demoSignalTimer=null,demoVoiceTimer=null,demoVoiceSpeakerIdx=0,demoSignalIdx=0,demoBlockedList=[];
 
 function resetDemoState(){
  const now=Date.now();
  demoGlobalMsgs=[
-  {id:"dg1",uid:"demo_a4f1",handle:"Explorer-a4f1",text:"Welcome to 100m Network! Try Radar, Signal Match, or Live Voice.",createdAt:now-240000,reactions:{demo_9c2d:"🔥"}},
-  {id:"dg2",uid:"demo_9c2d",handle:"Explorer-9c2d",text:"Zero GPS stored — only anonymous ~100m zone hashes.",createdAt:now-120000,reactions:{demo_7b0e:"👍"}},
-  {id:"dg3",uid:"demo_7b0e",handle:"Explorer-7b0e",text:"Send a message below or long-press any bubble to react or reply!",createdAt:now-45000,reactions:{}}
+  {id:"dg1",uid:"demo_a4f1",handle:"SpicyPotato-a4",text:"Welcome to 100m Network! Try Radar, Signal Match, or Live Voice.",createdAt:now-240000,reactions:{demo_9c2d:"🔥"}},
+  {id:"dg2",uid:"demo_9c2d",handle:"ChillPenguin-9c",text:"Zero GPS stored — only anonymous ~100m zone hashes.",createdAt:now-120000,reactions:{demo_7b0e:"👍"}},
+  {id:"dg3",uid:"demo_7b0e",handle:"FunkyJapan-7b",text:"Send a message below or long-press any bubble to react or reply!",createdAt:now-45000,reactions:{}}
  ];
  demoNearbyMsgs=[
-  {id:"dn1",uid:"demo_a4f1",handle:"Explorer-a4f1",text:"Hey! Anyone nearby in this ~100m zone?",createdAt:now-150000,reactions:{demo_3f8a:"👋"}},
-  {id:"dn2",uid:"demo_3f8a",handle:"Explorer-3f8a",text:"Yep, Radar is super smooth here. Messages auto-clear in 24h.",createdAt:now-60000,reactions:{}}
+  {id:"dn1",uid:"demo_a4f1",handle:"SpicyPotato-a4",text:"Hey! Anyone nearby in this ~100m zone?",createdAt:now-150000,reactions:{demo_3f8a:"👋"}},
+  {id:"dn2",uid:"demo_3f8a",handle:"SleepyKoala-3f",text:"Yep, Radar is super smooth here. Messages auto-clear in 24h.",createdAt:now-60000,reactions:{}}
  ];
  demoPrivateStore={
   "demo_a4f1":[
@@ -1822,9 +1830,9 @@ function demoRenderVoiceSeats(){
  if(!grid)return;
  const seats=liveVoiceJoined
   ?[{uid:DEMO_UID,handle:"You",speaking:!liveVoiceMuted&&demoVoiceSpeakerIdx===0},
-    {uid:"demo_a4f1",handle:"Explorer-a4f1",speaking:demoVoiceSpeakerIdx===1},
-    {uid:"demo_9c2d",handle:"Explorer-9c2d",speaking:demoVoiceSpeakerIdx===2},
-    {uid:"demo_7b0e",handle:"Explorer-7b0e",speaking:false}]
+    {uid:"demo_a4f1",handle:"SpicyPotato-a4",speaking:demoVoiceSpeakerIdx===1},
+    {uid:"demo_9c2d",handle:"ChillPenguin-9c",speaking:demoVoiceSpeakerIdx===2},
+    {uid:"demo_7b0e",handle:"FunkyJapan-7b",speaking:false}]
   :[];
  if(badge)badge.textContent=seats.length+"/"+LIVE_VOICE_MAX+" PREVIEW";
  if(!seats.length){
@@ -1862,7 +1870,7 @@ function enterGuestPreview(){
  document.getElementById("profileAvatar").textContent="G";
  document.getElementById("myPublicChatId").textContent=myPublicChatId;
  document.getElementById("editProfileButton").classList.remove("hidden");
- document.getElementById("radarAnonymousHandle").textContent="Explorer-demo";
+ document.getElementById("radarAnonymousHandle").textContent="CrispyTomato-99";
  document.getElementById("globalChatStatus").textContent="Interactive Preview — try sending messages, reactions & replies.";
  document.getElementById("privateChatStatus").textContent="Preview tip: try 100m-DEMO01 or tap any explorer avatar.";
  demoRenderGlobalChat();
@@ -2271,7 +2279,7 @@ function requestPrivacyZone(){
 async function publishRadarPresence(){
  if(!currentUser)return;
  const publicRef=rtdb.ref("radarPublic/"+currentUser.uid);
- const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
+ const handle=handleFor(currentUser.uid);
  await publicRef.onDisconnect().remove();
  const base={online:true,anonymousHandle:handle,avatar:"👤",updatedAt:firebase.database.ServerValue.TIMESTAMP};
  if(myRadarZone&&myRadarZone!=="z_global"){
@@ -2372,7 +2380,7 @@ async function setRadarStatus(isOnline){
  const on=document.getElementById("radarOnButton"),off=document.getElementById("radarOffButton");
  if(on)on.disabled=true;if(off)off.disabled=true;
  const publicRef=rtdb.ref("radarPublic/"+currentUser.uid);
- const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
+ const handle=handleFor(currentUser.uid);
  try{
   if(isOnline){
    updateRadarStatusUI(false,"Creating anonymous ~100m privacy zone…");
@@ -2553,7 +2561,7 @@ async function setNearbyTyping(isTyping){
   if(isTyping){
    if(nearbyTypingActive&&Date.now()-nearbyTypingLast<3000)return;if(!nearbyTypingActive)await ref.onDisconnect().remove();nearbyTypingLast=Date.now();
    nearbyTypingActive=true;
-   await ref.set({typing:true,handle:"Explorer-"+currentUser.uid.slice(0,4).toLowerCase(),updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   await ref.set({typing:true,handle:handleFor(currentUser.uid),updatedAt:firebase.database.ServerValue.TIMESTAMP});
   }else{
    nearbyTypingActive=false;
    if(nearbyTypingTimer)clearTimeout(nearbyTypingTimer);
@@ -2625,7 +2633,7 @@ async function joinNearbyRoom(){
  if(!currentUser||guestMode){const s=document.getElementById("nearbyRoomStatus");if(s)s.textContent="Sign in to use the shared group chat.";return}
  if(!radarIsOn){const s=document.getElementById("nearbyRoomStatus");if(s)s.textContent="Turn Radar ON first.";return}
  try{
-  const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
+  const handle=handleFor(currentUser.uid);
   const memberRef=rtdb.ref("nearbyChat/members/"+currentUser.uid);
   await memberRef.onDisconnect().remove();
   await memberRef.set({active:true,handle,speaking:false,speakingUntil:0,joinedAt:firebase.database.ServerValue.TIMESTAMP});
@@ -2658,7 +2666,7 @@ async function sendNearbyRoomMessage(){
  if(!currentUser||!radarIsOn){document.getElementById("nearbyRoomStatus").textContent="Sign in and turn Radar ON before sending.";return}
  if(!textValue||!checkMessageCooldown("nearbyRoomStatus"))return;
  try{
-  const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
+  const handle=handleFor(currentUser.uid);
   const payload={uid:currentUser.uid,handle,text:textValue,createdAt:firebase.database.ServerValue.TIMESTAMP};
   if(nearbyReplyTarget){payload.replyTo=nearbyReplyTarget.id;payload.replyHandle=nearbyReplyTarget.handle;payload.replyText=nearbyReplyTarget.text.slice(0,120)}
   await rtdb.ref("nearbyChat/messages").push(payload);
@@ -2690,7 +2698,7 @@ async function leaveNearbyRoom(silent=false){
 }
 
 // GLOBAL CHAT
-function globalHandle(){return "Explorer-"+(currentUser?.uid||"guest").slice(0,4).toLowerCase()}
+function globalHandle(){return handleFor(currentUser?.uid||"guest")}
 function stopGlobalChatListeners(){
  if(globalMembersRef&&globalMembersListener)globalMembersRef.off("value",globalMembersListener);
  if(globalMessagesRef&&globalMessagesListener)globalMessagesRef.off("value",globalMessagesListener);
@@ -3591,8 +3599,8 @@ function loadLocalDropNotes(){
  }catch(e){}
  const now=Date.now();
  return [
-  {id:"dn_seed1",handle:"Explorer-a4f1",tag:"Say Hi",text:"First time here — love the clean dark UI and privacy-first ~100m Radar!",createdAt:now-3600000,votes:3,voted:false},
-  {id:"dn_seed2",handle:"Explorer-9c2d",tag:"Question",text:"Who's joining tonight's 9 PM IST Live Voice Jam?",createdAt:now-1500000,votes:2,voted:false}
+  {id:"dn_seed1",handle:"SpicyPotato-a4",tag:"Say Hi",text:"First time here — love the clean dark UI and privacy-first ~100m Radar!",createdAt:now-3600000,votes:3,voted:false},
+  {id:"dn_seed2",handle:"ChillPenguin-9c",tag:"Question",text:"Who's joining tonight's 9 PM IST Live Voice Jam?",createdAt:now-1500000,votes:2,voted:false}
  ];
 }
 function saveLocalDropNotes(list){
@@ -3645,7 +3653,7 @@ async function postDropNote(){
  const input=document.getElementById("dropNoteInput"),st=document.getElementById("dropNoteStatus");
  const val=(input&&input.value||"").trim();
  if(!val)return;
- const handle=(currentUser&&!guestMode)?globalHandle():"Guest-demo";
+ const handle=(currentUser&&!guestMode)?globalHandle():"CrispyTomato-99";
  if(!guestMode&&rtdb&&currentUser){
   try{
    await rtdb.ref("globalChat/dropNotes").push({uid:currentUser.uid,handle,tag:selectedNoteTag,text:val,votes:1,voters:{[currentUser.uid]:true},createdAt:firebase.database.ServerValue.TIMESTAMP});
