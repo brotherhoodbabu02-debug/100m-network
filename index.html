@@ -1088,6 +1088,35 @@ button{font-size:14.5px}
 .chat-msg,.global-chat-msg,.global-chat-msg .body{font-size:14.5px}
 .comment-note,.empty-cta-box p{font-size:13px}
 
+
+/* ---------- 1-ON-1 VOICE CALL BAR ---------- */
+.direct-call-bar{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+ padding:13px 16px;margin-bottom:14px;border-radius:18px;
+ border:1px solid rgba(52,211,153,0.4);
+ background:linear-gradient(135deg, rgba(52,211,153,0.14) 0%, rgba(16,17,22,0.96) 75%);
+ box-shadow:0 12px 30px rgba(0,0,0,0.45);
+ animation:pageIn .2s ease-out;
+}
+.direct-call-bar.ringing{
+ border-color:rgba(15,132,255,0.48);
+ background:linear-gradient(135deg, rgba(15,132,255,0.18) 0%, rgba(16,17,22,0.96) 75%);
+}
+.call-info{display:flex;align-items:center;gap:10px;min-width:0}
+.call-pulse-dot{
+ width:11px;height:11px;border-radius:50%;flex:0 0 11px;
+ background:var(--green);
+ box-shadow:0 0 0 0 rgba(52,211,153,0.6);
+ animation:ping 1.6s ease-out infinite;
+}
+.direct-call-bar.ringing .call-pulse-dot{background:#0f84ff}
+.call-timer{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--subtext);font-weight:700}
+.call-actions{display:flex;gap:7px;flex-wrap:wrap}
+.call-btn{
+ background:rgba(52,211,153,0.14);border:1px solid rgba(52,211,153,0.38);color:var(--green);
+}
+.call-btn:hover:not(:disabled){background:rgba(52,211,153,0.24);border-color:rgba(52,211,153,0.55)}
+
 </style>
 </head>
 <body>
@@ -1327,6 +1356,20 @@ button{font-size:14.5px}
 
 <section class="page" id="chats">
  <h2>Chats</h2><p class="sub">Global conversations, instant 1-on-1 Signal Match, and private messages.</p>
+ <div id="directCallBar" class="direct-call-bar hidden" aria-live="polite">
+  <div class="call-info">
+   <span class="call-pulse-dot"></span>
+   <div>
+    <strong id="directCallTitle" style="display:block;font-size:15px">Voice Call</strong>
+    <span id="directCallStatus" class="call-timer">Connecting…</span>
+   </div>
+  </div>
+  <div class="call-actions">
+   <button type="button" id="directCallAcceptBtn" class="call-btn small hidden" onclick="acceptDirectCall()">📞 Answer</button>
+   <button type="button" id="directCallMuteBtn" class="secondary small hidden" onclick="toggleDirectCallMute()">🎙️ Mute</button>
+   <button type="button" id="directCallEndBtn" class="danger small" onclick="endDirectCall()">End Call</button>
+  </div>
+ </div>
  <div class="chat-mode-tabs" role="tablist" aria-label="Chat sections">
   <button type="button" class="chat-mode-tab active" data-chat-tab="global" onclick="switchChatTab('global')">Global</button>
   <button type="button" class="chat-mode-tab" data-chat-tab="signal" onclick="switchChatTab('signal')">⚡ Signal</button>
@@ -1382,6 +1425,7 @@ button{font-size:14.5px}
      <button type="button" class="primary" style="width:auto;margin:0;padding:12px 16px" id="signalSendBtn" onclick="sendSignalMessage()">Send</button>
     </div>
     <div class="signal-actions">
+     <button type="button" class="call-btn small" onclick="startDirectCallFromSignal()">📞 Voice Call</button>
      <button type="button" class="secondary small" onclick="promoteSignalToPrivate()">Add to Private Chat</button>
      <button type="button" class="secondary small" onclick="reportSignalPartner()">Report</button>
      <button type="button" class="danger small" onclick="blockSignalPartner()">Block</button>
@@ -1415,7 +1459,7 @@ button{font-size:14.5px}
     <button class="primary" onclick="startPrivateChat()">Open private chat</button>
     <p id="privateChatStatus" class="message muted"></p>
    </div>
-   <div class="card"><h3 id="activeChatTitle">Select a conversation</h3>
+   <div class="card"><div class="row" style="align-items:center;justify-content:space-between;margin-bottom:8px"><h3 id="activeChatTitle" style="margin:0">Select a conversation</h3><button type="button" id="privateCallBtn" class="call-btn small fit hidden" onclick="startDirectCallFromPrivate()">📞 Call</button></div>
     <div id="privateMessages" class="chat-list"><div class="empty">Your private messages will appear here.</div></div>
     <div id="privateReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="privateReplyName">Replying</strong><p id="privateReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelPrivateReply()">Cancel</button></div></div>
     <textarea id="privateMessageInput" maxlength="2000" placeholder="Write a message..."></textarea>
@@ -1825,12 +1869,13 @@ function enterGuestPreview(){
  demoRenderRadarStage();
  demoRenderVoiceSeats();
  loadBlockedAccounts();
- initDropNotes();
+ initDropNotes();initDirectCallInbox();
  updateRadarStatusUI(false,"Preview Mode ready — tap Turn ON Radar to test ~100m Radar & group chat.");
  go("home");
 }
 function exitGuestPreview(){
  demoStopVoice();
+ endDirectCall(true);
  if(demoSignalTimer){clearTimeout(demoSignalTimer);demoSignalTimer=null;}
  radarIsOn=false;guestMode=false;activeChatId=null;
  const nr=document.getElementById("nearbyRoomActive");if(nr)nr.classList.add("hidden");
@@ -1991,7 +2036,8 @@ function switchChatTab(tab){
 function openPrivateChat(chatId,otherUid){if(blockedUids.has(otherUid))return;switchChatTab("private");
  if(!currentUser||guestMode)return;
  if(activeChatUnsubscribe)activeChatUnsubscribe();
- activeChatId=chatId;
+ activeChatId=chatId;activePrivateOtherUid=otherUid;
+ const pCallBtn=document.getElementById("privateCallBtn");if(pCallBtn)pCallBtn.classList.remove("hidden");
  const chatTitle=document.getElementById("activeChatTitle");chatTitle.textContent="Chat with "+handleFor(otherUid);attachProfileAction(chatTitle,otherUid,handleFor(otherUid));
  document.getElementById("sendPrivateButton").disabled=false;
  const box=document.getElementById("privateMessages");
@@ -2121,7 +2167,7 @@ function attachProfileAction(element,uid,handle){
 async function openPrivateChatByUid(otherUid){
  if(guestMode&&otherUid){
   if(blockedUids.has(otherUid)){const s=document.getElementById("privateChatStatus");if(s)s.textContent="Unblock this account before starting a chat.";return;}
-  activeChatId=otherUid;switchChatTab("private");
+  activeChatId=otherUid;activePrivateOtherUid=otherUid;switchChatTab("private");const pCallBtn=document.getElementById("privateCallBtn");if(pCallBtn)pCallBtn.classList.remove("hidden");
   const ex=DEMO_EXPLORERS.find(e=>e.uid===otherUid)||{handle:handleFor(otherUid)};
   const chatTitle=document.getElementById("activeChatTitle");chatTitle.textContent="Chat with "+ex.handle+" (Preview)";
   document.getElementById("sendPrivateButton").disabled=false;
@@ -2771,7 +2817,7 @@ function handleSignedIn(user){
  guestMode=false;const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();initDropNotes();
 }
 function cleanupSession(){
- stopRadarGeoWatch();stopRadarRoomListener();stopNearbyRoomListeners();stopGlobalChatListeners();stopNearbyVoiceRoom();stopSignalMatch(true);radarIsOn=false;
+ stopRadarGeoWatch();stopRadarRoomListener();stopNearbyRoomListeners();stopGlobalChatListeners();stopNearbyVoiceRoom();stopSignalMatch(true);endDirectCall(true);radarIsOn=false;
  if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
  activeChatId=null;blockedUids=new Set();
@@ -3634,6 +3680,178 @@ updateLiveHourBanner();
 if(liveHourInterval)clearInterval(liveHourInterval);
 liveHourInterval=setInterval(updateLiveHourBanner,30000);
 
+
+// ---------- 1-ON-1 DIRECT VOICE CALL (SIGNAL MATCH & PRIVATE CHAT) ----------
+let activePrivateOtherUid=null,directCallState="idle",directCallId=null,directCallPeerUid=null,directCallPeerName="";
+let directCallPC=null,directCallStream=null,directCallAudio=null,directCallMuted=false,directCallTimer=null,directCallSecs=0;
+let directCallInboxRef=null,directCallInboxListener=null,directCallRoomRef=null,directCallRoomListener=null,directCallDemoTimer=null,directCallPendingIce=[];
+
+function formatCallTime(s){
+ const m=String(Math.floor(s/60)).padStart(2,"0"),sec=String(s%60).padStart(2,"0");
+ return m+":"+sec;
+}
+function updateDirectCallUI(){
+ const bar=document.getElementById("directCallBar"),title=document.getElementById("directCallTitle"),st=document.getElementById("directCallStatus");
+ const acc=document.getElementById("directCallAcceptBtn"),mute=document.getElementById("directCallMuteBtn"),end=document.getElementById("directCallEndBtn");
+ if(!bar)return;
+ if(directCallState==="idle"){bar.classList.add("hidden");bar.classList.remove("ringing");return;}
+ bar.classList.remove("hidden");
+ bar.classList.toggle("ringing",directCallState==="calling"||directCallState==="incoming");
+ if(title)title.textContent=(directCallState==="incoming"?"Incoming Call · ":"1-on-1 Voice · ")+(directCallPeerName||"Explorer");
+ if(st){
+  if(directCallState==="calling")st.textContent="Ringing… waiting for answer";
+  else if(directCallState==="incoming")st.textContent="Ringing — tap Answer to talk";
+  else if(directCallState==="connected")st.textContent=(directCallMuted?"MUTED · ":"● LIVE · ")+formatCallTime(directCallSecs);
+ }
+ if(acc)acc.classList.toggle("hidden",directCallState!=="incoming");
+ if(mute){mute.classList.toggle("hidden",directCallState!=="connected");mute.textContent=directCallMuted?"🔇 Unmute":"🎙️ Mute";}
+ if(end)end.textContent=directCallState==="incoming"?"Decline":"End Call";
+}
+function startDirectCallClock(){
+ if(directCallTimer)clearInterval(directCallTimer);
+ directCallSecs=0;
+ directCallTimer=setInterval(()=>{directCallSecs++;updateDirectCallUI();},1000);
+}
+function startDirectCallFromSignal(){
+ if(signalState!=="matched"||!signalPartnerUid)return;
+ startDirectCall(signalPartnerUid,signalPartnerHandle||"Match");
+}
+function startDirectCallFromPrivate(){
+ if(!activePrivateOtherUid)return;
+ const ex=DEMO_EXPLORERS.find(e=>e.uid===activePrivateOtherUid);
+ startDirectCall(activePrivateOtherUid,ex?ex.handle:handleFor(activePrivateOtherUid));
+}
+async function startDirectCall(peerUid,peerName){
+ if(!peerUid||directCallState!=="idle")return;
+ directCallPeerUid=peerUid;directCallPeerName=peerName||"Explorer";directCallMuted=false;
+ if(guestMode){
+  directCallState="calling";updateDirectCallUI();
+  if(directCallDemoTimer)clearTimeout(directCallDemoTimer);
+  directCallDemoTimer=setTimeout(()=>{
+   if(!guestMode||directCallState!=="calling")return;
+   directCallState="connected";startDirectCallClock();updateDirectCallUI();playMatchChime();
+  },1400);
+  return;
+ }
+ if(!currentUser||!rtdb)return;
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+  const st=document.getElementById("privateChatStatus");if(st)st.textContent="Microphone unavailable in this browser.";return;
+ }
+ try{
+  directCallStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+  directCallId="call_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
+  directCallState="calling";updateDirectCallUI();
+  const pc=new RTCPeerConnection(voiceIceConfig);directCallPC=pc;directCallPendingIce=[];
+  directCallStream.getAudioTracks().forEach(t=>pc.addTrack(t,directCallStream));
+  pc.onicecandidate=e=>{
+   if(e.candidate&&directCallId&&rtdb){
+    rtdb.ref("directVoiceCalls/"+directCallId+"/iceCaller").push(JSON.stringify(e.candidate.toJSON())).catch(()=>{});
+   }
+  };
+  pc.ontrack=e=>{
+   const stream=(e.streams&&e.streams[0])||new MediaStream([e.track]);
+   if(!directCallAudio){directCallAudio=document.createElement("audio");directCallAudio.autoplay=true;directCallAudio.playsInline=true;directCallAudio.style.display="none";document.body.appendChild(directCallAudio);}
+   directCallAudio.srcObject=stream;directCallAudio.play().catch(()=>{});
+  };
+  const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+  directCallRoomRef=rtdb.ref("directVoiceCalls/"+directCallId);
+  await directCallRoomRef.onDisconnect().remove();
+  await directCallRoomRef.set({caller:currentUser.uid,callerHandle:globalHandle(),callee:peerUid,status:"ringing",offer:pc.localDescription.sdp,createdAt:firebase.database.ServerValue.TIMESTAMP});
+  await rtdb.ref("directVoiceInbox/"+peerUid+"/"+directCallId).set({callId:directCallId,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP});
+  listenDirectCallRoom(directCallId,true);
+ }catch(e){
+  endDirectCall(true);
+  const st=document.getElementById("privateChatStatus");if(st)st.textContent="Could not start call: "+e.message;
+ }
+}
+function listenDirectCallRoom(callId,isCaller){
+ if(directCallRoomRef&&directCallRoomListener)directCallRoomRef.off("value",directCallRoomListener);
+ directCallRoomRef=rtdb.ref("directVoiceCalls/"+callId);
+ let answerApplied=false;
+ directCallRoomListener=async snap=>{
+  const data=snap.val();
+  if(!data||data.status==="ended"){endDirectCall(true);return;}
+  if(isCaller&&data.answer&&!answerApplied&&directCallPC){
+   answerApplied=true;
+   try{
+    await directCallPC.setRemoteDescription({type:"answer",sdp:data.answer});
+    for(const c of directCallPendingIce){await directCallPC.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{});}
+    directCallPendingIce=[];
+    directCallState="connected";startDirectCallClock();updateDirectCallUI();playMatchChime();
+   }catch(e){}
+  }
+  const iceKey=isCaller?"iceCallee":"iceCaller";
+  if(data[iceKey]&&directCallPC){
+   Object.values(data[iceKey]).forEach(raw=>{
+    try{
+     const cand=typeof raw==="string"?JSON.parse(raw):raw;
+     if(directCallPC.remoteDescription)directCallPC.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});
+     else directCallPendingIce.push(cand);
+    }catch(e){}
+   });
+  }
+ };
+ directCallRoomRef.on("value",directCallRoomListener);
+}
+function initDirectCallInbox(){
+ if(directCallInboxRef&&directCallInboxListener)directCallInboxRef.off("child_added",directCallInboxListener);
+ if(!currentUser||guestMode||!rtdb)return;
+ directCallInboxRef=rtdb.ref("directVoiceInbox/"+currentUser.uid);
+ directCallInboxListener=snap=>{
+  const inv=snap.val()||{};snap.ref.remove().catch(()=>{});
+  if(!inv.callId||!inv.from||blockedUids.has(inv.from)||directCallState!=="idle")return;
+  if(Number(inv.createdAt||0)&&Date.now()-Number(inv.createdAt)>60000)return;
+  directCallId=inv.callId;directCallPeerUid=inv.from;directCallPeerName=String(inv.fromHandle||handleFor(inv.from));
+  directCallState="incoming";updateDirectCallUI();playMatchChime();go("chats");
+ };
+ directCallInboxRef.on("child_added",directCallInboxListener,()=>{});
+}
+async function acceptDirectCall(){
+ if(directCallState!=="incoming"||!directCallId||!currentUser||!rtdb)return;
+ try{
+  directCallStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+  const snap=await rtdb.ref("directVoiceCalls/"+directCallId).once("value");
+  const data=snap.val();if(!data||!data.offer){endDirectCall(true);return;}
+  const pc=new RTCPeerConnection(voiceIceConfig);directCallPC=pc;directCallPendingIce=[];
+  directCallStream.getAudioTracks().forEach(t=>pc.addTrack(t,directCallStream));
+  pc.onicecandidate=e=>{
+   if(e.candidate&&directCallId&&rtdb){
+    rtdb.ref("directVoiceCalls/"+directCallId+"/iceCallee").push(JSON.stringify(e.candidate.toJSON())).catch(()=>{});
+   }
+  };
+  pc.ontrack=e=>{
+   const stream=(e.streams&&e.streams[0])||new MediaStream([e.track]);
+   if(!directCallAudio){directCallAudio=document.createElement("audio");directCallAudio.autoplay=true;directCallAudio.playsInline=true;directCallAudio.style.display="none";document.body.appendChild(directCallAudio);}
+   directCallAudio.srcObject=stream;directCallAudio.play().catch(()=>{});
+  };
+  await pc.setRemoteDescription({type:"offer",sdp:data.offer});
+  const answer=await pc.createAnswer();await pc.setLocalDescription(answer);
+  await rtdb.ref("directVoiceCalls/"+directCallId).update({status:"connected",answer:pc.localDescription.sdp});
+  listenDirectCallRoom(directCallId,false);
+  directCallState="connected";startDirectCallClock();updateDirectCallUI();
+ }catch(e){endDirectCall(true);}
+}
+function toggleDirectCallMute(){
+ if(directCallState!=="connected")return;
+ directCallMuted=!directCallMuted;
+ if(directCallStream)directCallStream.getAudioTracks().forEach(t=>{t.enabled=!directCallMuted;});
+ updateDirectCallUI();
+}
+function endDirectCall(silent=false){
+ if(directCallDemoTimer){clearTimeout(directCallDemoTimer);directCallDemoTimer=null;}
+ if(directCallTimer){clearInterval(directCallTimer);directCallTimer=null;}
+ if(directCallRoomRef&&directCallRoomListener){directCallRoomRef.off("value",directCallRoomListener);}
+ if(!silent&&directCallId&&rtdb&&!guestMode){
+  rtdb.ref("directVoiceCalls/"+directCallId).update({status:"ended"}).catch(()=>{});
+  if(directCallPeerUid)rtdb.ref("directVoiceInbox/"+directCallPeerUid+"/"+directCallId).remove().catch(()=>{});
+ }
+ if(directCallPC){try{directCallPC.close();}catch(e){}directCallPC=null;}
+ if(directCallStream){directCallStream.getTracks().forEach(t=>t.stop());directCallStream=null;}
+ if(directCallAudio){directCallAudio.pause();directCallAudio.srcObject=null;directCallAudio.remove();directCallAudio=null;}
+ directCallState="idle";directCallId=null;directCallPeerUid=null;directCallPeerName="";directCallMuted=false;directCallSecs=0;directCallPendingIce=[];
+ updateDirectCallUI();
+}
+
 function dismissIntroSplash(){
  const el=document.getElementById("introSplash");
  if(!el||el.classList.contains("hide"))return;
@@ -3645,4 +3863,3 @@ setTimeout(dismissIntroSplash,3200);
 </script>
 </body>
 </html>
-```
