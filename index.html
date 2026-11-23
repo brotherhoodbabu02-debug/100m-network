@@ -118,6 +118,17 @@ main:has(#chats.active){max-width:1180px}
  padding:9px 12px;border-radius:10px;font-size:13px;font-weight:700;
 }
 .chat-mode-tab.active{background:#f4f4f5;color:#09090b}
+.radar-mode-tabs{
+ display:grid;grid-template-columns:1fr 1fr;gap:5px;
+ padding:5px;margin-bottom:14px;
+ background:#111114;border:1px solid var(--line);border-radius:14px;
+}
+.radar-mode-tab{
+ border:0;background:transparent;color:var(--muted);
+ padding:9px 12px;border-radius:10px;font-size:13px;font-weight:700;
+}
+.radar-mode-tab.active{background:#f4f4f5;color:#09090b}
+
 .chats-split{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
 .chats-col{min-width:0}
 @media(max-width:767px){
@@ -893,7 +904,7 @@ nav.bottom-nav{
 </section>
 
 <section class="page" id="radar">
- <h2>Live Radar</h2><p class="sub">Opt-in live online presence · zero GPS tracking.</p>
+ <h2>100m Live Radar</h2><p id="radarModeSubtitle" class="sub">Privacy-safe ~100m zone radar — no exact distance, no direction, and no GPS coordinates are ever shared.</p>
  <div class="card">
   <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:12px">
    <div style="display:flex;align-items:center;gap:12px">
@@ -1049,7 +1060,7 @@ nav.bottom-nav{
  <button class="primary" id="saveProfileButton" onclick="saveProfile()">Save Changes</button><button class="logout" onclick="closeEditProfile()">Cancel</button><p id="editMessage"></p>
  </div>
 </section>
-<footer class="note">Radar uses opt-in online presence only. No GPS or location is collected. Never share personal details or meet strangers based only on an online chat.</footer>
+<footer class="note">100m Radar uses an on-device anonymous ~100m zone hash only while Radar is ON. Exact GPS coordinates, meter distance, and direction are never stored or shown.</footer>
 </main>
 <nav class="bottom-nav" aria-label="Main navigation">
  <button type="button" class="active" data-page="home" onclick="go('home',this)" aria-label="Home"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><small>Home</small></button>
@@ -1393,45 +1404,106 @@ function stopRadarRoomListener(){
  }
  radarPublicRef=null;radarPublicListener=null;
 }
+let myRadarZone=null,radarGeoWatchId=null,radarLastSnapshot=null;
+async function hashZoneCell(lat,lng){
+ // Quantize to ~100m grid cell on-device and one-way SHA-256 hash it — exact GPS NEVER leaves the phone
+ const gx=Math.floor(lat*1000);
+ const gy=Math.floor(lng*1000);
+ const raw="100m-zone-v1:"+gx+":"+gy;
+ const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(raw));
+ const hex=Array.from(new Uint8Array(buf)).slice(0,8).map(b=>b.toString(16).padStart(2,"0")).join("");
+ return "z_"+hex;
+}
+function stopRadarGeoWatch(){
+ if(radarGeoWatchId!==null&&navigator.geolocation){
+  try{navigator.geolocation.clearWatch(radarGeoWatchId);}catch(e){}
+ }
+ radarGeoWatchId=null;
+}
+function requestPrivacyZone(){
+ return new Promise((resolve,reject)=>{
+  if(!navigator.geolocation){reject(new Error("Location is not supported on this browser."));return;}
+  navigator.geolocation.getCurrentPosition(
+   async pos=>{
+    try{resolve(await hashZoneCell(pos.coords.latitude,pos.coords.longitude));}
+    catch(e){reject(new Error("Could not compute privacy zone."));}
+   },
+   err=>reject(new Error(err.code===1?"Location permission denied. Allow location to use 100m Radar.":"Could not detect your ~100m zone. Turn on phone Location and try again.")),
+   {enableHighAccuracy:true,timeout:12000,maximumAge:20000}
+  );
+ });
+}
+async function publishRadarPresence(){
+ if(!currentUser)return;
+ const publicRef=rtdb.ref("radarPublic/"+currentUser.uid);
+ const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
+ await publicRef.onDisconnect().remove();
+ const base={online:true,anonymousHandle:handle,avatar:"👤",updatedAt:firebase.database.ServerValue.TIMESTAMP};
+ if(myRadarZone&&myRadarZone!=="z_global"){
+  try{await publicRef.set({...base,zone:myRadarZone});return;}
+  catch(err){if(!/permission/i.test(String(err&&err.message)))throw err;}
+ }
+ await publicRef.set(base);
+}
+function startRadarGeoWatch(){
+ stopRadarGeoWatch();
+ if(!navigator.geolocation)return;
+ radarGeoWatchId=navigator.geolocation.watchPosition(async pos=>{
+  try{
+   const nextZone=await hashZoneCell(pos.coords.latitude,pos.coords.longitude);
+   if(nextZone!==myRadarZone){
+    myRadarZone=nextZone;
+    if(radarIsOn&&currentUser)publishRadarPresence().catch(()=>{});
+    if(radarLastSnapshot)renderRadarMembers(radarLastSnapshot);
+   }
+  }catch(e){}
+ },()=>{},{enableHighAccuracy:false,maximumAge:25000,timeout:15000});
+}
+function renderRadarMembers(snapshot){
+ const box=document.getElementById("liveMembersList"),count=document.getElementById("liveMemberCount");
+ const members=[];
+ snapshot.forEach(child=>{
+  const data=child.val()||{};
+  if(child.key!==currentUser.uid&&data.online===true&&!blockedUids.has(child.key)){
+   if(myRadarZone&&myRadarZone!=="z_global"&&data.zone&&data.zone!==myRadarZone)return;
+   members.push({uid:child.key,username:String(data.anonymousHandle||"Explorer")});
+  }
+ });
+ if(count)count.textContent=members.length+" in ~100m zone";
+ const refreshed=document.getElementById("radarRefreshTime");
+ if(refreshed)refreshed.textContent="Privacy-safe ~100m zone · updated "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+ if(!box)return;
+ box.innerHTML='<div class="radar-center">100M</div><div class="radar-sweep"></div>';
+ if(!members.length){
+  const empty=document.createElement("div");empty.className="radar-empty";
+  empty.textContent=!myRadarZone
+   ?"Turn ON Radar to check for opted-in members in your ~100m zone."
+   :"No other opted-in members in your ~100m zone right now.";
+  box.appendChild(empty);
+  return;
+ }
+ // Neutral evenly-spaced ring — NEVER exposes exact distance or compass direction
+ members.forEach((member,index)=>{
+  const angle=(-90+(360*index/members.length))*Math.PI/180;
+  const radius=34;
+  const profile=document.createElement("button");
+  profile.type="button";profile.className="radar-profile-button";
+  profile.style.left=(50+Math.cos(angle)*radius)+"%";
+  profile.style.top=(50+Math.sin(angle)*radius)+"%";
+  profile.textContent="👤";profile.setAttribute("aria-label","Open member profile");
+  profile.title=member.username+" · Same ~100m zone";
+  profile.addEventListener("click",()=>{if(!profile.dataset.longPressed)showProfileActionMenu(member.uid,member.username);profile.dataset.longPressed="";});
+  attachProfileAction(profile,member.uid,member.username);
+  box.appendChild(profile);
+ });
+}
 function startRadarRoomListener(){
  if(!currentUser||guestMode)return;
  stopRadarRoomListener();
- const box=document.getElementById("liveMembersList");
- const count=document.getElementById("liveMemberCount");
- if(box)box.innerHTML='<div class="empty">Connecting to LIVE Radar...</div>';
+ const box=document.getElementById("liveMembersList"),count=document.getElementById("liveMemberCount");
+ if(box)box.innerHTML='<div class="empty">Connecting to 100m Radar...</div>';
  radarPublicRef=rtdb.ref("radarPublic");
- radarPublicListener=snapshot=>{
-  const members=[];
-  snapshot.forEach(child=>{
-   const data=child.val()||{};
-   if(child.key!==currentUser.uid&&data.online===true&&!blockedUids.has(child.key)){
-    members.push({uid:child.key,username:String(data.anonymousHandle||"Explorer"),avatar:String(data.avatar||"👤")});
-   }
-  });
-  if(count)count.textContent=members.length+" online";
-  const refreshed=document.getElementById("radarRefreshTime");
-  if(refreshed)refreshed.textContent="Live list updated: "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
-  if(!box)return;
-  box.innerHTML='<div class="radar-center">RADAR</div><div class="radar-sweep"></div>';
-  if(!members.length){
-   const empty=document.createElement("div");empty.className="radar-empty";
-   empty.textContent="No other members online yet";box.appendChild(empty);
-   return;
-  }
-  members.forEach((member,index)=>{
-   const angle=(-90+(360*index/members.length))*Math.PI/180;
-   const radius=36;
-   const profile=document.createElement("button");
-   profile.type="button";profile.className="radar-profile-button";
-   profile.style.left=(50+Math.cos(angle)*radius)+"%";
-   profile.style.top=(50+Math.sin(angle)*radius)+"%";
-   profile.textContent="👤";profile.setAttribute("aria-label","Open member profile");
-   profile.title="Online profile";
-   profile.addEventListener("click",()=>{if(!profile.dataset.longPressed)showRadarUsername(member.username);profile.dataset.longPressed="";});
-    attachProfileAction(profile,member.uid,member.username);
-   box.appendChild(profile);
-  });
- };
+ radarPublicListener=snapshot=>{radarLastSnapshot=snapshot;renderRadarMembers(snapshot);};
  radarPublicRef.on("value",radarPublicListener,error=>{
   if(box)box.textContent="Radar list unavailable: "+error.message;
   if(count)count.textContent="—";
@@ -1441,41 +1513,41 @@ function refreshRadarList(){
  const button=document.getElementById("refreshRadarButton");
  if(!currentUser||guestMode){
   const box=document.getElementById("liveMembersList");
-  if(box)box.innerHTML='<div class="empty">Sign in to refresh the LIVE member list.</div>';
+  if(box)box.innerHTML='<div class="empty">Sign in to refresh the 100m Radar.</div>';
   return;
  }
  if(button){button.disabled=true;button.textContent="Refreshing…";}
  startRadarRoomListener();
  window.setTimeout(()=>{if(button){button.disabled=false;button.textContent="Refresh";}},900);
 }
-
 async function setRadarStatus(isOnline){
- if(!currentUser||guestMode){updateRadarStatusUI(false,"Please sign in to use Radar.");return;}
+ if(!currentUser||guestMode){updateRadarStatusUI(false,"Please sign in to use 100m Radar.");return;}
  const on=document.getElementById("radarOnButton"),off=document.getElementById("radarOffButton");
  if(on)on.disabled=true;if(off)off.disabled=true;
  const publicRef=rtdb.ref("radarPublic/"+currentUser.uid);
  const handle="Explorer-"+currentUser.uid.slice(0,4).toLowerCase();
  try{
   if(isOnline){
-   await publicRef.onDisconnect().remove();
-   await publicRef.set({
-    online:true,
-    anonymousHandle:handle,
-    avatar:"👤",
-    updatedAt:firebase.database.ServerValue.TIMESTAMP
-   });
+   updateRadarStatusUI(false,"Creating anonymous ~100m privacy zone…");
+   let usedZone=true;
+   try{myRadarZone=await requestPrivacyZone();}
+   catch(geoErr){myRadarZone="z_global";usedZone=false;}
+   await publishRadarPresence();
+   if(usedZone)startRadarGeoWatch();
    radarIsOn=true;
    const name=document.getElementById("radarAnonymousHandle");
    if(name)name.textContent=handle;
-   updateRadarStatusUI(true,"Radar is LIVE. Other members see your profile icon; your anonymous handle appears when they tap it.");
+   updateRadarStatusUI(true,usedZone?"100m Radar is LIVE. Only an anonymous ~100m zone hash is used — exact location & distance are never shared.":"Radar is LIVE (opt-in mode — GPS is blocked in preview; ~100m zone activates automatically on your live HTTPS site).");
    startRadarRoomListener();
    await joinNearbyRoom();
   }else{
+   stopRadarGeoWatch();
+   myRadarZone=null;
    await leaveNearbyRoom(true);
    await publicRef.onDisconnect().cancel();
    await publicRef.remove();
    radarIsOn=false;
-   updateRadarStatusUI(false,"Radar is OFF. Your anonymous status has been removed.");
+   updateRadarStatusUI(false,"100m Radar is OFF. Your anonymous zone status has been removed.");
    const roomStatus=document.getElementById("nearbyRoomStatus");if(roomStatus)roomStatus.textContent="Radar is OFF. You left the shared chat.";
   }
  }catch(e){
@@ -1886,7 +1958,7 @@ function handleSignedIn(user){
  guestMode=false;document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();
 }
 function cleanupSession(){
- stopRadarRoomListener();stopNearbyRoomListeners();stopGlobalChatListeners();stopNearbyVoiceRoom();stopSignalMatch(true);radarIsOn=false;
+ stopRadarGeoWatch();stopRadarRoomListener();stopNearbyRoomListeners();stopGlobalChatListeners();stopNearbyVoiceRoom();stopSignalMatch(true);radarIsOn=false;
  if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
  activeChatId=null;blockedUids=new Set();
