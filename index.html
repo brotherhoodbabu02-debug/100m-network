@@ -1636,6 +1636,54 @@ header{
 .snl-fx-banner.bite{background:linear-gradient(135deg,#dc2626,#991b1b);border:2px solid #fca5a5}
 .snl-fx-banner.climb{background:linear-gradient(135deg,#16a34a,#15803d);border:2px solid #86efac}
 
+
+/* ---------- 2-PLAYER GAMES VISUAL LOBBY GRID ---------- */
+.arcade-grid{
+ display:grid;grid-template-columns:1fr 1fr;gap:11px;
+ margin:12px 0 14px;
+}
+.arcade-card{
+ position:relative;overflow:hidden;border-radius:18px;padding:12px 10px 11px;
+ border:2px solid rgba(255,255,255,0.16);
+ display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:8px;
+ min-height:132px;text-align:center;cursor:pointer;
+ box-shadow:0 10px 24px rgba(0,0,0,0.45);
+ transition:transform .14s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.arcade-card:hover{transform:translateY(-2px);border-color:#ffffff;box-shadow:0 14px 28px rgba(0,0,0,0.6)}
+.arcade-card:active{transform:scale(0.96)}
+.arcade-card.c-ludo{background:linear-gradient(145deg,#1d4ed8,#0f172a 85%)}
+.arcade-card.c-snl{background:linear-gradient(145deg,#15803d,#0f172a 85%)}
+.arcade-card.c-dots{background:linear-gradient(145deg,#0284c7,#0f172a 85%)}
+.arcade-card.c-chk{background:linear-gradient(145deg,#b91c1c,#0f172a 85%)}
+.arcade-card.c-ttt{background:linear-gradient(145deg,#7c3aed,#0f172a 85%)}
+.arcade-card.c-mem{background:linear-gradient(145deg,#db2777,#0f172a 85%)}
+.arcade-card.c-wc{background:linear-gradient(145deg,#d97706,#0f172a 85%)}
+.arcade-art{width:62px;height:62px;display:grid;place-items:center;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.45))}
+.arcade-art svg{width:100%;height:100%}
+.arcade-card-title{
+ font-family:"Plus Jakarta Sans","Inter",sans-serif;
+ font-size:14px;font-weight:800;letter-spacing:0.01em;color:#ffffff;
+ text-transform:uppercase;line-height:1.15;
+ text-shadow:0 2px 6px rgba(0,0,0,0.6);
+}
+.arcade-card-tag{
+ font-family:"JetBrains Mono",monospace;font-size:9.5px;font-weight:700;
+ padding:2px 7px;border-radius:999px;background:rgba(0,0,0,0.42);color:rgba(255,255,255,0.85);
+}
+.arcade-scorebar{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ padding:10px 14px;border-radius:16px;
+ background:#09090b;border:1px solid rgba(255,255,255,0.12);
+}
+.arcade-side{display:flex;align-items:center;gap:6px;font-weight:800;font-size:13px}
+.arcade-badge-num{
+ min-width:26px;height:26px;padding:0 6px;border-radius:999px;
+ display:grid;place-items:center;font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:800;
+}
+.arcade-badge-num.b{background:#2563eb;color:#ffffff}
+.arcade-badge-num.g{background:#16a34a;color:#ffffff}
+
 </style>
 </head>
 <body>
@@ -5127,6 +5175,7 @@ function shareCurrentGameScore(){
 }
 function openMiniGames(ctx){
  miniGameContext=ctx||"signal";
+ miniGameTab="lobby";
  if(dotsState.h.length!==DOTS_N)dotsReset();
  if(!memState.cards.length)memReset();
  if(chkState.board.length!==CHK_N)chkReset();
@@ -5143,17 +5192,42 @@ function closeMiniGames(){stopWcTimer();if(ludoRollTimer){clearInterval(ludoRoll
 function switchMiniGameTab(tab){
  miniGameTab=tab;
  if(tab==="wc"){wcReset();return;}
- else stopWcTimer();
+ stopWcTimer();
  renderMiniGamesPanel();
 }
 function renderMiniGamesPanel(){
  const panel=document.getElementById("miniGamesPanel");if(!panel)return;
  const partnerLabel=miniGameContext==="signal"?(signalPartnerHandle||"Match"):(document.getElementById("activeChatTitle")?.textContent.replace("Chat with ","").replace(" (Preview)","")||"Partner");
- const tabs=[
-  ["ttt","❌⭕ X-O"],["ludo","🎲 Ludo"],["snl","🐍 Snakes"],["dots","✏️ Dots 8×8"],
-  ["mem","🃏 Memory"],["wc","🔤 Words"],["chk","⚫ Checkers 8×8"]
- ];
- const tabsHtml=tabs.map(([id,lbl])=>'<button type="button" class="games-pill'+(miniGameTab===id?" active":"")+'" onclick="switchMiniGameTab(\''+id+'\')">'+lbl+'</button>').join("");
+ const gameTitles={ttt:"Tic-Tac-Toe",ludo:"Ludo 15×15",snl:"Snakes & Ladders",dots:"Dots & Boxes 8×8",mem:"Memory Flip",wc:"Word Chain",chk:"Checkers 8×8"};
+ if(miniGameTab==="lobby"){
+  const cards=[
+   {id:"ludo",cls:"c-ludo",title:"Ludo",tag:"15×15 CLASSIC",art:'<svg viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="10" fill="#f8fafc"/><rect x="4" y="4" width="24" height="24" rx="6" fill="#dc2626"/><rect x="36" y="4" width="24" height="24" rx="6" fill="#16a34a"/><rect x="4" y="36" width="24" height="24" rx="6" fill="#2563eb"/><rect x="36" y="36" width="24" height="24" rx="6" fill="#eab308"/><polygon points="24,24 40,24 32,32" fill="#16a34a"/><polygon points="24,40 40,40 32,32" fill="#2563eb"/><circle cx="16" cy="48" r="5" fill="#ffffff"/><circle cx="48" cy="16" r="5" fill="#ffffff"/></svg>'},
+   {id:"snl",cls:"c-snl",title:"Snakes & Ladders",tag:"10×10 BOARD",art:'<svg viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="10" fill="#dcfce7"/><line x1="16" y1="52" x2="32" y2="14" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="54" x2="42" y2="16" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/><line x1="20" y1="42" x2="30" y2="44" stroke="#b45309" stroke-width="3"/><line x1="25" y1="30" x2="35" y2="32" stroke="#b45309" stroke-width="3"/><path d="M 48 16 Q 36 28, 48 38 T 40 54" fill="none" stroke="#dc2626" stroke-width="6" stroke-linecap="round"/><circle cx="48" cy="16" r="6" fill="#dc2626"/><circle cx="46" cy="14" r="1.5" fill="#fef08a"/><circle cx="50" cy="14" r="1.5" fill="#fef08a"/></svg>'},
+   {id:"dots",cls:"c-dots",title:"Dots & Boxes",tag:"8×8 DOTS",art:'<svg viewBox="0 0 64 64"><rect x="14" y="14" width="18" height="18" rx="4" fill="rgba(56,189,248,0.45)"/><rect x="32" y="32" width="18" height="18" rx="4" fill="rgba(248,113,113,0.45)"/><line x1="14" y1="14" x2="50" y2="14" stroke="#38bdf8" stroke-width="4"/><line x1="14" y1="32" x2="50" y2="32" stroke="#f87171" stroke-width="4"/><line x1="14" y1="14" x2="14" y2="50" stroke="#38bdf8" stroke-width="4"/><line x1="32" y1="14" x2="32" y2="50" stroke="#38bdf8" stroke-width="4"/><circle cx="14" cy="14" r="4" fill="#fff"/><circle cx="32" cy="14" r="4" fill="#fff"/><circle cx="50" cy="14" r="4" fill="#fff"/><circle cx="14" cy="32" r="4" fill="#fff"/><circle cx="32" cy="32" r="4" fill="#fff"/><circle cx="50" cy="32" r="4" fill="#fff"/><circle cx="14" cy="50" r="4" fill="#fff"/><circle cx="32" cy="50" r="4" fill="#fff"/><circle cx="50" cy="50" r="4" fill="#fff"/></svg>'},
+   {id:"chk",cls:"c-chk",title:"Checkers",tag:"8×8 CLASSIC",art:'<svg viewBox="0 0 64 64"><rect x="6" y="6" width="52" height="52" rx="10" fill="#1e293b"/><rect x="6" y="6" width="26" height="26" fill="#334155"/><rect x="32" y="32" width="26" height="26" fill="#334155"/><circle cx="19" cy="19" r="9" fill="#ef4444" stroke="#fff" stroke-width="2"/><circle cx="45" cy="45" r="9" fill="#2563eb" stroke="#fff" stroke-width="2"/><circle cx="45" cy="19" r="9" fill="#ef4444" stroke="#fff" stroke-width="2"/></svg>'},
+   {id:"ttt",cls:"c-ttt",title:"Tic-Tac-Toe",tag:"QUICK DUEL",art:'<svg viewBox="0 0 64 64"><line x1="24" y1="10" x2="24" y2="54" stroke="rgba(255,255,255,0.4)" stroke-width="3"/><line x1="40" y1="10" x2="40" y2="54" stroke="rgba(255,255,255,0.4)" stroke-width="3"/><line x1="10" y1="24" x2="54" y2="24" stroke="rgba(255,255,255,0.4)" stroke-width="3"/><line x1="10" y1="40" x2="54" y2="40" stroke="rgba(255,255,255,0.4)" stroke-width="3"/><path d="M12 12 L20 20 M20 12 L12 20" stroke="#60a5fa" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="32" r="5.5" fill="none" stroke="#34d399" stroke-width="4"/><path d="M44 44 L52 52 M52 44 L44 52" stroke="#60a5fa" stroke-width="4" stroke-linecap="round"/></svg>'},
+   {id:"mem",cls:"c-mem",title:"Memory Flip",tag:"4×4 PAIRS",art:'<svg viewBox="0 0 64 64"><rect x="8" y="10" width="22" height="28" rx="6" fill="#38bdf8" stroke="#fff" stroke-width="2"/><rect x="34" y="24" width="22" height="28" rx="6" fill="#f472b6" stroke="#fff" stroke-width="2"/><text x="19" y="29" text-anchor="middle" font-size="14">🐼</text><text x="45" y="43" text-anchor="middle" font-size="14">🐼</text></svg>'},
+   {id:"wc",cls:"c-wc",title:"Word Chain",tag:"15s TIMER",art:'<svg viewBox="0 0 64 64"><rect x="6" y="12" width="32" height="16" rx="8" fill="#ffffff"/><text x="22" y="24" text-anchor="middle" font-size="10" font-weight="800" fill="#0f172a">CAT</text><rect x="24" y="34" width="34" height="16" rx="8" fill="#fbbf24"/><text x="41" y="46" text-anchor="middle" font-size="10" font-weight="800" fill="#0f172a">TIGER</text></svg>'}
+  ];
+  const gridHtml=cards.map(c=>'<button type="button" class="arcade-card '+c.cls+'" onclick="switchMiniGameTab(\''+c.id+'\')">'+
+   '<div class="arcade-art">'+c.art+'</div>'+
+   '<div class="arcade-card-title">'+c.title+'</div>'+
+   '<span class="arcade-card-tag">'+c.tag+'</span>'+
+  '</button>').join("");
+  const myWins=tttScore.you+(ludoState.winner==="You"?1:0)+(snlState.winner==="You"?1:0)+(dotsState.over&&dotsState.s1>dotsState.s2?1:0)+(memState.matched.length===16&&memState.sYou>memState.sOpp?1:0);
+  const oppWins=tttScore.opp+(ludoState.winner==="Green"?1:0)+(snlState.winner==="Opponent"?1:0)+(dotsState.over&&dotsState.s2>dotsState.s1?1:0)+(memState.matched.length===16&&memState.sOpp>memState.sYou?1:0);
+  panel.innerHTML='<div class="row" style="justify-content:space-between;align-items:center">'+
+    '<div><h3 style="margin:0;font-size:18px">🎮 2 Player Games</h3><p class="muted" style="font-size:12px;margin:2px 0 0">Playing with '+String(partnerLabel).replace(/</g,"&lt;")+'</p></div>'+
+    '<button type="button" class="secondary small fit" onclick="closeMiniGames()">✕</button>'+
+   '</div>'+
+   '<div class="arcade-grid">'+gridHtml+'</div>'+
+   '<div class="arcade-scorebar">'+
+    '<div class="arcade-side"><span class="arcade-badge-num b">'+myWins+'</span><span>You</span></div>'+
+    '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--amber);font-weight:700">🏆 ARCADE</span>'+
+    '<div class="arcade-side"><span>Opp</span><span class="arcade-badge-num g">'+oppWins+'</span></div>'+
+   '</div>';
+  return;
+ }
  let bodyHtml="";
  if(miniGameTab==="ttt"){
   const res=tttCheckWinner(tttBoard);
@@ -5325,11 +5399,11 @@ function renderMiniGamesPanel(){
    '<p class="sub" style="text-align:center;margin:4px 0">'+chkState.msg+'</p><div class="chk-board-8">'+cells+'</div>'+
    '<div class="row" style="margin-top:8px"><button type="button" class="secondary small" onclick="chkReset()">New 8×8 Game</button><button type="button" class="primary small" style="margin:0" onclick="shareCurrentGameScore()">Share Result</button></div>';
  }
- panel.innerHTML='<div class="row" style="justify-content:space-between;align-items:center">'+
-   '<h3 style="margin:0">🎮 100m Arcade · '+String(partnerLabel).replace(/</g,"&lt;")+'</h3>'+
+ panel.innerHTML='<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">'+
+   '<button type="button" class="secondary small fit" onclick="switchMiniGameTab(\'lobby\')">← Games</button>'+
+   '<strong style="font-size:15px;text-align:center">'+(gameTitles[miniGameTab]||"100m Arcade")+'</strong>'+
    '<button type="button" class="secondary small fit" onclick="closeMiniGames()">✕</button>'+
-  '</div>'+
-  '<div class="games-picker">'+tabsHtml+'</div>'+bodyHtml;
+  '</div>'+bodyHtml;
 }
 
 function dismissIntroSplash(){
