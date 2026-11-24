@@ -1684,6 +1684,32 @@ header{
 .arcade-badge-num.b{background:#2563eb;color:#ffffff}
 .arcade-badge-num.g{background:#16a34a;color:#ffffff}
 
+
+/* ---------- FINAL 6-BUG POLISH ---------- */
+#app main{padding-bottom:204px !important}
+footer.note{margin-bottom:28px}
+#globalSendButton{
+ display:grid !important;place-items:center !important;
+ width:46px !important;height:46px !important;padding:0 !important;
+ font-size:16px !important;color:#ffffff !important;
+}
+#globalSendButton:before{content:none !important;display:none !important}
+.lk-dice-btn{
+ background:linear-gradient(145deg,#ffffff,#e2e8f0) !important;
+ opacity:1;
+}
+.lk-dice-btn:disabled{opacity:0.52 !important;filter:grayscale(0.25)}
+.lk-dice-btn.ready{
+ opacity:1 !important;
+ border-color:#0f84ff !important;
+ box-shadow:0 0 0 4px rgba(15,132,255,0.38), 0 8px 20px rgba(15,132,255,0.45) !important;
+}
+.modal-close-x{
+ width:34px;height:34px;padding:0 !important;border-radius:999px;
+ display:grid;place-items:center;color:#ffffff !important;
+ background:rgba(255,255,255,0.1) !important;border:1px solid rgba(255,255,255,0.22) !important;
+}
+
 </style>
 </head>
 <body>
@@ -2014,7 +2040,7 @@ header{
      <div id="globalTypingStatus" class="typing-slot" aria-live="polite"></div>
      <div id="globalChatMessages" class="global-chat-messages"><div class="empty">Loading messages...</div></div>
      <div id="globalReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="globalReplyName">Replying</strong><p id="globalReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelGlobalReply()">Cancel</button></div></div>
-     <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()">Send</button></div>
+     <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()" aria-label="Send message"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#ffffff" stroke="#ffffff"/></svg></button></div>
      <p class="comment-note">Messages are shared with all signed-in members. Messages older than 24 hours are automatically deleted.</p>
     </div>
    </div>
@@ -2768,7 +2794,7 @@ function showProfileActionMenu(uid,handle){
  chat.onclick=async()=>{overlay.remove();await openPrivateChatByUid(uid)};
  const block=document.createElement("button");block.type="button";block.className="danger";block.textContent="Block Account";
  block.onclick=async()=>{overlay.remove();await blockAccount(uid,handle)};
- const cancel=document.createElement("button");cancel.type="button";cancel.className="secondary";cancel.textContent="Cancel";cancel.onclick=()=>overlay.remove();
+ overlay.style.zIndex="1400";const cancel=document.createElement("button");cancel.type="button";cancel.className="secondary";cancel.textContent="Cancel";cancel.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();overlay.remove();});
  const rep=document.createElement("button");rep.type="button";rep.className="secondary";rep.textContent="Report";rep.onclick=()=>{overlay.remove();reportTarget=uid;document.getElementById("reportStatus").textContent="Reporting "+(handle||"this member")+".";go("safety")};
  panel.append(title,chat,rep,block,cancel);overlay.appendChild(panel);
  overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove()});
@@ -3471,12 +3497,14 @@ if(auth)auth.onAuthStateChanged(user=>{
  else{currentUser=null;if(guestMode)return;cleanupSession();updateRadarStatusUI(false,"Sign in to control your private status.");document.getElementById("authPage").style.display="block";document.getElementById("app").style.display="none"}
 });
 function go(id,btn){
+ const target=document.getElementById(id);
+ const alreadyActive=!!(target&&target.classList.contains("active"));
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
- const target=document.getElementById(id);if(target)target.classList.add("active");
+ if(target)target.classList.add("active");
  document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));
  const activeButton=btn||document.querySelector('.bottom-nav button[data-page="'+id+'"]');
  if(activeButton)activeButton.classList.add("active");
- window.scrollTo(0,0);
+ if(!alreadyActive)window.scrollTo(0,0);
 }
 async function loadBlockedAccounts(){
  const box=document.getElementById("blockedAccountsList");
@@ -4705,7 +4733,7 @@ function ludoMoveToken(idx){
  });
 }
 function ludoOppTurn(){
- if(ludoState.over||ludoState.turn!=="opp"||ludoState.rolling||ludoAnimating)return;
+ if(miniGameTab!=="ludo"||!document.getElementById("miniGamesOverlay")||ludoState.over||ludoState.turn!=="opp"||ludoState.rolling||ludoAnimating)return;
  ludoAnimateRoll("opp",d=>{
   const valid=ludoState.opp.map((p,i)=>ludoCanMove(p,d)?i:-1).filter(i=>i>=0);
   if(!valid.length){
@@ -4948,7 +4976,7 @@ function snlRoll(){
  snlAnimateRoll("you",d=>snlExecuteTurn("you",d));
 }
 function snlOppTurn(){
- if(snlState.over||snlState.turn!=="opp"||snlState.rolling||snlState.animating)return;
+ if(miniGameTab!=="snl"||!document.getElementById("miniGamesOverlay")||snlState.over||snlState.turn!=="opp"||snlState.rolling||snlState.animating)return;
  snlAnimateRoll("opp",d=>snlExecuteTurn("opp",d));
 }
 
@@ -5188,11 +5216,20 @@ function openMiniGames(ctx){
  document.body.appendChild(overlay);
  renderMiniGamesPanel();
 }
-function closeMiniGames(){stopWcTimer();if(ludoRollTimer){clearInterval(ludoRollTimer);ludoRollTimer=null;}if(snlRollTimer){clearInterval(snlRollTimer);snlRollTimer=null;}if(snlAnimTimer){clearTimeout(snlAnimTimer);snlAnimTimer=null;snlState.animating=false;}if(ludoHopTimer){clearTimeout(ludoHopTimer);ludoHopTimer=null;ludoAnimating=false;}const o=document.getElementById("miniGamesOverlay");if(o)o.remove();}
+function stopAllGameTimers(){
+ stopWcTimer();
+ if(ludoRollTimer){clearInterval(ludoRollTimer);ludoRollTimer=null;}
+ if(ludoHopTimer){clearTimeout(ludoHopTimer);ludoHopTimer=null;}
+ if(snlRollTimer){clearInterval(snlRollTimer);snlRollTimer=null;}
+ if(snlAnimTimer){clearTimeout(snlAnimTimer);snlAnimTimer=null;}
+ ludoAnimating=false;ludoState.rolling=false;ludoHoppingKey="";
+ snlState.rolling=false;snlState.animating=false;snlState.fx="";snlState.glideWho="";snlState.swallowWho="";snlState.shake=false;
+}
+function closeMiniGames(){stopAllGameTimers();const o=document.getElementById("miniGamesOverlay");if(o)o.remove();}
 function switchMiniGameTab(tab){
+ stopAllGameTimers();
  miniGameTab=tab;
  if(tab==="wc"){wcReset();return;}
- stopWcTimer();
  renderMiniGamesPanel();
 }
 function renderMiniGamesPanel(){
@@ -5218,7 +5255,7 @@ function renderMiniGamesPanel(){
   const oppWins=tttScore.opp+(ludoState.winner==="Green"?1:0)+(snlState.winner==="Opponent"?1:0)+(dotsState.over&&dotsState.s2>dotsState.s1?1:0)+(memState.matched.length===16&&memState.sOpp>memState.sYou?1:0);
   panel.innerHTML='<div class="row" style="justify-content:space-between;align-items:center">'+
     '<div><h3 style="margin:0;font-size:18px">🎮 2 Player Games</h3><p class="muted" style="font-size:12px;margin:2px 0 0">Playing with '+String(partnerLabel).replace(/</g,"&lt;")+'</p></div>'+
-    '<button type="button" class="secondary small fit" onclick="closeMiniGames()">✕</button>'+
+    '<button type="button" class="modal-close-x fit" onclick="closeMiniGames()" aria-label="Close games"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'+
    '</div>'+
    '<div class="arcade-grid">'+gridHtml+'</div>'+
    '<div class="arcade-scorebar">'+
@@ -5402,7 +5439,7 @@ function renderMiniGamesPanel(){
  panel.innerHTML='<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">'+
    '<button type="button" class="secondary small fit" onclick="switchMiniGameTab(\'lobby\')">← Games</button>'+
    '<strong style="font-size:15px;text-align:center">'+(gameTitles[miniGameTab]||"100m Arcade")+'</strong>'+
-   '<button type="button" class="secondary small fit" onclick="closeMiniGames()">✕</button>'+
+   '<button type="button" class="modal-close-x fit" onclick="closeMiniGames()" aria-label="Close games"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'+
   '</div>'+bodyHtml;
 }
 
