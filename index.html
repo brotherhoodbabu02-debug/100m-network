@@ -1710,6 +1710,38 @@ footer.note{margin-bottom:28px}
  background:rgba(255,255,255,0.1) !important;border:1px solid rgba(255,255,255,0.22) !important;
 }
 
+
+/* ---------- INCOMING CALL & GAME INVITE POPUP ---------- */
+.incoming-modal-card{
+ width:min(100%,350px);
+ background:linear-gradient(160deg,#161b2e 0%,#0b0d14 100%);
+ border:1.5px solid rgba(56,189,248,0.45);
+ border-radius:26px;
+ padding:26px 22px;
+ text-align:center;
+ box-shadow:0 28px 70px rgba(0,0,0,0.85), 0 0 36px rgba(15,132,255,0.25);
+ animation:pageIn .2s ease-out;
+}
+.incoming-ring-av{
+ width:74px;height:74px;border-radius:50%;margin:0 auto 14px;
+ display:grid;place-items:center;font-size:32px;
+ background:linear-gradient(135deg,#0f84ff,#16a34a);
+ border:3px solid #ffffff;
+ animation:ping 1.5s ease-out infinite;
+}
+.incoming-ring-av.game{background:linear-gradient(135deg,#7c3aed,#0f84ff)}
+.incoming-btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.accept-pill{
+ background:linear-gradient(135deg,#22c55e,#15803d) !important;
+ color:#ffffff !important;border:0 !important;padding:13px 16px !important;
+ box-shadow:0 8px 22px rgba(34,197,94,0.38);
+}
+.decline-pill{
+ background:linear-gradient(135deg,#ef4444,#b91c1c) !important;
+ color:#ffffff !important;border:0 !important;padding:13px 16px !important;
+ box-shadow:0 8px 22px rgba(239,68,68,0.35);
+}
+
 </style>
 </head>
 <body>
@@ -4478,7 +4510,7 @@ async function startDirectCall(peerUid,peerName){
  }
  try{
   directCallState="calling";directCallNote="Requesting microphone…";updateDirectCallUI();
-  directCallStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+  directCallStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:{ideal:true},noiseSuppression:{ideal:true},autoGainControl:{ideal:true},channelCount:1,sampleRate:48000},video:false});
   directCallId="call_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
   const pc=new RTCPeerConnection(voiceIceConfig);directCallPC=pc;directCallPendingIce=[];directCallSeenIce=new Set();
   directCallStream.getAudioTracks().forEach(t=>pc.addTrack(t,directCallStream));
@@ -4543,16 +4575,119 @@ function listenDirectCallRoom(callId,isCaller){
  };
  directCallRoomRef.on("value",directCallRoomListener);
 }
+let ringtoneInterval=null,pendingGameInvite=null;
+function startIncomingRingtone(){
+ stopIncomingRingtone();
+ const chime=()=>{
+  try{
+   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+   const ctx=walkieAudioCtx||new AC();walkieAudioCtx=ctx;
+   if(ctx.state==="suspended")ctx.resume().catch(()=>{});
+   const now=ctx.currentTime;
+   [659.25,880].forEach((f,i)=>{
+    const osc=ctx.createOscillator(),g=ctx.createGain();
+    osc.type="sine";osc.frequency.setValueAtTime(f,now+i*0.18);
+    g.gain.setValueAtTime(0.001,now+i*0.18);
+    g.gain.exponentialRampToValueAtTime(0.1,now+i*0.18+0.02);
+    g.gain.exponentialRampToValueAtTime(0.001,now+i*0.18+0.16);
+    osc.connect(g);g.connect(ctx.destination);osc.start(now+i*0.18);osc.stop(now+i*0.18+0.17);
+   });
+  }catch(e){}
+ };
+ chime();
+ ringtoneInterval=setInterval(chime,2200);
+}
+function stopIncomingRingtone(){if(ringtoneInterval){clearInterval(ringtoneInterval);ringtoneInterval=null;}}
+function closeIncomingPopup(){stopIncomingRingtone();const el=document.getElementById("incomingActionOverlay");if(el)el.remove();}
+function showIncomingCallPopup(callerHandle){
+ closeIncomingPopup();startIncomingRingtone();
+ const overlay=document.createElement("div");overlay.id="incomingActionOverlay";overlay.className="profile-action-overlay";overlay.style.zIndex="1500";
+ overlay.innerHTML='<div class="incoming-modal-card">'+
+  '<div class="incoming-ring-av">📞</div>'+
+  '<h3 style="font-size:21px;margin:0">'+String(callerHandle||"Explorer").replace(/</g,"&lt;")+'</h3>'+
+  '<p class="sub" style="margin:6px 0 0">is calling you on 100m Voice…</p>'+
+  '<div class="incoming-btn-row">'+
+   '<button type="button" class="decline-pill" onclick="declineIncomingCallPopup()">✕ Decline</button>'+
+   '<button type="button" class="accept-pill" onclick="acceptIncomingCallPopup()">📞 Accept</button>'+
+  '</div></div>';
+ document.body.appendChild(overlay);
+}
+function acceptIncomingCallPopup(){closeIncomingPopup();go("chats");acceptDirectCall();}
+function declineIncomingCallPopup(){closeIncomingPopup();endDirectCall(false);}
+
+const GAME_NAME_MAP={ludo:"Ludo 15×15",snl:"Snakes & Ladders",dots:"Dots & Boxes",chk:"Checkers 8×8",ttt:"Tic-Tac-Toe",mem:"Memory Flip",wc:"Word Chain"};
+function showIncomingGamePopup(fromUid,fromHandle,gameId){
+ closeIncomingPopup();playMatchChime();
+ pendingGameInvite={fromUid,fromHandle,gameId};
+ const gName=GAME_NAME_MAP[gameId]||"Mini-Game";
+ const overlay=document.createElement("div");overlay.id="incomingActionOverlay";overlay.className="profile-action-overlay";overlay.style.zIndex="1500";
+ overlay.innerHTML='<div class="incoming-modal-card">'+
+  '<div class="incoming-ring-av game">🎮</div>'+
+  '<h3 style="font-size:20px;margin:0">'+String(fromHandle||"Explorer").replace(/</g,"&lt;")+'</h3>'+
+  '<p class="sub" style="margin:6px 0 0">invited you to play <strong style="color:#fff">'+gName+'</strong>!</p>'+
+  '<div class="incoming-btn-row">'+
+   '<button type="button" class="decline-pill" onclick="respondGameInvite(false)">✕ Decline</button>'+
+   '<button type="button" class="accept-pill" onclick="respondGameInvite(true)">🎮 Accept</button>'+
+  '</div></div>';
+ document.body.appendChild(overlay);
+}
+function respondGameInvite(accepted){
+ const inv=pendingGameInvite;pendingGameInvite=null;closeIncomingPopup();
+ if(!inv)return;
+ if(!guestMode&&currentUser&&rtdb&&inv.fromUid){
+  const code=(accepted?"gacc_":"gdec_")+inv.gameId+"_"+Date.now();
+  rtdb.ref("directVoiceInbox/"+inv.fromUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+ }
+ if(accepted){
+  openMiniGames(signalState==="matched"?"signal":"private");
+  switchMiniGameTab(inv.gameId);
+ }
+}
+function sendGameInviteAndOpen(gameId){
+ const targetUid=(miniGameContext==="signal")?signalPartnerUid:activePrivateOtherUid;
+ const gName=GAME_NAME_MAP[gameId]||"Mini-Game";
+ if(guestMode){
+  const st=document.getElementById(miniGameContext==="signal"?"signalStatusText":"privateChatStatus");
+  if(st)st.textContent="Preview: Invited partner to "+gName+" — Accepted!";
+  switchMiniGameTab(gameId);return;
+ }
+ if(currentUser&&rtdb&&targetUid){
+  const code="ginv_"+gameId+"_"+Date.now();
+  rtdb.ref("directVoiceInbox/"+targetUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+  const st=document.getElementById(miniGameContext==="signal"?"signalStatusText":"privateChatStatus");
+  if(st)st.textContent="Game invite sent for "+gName+"! Waiting for them to accept…";
+ }
+ switchMiniGameTab(gameId);
+}
 function initDirectCallInbox(){
  if(directCallInboxRef&&directCallInboxListener)directCallInboxRef.off("child_added",directCallInboxListener);
  if(!currentUser||guestMode||!rtdb)return;
  directCallInboxRef=rtdb.ref("directVoiceInbox/"+currentUser.uid);
  directCallInboxListener=snap=>{
   const inv=snap.val()||{};snap.ref.remove().catch(()=>{});
-  if(!inv.callId||!inv.from||blockedUids.has(inv.from)||directCallState!=="idle")return;
+  if(!inv.callId||!inv.from||blockedUids.has(inv.from))return;
   if(Number(inv.createdAt||0)&&Date.now()-Number(inv.createdAt)>60000)return;
-  directCallId=inv.callId;directCallPeerUid=inv.from;directCallPeerName=String(inv.fromHandle||handleFor(inv.from));
-  directCallState="incoming";directCallNote="";updateDirectCallUI();playMatchChime();go("chats");
+  const cid=String(inv.callId),fromName=String(inv.fromHandle||handleFor(inv.from));
+  if(cid.startsWith("ginv_")){
+   const gId=cid.split("_")[1]||"ludo";
+   showIncomingGamePopup(inv.from,fromName,gId);return;
+  }
+  if(cid.startsWith("gacc_")){
+   const gId=cid.split("_")[1]||"ludo";
+   const st=document.getElementById("signalStatusText"),st2=document.getElementById("privateChatStatus");
+   const msg="🎮 "+fromName+" accepted your "+(GAME_NAME_MAP[gId]||"Game")+" invite!";
+   if(st)st.textContent=msg;if(st2)st2.textContent=msg;playMatchChime();return;
+  }
+  if(cid.startsWith("gdec_")){
+   const gId=cid.split("_")[1]||"ludo";
+   const st=document.getElementById("signalStatusText"),st2=document.getElementById("privateChatStatus");
+   const msg=fromName+" declined the "+(GAME_NAME_MAP[gId]||"Game")+" invite.";
+   if(st)st.textContent=msg;if(st2)st2.textContent=msg;return;
+  }
+  if(directCallState!=="idle")return;
+  directCallId=cid;directCallPeerUid=inv.from;directCallPeerName=fromName;
+  directCallState="incoming";directCallNote="";updateDirectCallUI();
+  showIncomingCallPopup(fromName);
  };
  directCallInboxRef.on("child_added",directCallInboxListener,()=>{});
 }
@@ -4561,7 +4696,7 @@ async function acceptDirectCall(){
  unlockWalkieAudio(false);
  try{
   directCallNote="Connecting microphone…";updateDirectCallUI();
-  directCallStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+  directCallStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:{ideal:true},noiseSuppression:{ideal:true},autoGainControl:{ideal:true},channelCount:1,sampleRate:48000},video:false});
   const snap=await rtdb.ref("directVoiceCalls/"+directCallId).once("value");
   const data=snap.val();if(!data||!data.offer){endDirectCall(true);showDirectCallError("Call expired before answering.");return;}
   const pc=new RTCPeerConnection(voiceIceConfig);directCallPC=pc;directCallPendingIce=[];directCallSeenIce=new Set();
@@ -4603,6 +4738,7 @@ function toggleDirectCallMute(){
  updateDirectCallUI();
 }
 function endDirectCall(silent=false){
+ closeIncomingPopup();
  if(directCallDemoTimer){clearTimeout(directCallDemoTimer);directCallDemoTimer=null;}
  if(directCallTimer){clearInterval(directCallTimer);directCallTimer=null;}
  if(directCallRoomRef&&directCallRoomListener){directCallRoomRef.off("value",directCallRoomListener);}
@@ -5339,7 +5475,7 @@ function renderMiniGamesPanel(){
    {id:"mem",cls:"c-mem",title:"Memory Flip",tag:"4×4 PAIRS",art:'<svg viewBox="0 0 64 64"><rect x="8" y="10" width="22" height="28" rx="6" fill="#38bdf8" stroke="#fff" stroke-width="2"/><rect x="34" y="24" width="22" height="28" rx="6" fill="#f472b6" stroke="#fff" stroke-width="2"/><text x="19" y="29" text-anchor="middle" font-size="14">🐼</text><text x="45" y="43" text-anchor="middle" font-size="14">🐼</text></svg>'},
    {id:"wc",cls:"c-wc",title:"Word Chain",tag:"15s TIMER",art:'<svg viewBox="0 0 64 64"><rect x="6" y="12" width="32" height="16" rx="8" fill="#ffffff"/><text x="22" y="24" text-anchor="middle" font-size="10" font-weight="800" fill="#0f172a">CAT</text><rect x="24" y="34" width="34" height="16" rx="8" fill="#fbbf24"/><text x="41" y="46" text-anchor="middle" font-size="10" font-weight="800" fill="#0f172a">TIGER</text></svg>'}
   ];
-  const gridHtml=cards.map(c=>'<button type="button" class="arcade-card '+c.cls+'" onclick="switchMiniGameTab(\''+c.id+'\')">'+
+  const gridHtml=cards.map(c=>'<button type="button" class="arcade-card '+c.cls+'" onclick="sendGameInviteAndOpen(\''+c.id+'\')">'+
    '<div class="arcade-art">'+c.art+'</div>'+
    '<div class="arcade-card-title">'+c.title+'</div>'+
    '<span class="arcade-card-tag">'+c.tag+'</span>'+
