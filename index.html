@@ -1117,6 +1117,22 @@ button{font-size:14.5px}
 }
 .call-btn:hover:not(:disabled){background:rgba(52,211,153,0.24);border-color:rgba(52,211,153,0.55)}
 
+
+/* ---------- UX POLISH: HEADER, BOTTOM DOCK SPACING, DROP NOTES ---------- */
+header{
+ background:rgba(9,9,11,0.92);
+ backdrop-filter:blur(22px);
+ -webkit-backdrop-filter:blur(22px);
+ border-bottom:1px solid rgba(255,255,255,0.1);
+}
+#app main{padding-bottom:164px}
+.drop-notes-list{max-height:420px;padding-bottom:12px}
+.auth-badge.live-pill{
+ border-color:rgba(52,211,153,0.4);
+ background:rgba(52,211,153,0.12);
+ color:var(--green);
+}
+
 </style>
 </head>
 <body>
@@ -1168,6 +1184,7 @@ button{font-size:14.5px}
    <span class="auth-badge">PRIVACY-FIRST</span>
    <span class="auth-badge">NO GPS STORED</span>
    <span class="auth-badge">24H AUTO-DELETE</span>
+   <span id="authLiveHourPill" class="auth-badge live-pill">● LIVE HOUR · 9 PM IST</span>
   </div>
  </div>
  <div class="auth-grid">
@@ -1340,7 +1357,7 @@ button{font-size:14.5px}
   <div class="walkie-orb"><span>100m</span><small id="voiceRoomCountBadge">LIVE AUDIO</small></div>
   <p id="nearbySpeakingStatus" class="ptt-state speaking-status" aria-live="polite">Nobody is speaking right now.</p>
   <p id="pttStatus" class="ptt-state" aria-live="polite">Tap Join Live Voice to talk in real time.</p>
-  <div id="voiceRoomGrid" class="voice-room-grid"><span class="muted" style="font-size:12px">Join to see live speakers</span></div>
+  <div id="voiceRoomGrid" class="voice-room-grid"></div>
   <button type="button" id="pttJoinButton" class="primary" onclick="joinLiveVoiceCall()">🎙️ Join Live Voice Room</button>
   <div id="liveVoiceControls" class="ptt-wrap hidden">
    <button type="button" id="pttButton" class="ptt-button is-connected" onclick="toggleVoiceMute()" aria-label="Toggle microphone mute">🎙️</button>
@@ -1840,7 +1857,7 @@ function demoRenderVoiceSeats(){
   :[];
  if(badge)badge.textContent=seats.length+"/"+LIVE_VOICE_MAX+" PREVIEW";
  if(!seats.length){
-  grid.innerHTML='<span class="muted" style="font-size:12px">Tap Join Live Voice Room to preview live speakers</span>';
+  grid.innerHTML='';
   if(spStatus)spStatus.textContent="Nobody is speaking right now.";
   return;
  }
@@ -3637,10 +3654,12 @@ function updateLiveHourBanner(){
  const utcMs=now.getTime()+now.getTimezoneOffset()*60000;
  const ist=new Date(utcMs+istOffsetMin*60000);
  const h=ist.getHours(),m=ist.getMinutes();
+ const authPill=document.getElementById("authLiveHourPill");
  if(h===21){
   badge.textContent="● LIVE NOW";badge.className="live-hour-pill";
   hl.textContent="Daily Live Hour is ON right now!";
   cd.textContent=(60-m)+" min left in tonight's Voice & Signal Jam — jump in!";
+  if(authPill)authPill.textContent="● LIVE HOUR ON NOW ("+(60-m)+"m left)";
  }else{
   badge.textContent="9:00 PM IST";badge.className="live-hour-pill upcoming";
   hl.textContent="Evening Live Voice & Signal Jam";
@@ -3648,6 +3667,7 @@ function updateLiveHourBanner(){
   if(minsLeft<=0)minsLeft+=24*60;
   const hrs=Math.floor(minsLeft/60),mins=minsLeft%60;
   cd.textContent="Next daily gather starts in "+hrs+"h "+mins+"m — invite friends to join at 9 PM IST.";
+  if(authPill)authPill.textContent="● LIVE HOUR IN "+hrs+"H "+mins+"M (9 PM IST)";
  }
 }
 function selectNoteTag(btn){
@@ -3930,6 +3950,7 @@ function dismissIntroSplash(){
  el.classList.add("hide");
  setTimeout(()=>{if(el.parentNode)el.remove()},600);
 }
+try{if(/^https?:/i.test(window.location.protocol)&&/[?&]utm_/i.test(window.location.search)){window.history.replaceState({},document.title,window.location.pathname+window.location.hash);}}catch(e){}
 window.addEventListener("load",()=>setTimeout(dismissIntroSplash,2450));
 setTimeout(dismissIntroSplash,3200);
 </script>
