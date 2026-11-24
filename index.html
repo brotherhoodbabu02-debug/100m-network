@@ -1133,6 +1133,221 @@ header{
  color:var(--green);
 }
 
+
+/* ---------- IN-CHAT MINI-GAMES PANEL ---------- */
+.games-modal-panel{
+ width:min(100%,410px);
+ background:#121318;
+ border:1px solid rgba(255,255,255,0.14);
+ border-radius:24px;
+ padding:20px;
+ box-shadow:0 24px 64px rgba(0,0,0,0.82);
+ max-height:90vh;
+ overflow-y:auto;
+}
+.games-tabs{
+ display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;
+ padding:4px;margin:12px 0 14px;
+ background:#09090b;border:1px solid var(--line);border-radius:999px;
+}
+.games-tab{
+ border:0;background:transparent;color:var(--muted);
+ padding:8px 6px;border-radius:999px;font-size:12px;font-weight:800;
+}
+.games-tab.active{background:#0f84ff;color:#ffffff}
+.ttt-grid{
+ display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+ max-width:252px;margin:12px auto;
+}
+.ttt-cell{
+ aspect-ratio:1;border-radius:16px;padding:0;
+ background:#181920;border:1px solid rgba(255,255,255,0.12);
+ font-size:30px;font-weight:800;display:grid;place-items:center;
+ color:var(--text);
+}
+.ttt-cell.x{color:#60a5fa;border-color:rgba(15,132,255,0.45)}
+.ttt-cell.o{color:#34d399;border-color:rgba(52,211,153,0.45)}
+.ttt-cell.win{background:rgba(15,132,255,0.22);border-color:#0f84ff}
+.rps-choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.rps-btn{
+ padding:14px 8px;border-radius:18px;display:flex;flex-direction:column;align-items:center;gap:4px;
+ background:#181920;border:1px solid rgba(255,255,255,0.12);font-size:12.5px;
+}
+.rps-btn span{font-size:26px;line-height:1}
+.rps-score{
+ display:flex;justify-content:space-around;padding:10px;border-radius:14px;
+ background:#09090b;border:1px solid var(--line);
+ font-family:"JetBrains Mono",monospace;font-size:12px;margin-bottom:10px;
+}
+.ice-card{
+ padding:18px 16px;border-radius:18px;margin:12px 0;text-align:center;
+ border:1px solid rgba(15,132,255,0.35);
+ background:linear-gradient(135deg, rgba(15,132,255,0.14) 0%, rgba(16,17,22,0.96) 75%);
+ min-height:100px;display:flex;flex-direction:column;justify-content:center;gap:6px;
+}
+.ice-type{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;color:#60a5fa;letter-spacing:0.08em}
+.ice-prompt{font-size:15.5px;font-weight:700;color:var(--text);line-height:1.45}
+.game-btn{
+ background:rgba(15,132,255,0.14);border:1px solid rgba(15,132,255,0.38);color:#60a5fa;
+}
+.game-btn:hover:not(:disabled){background:rgba(15,132,255,0.24);border-color:rgba(15,132,255,0.58)}
+
+
+/* ---------- 7-GAME ARCADE STYLES ---------- */
+.games-modal-panel{width:min(100%,440px)}
+.games-picker{
+ display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;margin:10px 0 8px;
+ scrollbar-width:none;
+}
+.games-picker::-webkit-scrollbar{display:none}
+.games-pill{
+ flex:0 0 auto;border:1px solid var(--line);background:#181920;color:var(--subtext);
+ padding:7px 12px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap;
+}
+.games-pill.active{background:#0f84ff;border-color:#0f84ff;color:#ffffff;box-shadow:0 4px 12px rgba(15,132,255,0.35)}
+.snl-board{
+ display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
+ max-width:290px;margin:10px auto;
+}
+.snl-cell{
+ aspect-ratio:1;border-radius:10px;background:#181920;border:1px solid rgba(255,255,255,0.09);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ font-size:10px;font-family:"JetBrains Mono",monospace;position:relative;color:var(--muted);
+}
+.snl-cell.ladder{background:rgba(52,211,153,0.14);border-color:rgba(52,211,153,0.4);color:var(--green)}
+.snl-cell.snake{background:rgba(248,113,113,0.14);border-color:rgba(248,113,113,0.4);color:#fca5a5}
+.snl-tokens{display:flex;gap:2px;font-size:13px;line-height:1;margin-top:1px}
+.mem-grid{
+ display:grid;grid-template-columns:repeat(4,1fr);gap:7px;
+ max-width:280px;margin:10px auto;
+}
+.mem-card{
+ aspect-ratio:1;border-radius:14px;padding:0;font-size:22px;
+ display:grid;place-items:center;
+ background:#181920;border:1px solid rgba(255,255,255,0.14);color:var(--muted);
+}
+.mem-card.open{background:#0f84ff22;border-color:#0f84ff;color:var(--text)}
+.mem-card.matched{background:rgba(52,211,153,0.18);border-color:var(--green);color:var(--text)}
+.dots-grid{
+ display:grid;grid-template-columns:14px 56px 14px 56px 14px 56px 14px;
+ grid-template-rows:14px 56px 14px 56px 14px 56px 14px;
+ justify-content:center;align-items:center;margin:10px auto;
+}
+.dot-pt{width:10px;height:10px;border-radius:50%;background:#e4e4e7;justify-self:center}
+.edge-h,.edge-v{
+ border:0;padding:0;border-radius:999px;background:rgba(255,255,255,0.12);
+}
+.edge-h{width:100%;height:8px}
+.edge-v{width:8px;height:100%;justify-self:center}
+.edge-h:hover:not(:disabled),.edge-v:hover:not(:disabled){background:rgba(15,132,255,0.55)}
+.edge-h.p1,.edge-v.p1{background:#0f84ff}
+.edge-h.p2,.edge-v.p2{background:#f87171}
+.dot-box{
+ width:44px;height:44px;border-radius:10px;justify-self:center;
+ display:grid;place-items:center;font-weight:800;font-size:14px;
+ background:rgba(255,255,255,0.03);color:transparent;
+}
+.dot-box.p1{background:rgba(15,132,255,0.22);color:#60a5fa;border:1px solid rgba(15,132,255,0.45)}
+.dot-box.p2{background:rgba(248,113,113,0.22);color:#fca5a5;border:1px solid rgba(248,113,113,0.45)}
+.chk-board{
+ display:grid;grid-template-columns:repeat(6,1fr);gap:2px;
+ max-width:276px;margin:10px auto;padding:4px;border-radius:14px;background:#09090b;border:1px solid var(--line);
+}
+.chk-cell{
+ aspect-ratio:1;border-radius:6px;padding:0;border:0;display:grid;place-items:center;font-size:20px;
+}
+.chk-cell.light{background:#1d1e26}
+.chk-cell.dark{background:#111218}
+.chk-cell.sel{outline:2px solid #0f84ff;outline-offset:-2px;background:#0f84ff28}
+.chk-cell.hint{box-shadow:inset 0 0 0 2px #34d399;background:rgba(52,211,153,0.14)}
+.ludo-track{
+ display:grid;grid-template-columns:repeat(6,1fr);gap:5px;
+ max-width:290px;margin:10px auto;
+}
+.ludo-tile{
+ aspect-ratio:1;border-radius:10px;background:#181920;border:1px solid rgba(255,255,255,0.09);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:var(--muted);
+ font-family:"JetBrains Mono",monospace;
+}
+.ludo-tile.safe{border-color:rgba(56,189,248,0.4);background:rgba(56,189,248,0.1)}
+.ludo-tile.home{border-color:rgba(52,211,153,0.5);background:rgba(52,211,153,0.16);color:var(--green)}
+.wc-history{
+ display:flex;flex-wrap:wrap;gap:6px;padding:10px;border-radius:14px;
+ background:#09090b;border:1px solid var(--line);max-height:110px;overflow-y:auto;margin:8px 0;
+}
+.wc-chip{
+ font-family:"JetBrains Mono",monospace;font-size:11.5px;padding:4px 9px;border-radius:999px;
+ background:rgba(15,132,255,0.14);border:1px solid rgba(15,132,255,0.35);color:#60a5fa;
+}
+.wc-chip.opp{background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.35);color:var(--green)}
+
+
+/* ---------- UPGRADED REAL BOARDS (LUDO, SNL SVG, 8x8 DOTS, 8x8 CHECKERS) ---------- */
+.games-modal-panel{width:min(100%,460px);padding:18px}
+.ludo-board{
+ display:grid;grid-template-columns:repeat(11,1fr);gap:2px;
+ width:min(100%,352px);aspect-ratio:1;margin:8px auto;
+ padding:4px;border-radius:16px;background:#09090b;border:1px solid rgba(255,255,255,0.14);
+}
+.ludo-cell{
+ border-radius:4px;background:#181922;border:1px solid rgba(255,255,255,0.06);
+ display:flex;align-items:center;justify-content:center;position:relative;font-size:11px;
+}
+.ludo-cell.yard-r{background:rgba(248,113,113,0.16);border-color:rgba(248,113,113,0.3)}
+.ludo-cell.yard-g{background:rgba(52,211,153,0.14);border-color:rgba(52,211,153,0.26)}
+.ludo-cell.yard-b{background:rgba(15,132,255,0.18);border-color:rgba(15,132,255,0.35)}
+.ludo-cell.yard-y{background:rgba(251,191,36,0.14);border-color:rgba(251,191,36,0.26)}
+.ludo-cell.lane-b{background:rgba(15,132,255,0.28);border-color:rgba(15,132,255,0.45)}
+.ludo-cell.lane-r{background:rgba(248,113,113,0.26);border-color:rgba(248,113,113,0.42)}
+.ludo-cell.star{background:rgba(251,191,36,0.16);border-color:rgba(251,191,36,0.45)}
+.ludo-cell.center-home{
+ background:conic-gradient(from 45deg, #f87171 0 90deg, #34d399 90deg 180deg, #fbbf24 180deg 270deg, #0f84ff 270deg 360deg);
+ border:1px solid rgba(255,255,255,0.4);font-size:13px;
+}
+.ludo-pawns{display:flex;flex-wrap:wrap;gap:1px;align-items:center;justify-content:center;line-height:1}
+.ludo-pawn{
+ width:13px;height:13px;border-radius:50%;display:inline-block;
+ border:1.5px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.6);
+}
+.ludo-pawn.p-b{background:#0f84ff}
+.ludo-pawn.p-r{background:#ef4444}
+.ludo-pawn.movable{animation:ping 1.2s ease-out infinite;cursor:pointer;transform:scale(1.15)}
+.snl-wrap{
+ position:relative;width:min(100%,348px);aspect-ratio:1;margin:8px auto;
+ border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.14);background:#09090b;
+}
+.snl-grid-6{
+ display:grid;grid-template-columns:repeat(6,1fr);width:100%;height:100%;
+}
+.snl-sq{
+ position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:3px 4px;
+ border:0.5px solid rgba(255,255,255,0.06);font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;
+}
+.snl-sq.alt0{background:#161822;color:#71717a}
+.snl-sq.alt1{background:#1e2230;color:#a1a1aa}
+.snl-sq.goal{background:rgba(52,211,153,0.22);color:var(--green)}
+.snl-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.snl-sq .snl-tokens{position:relative;z-index:3;display:flex;gap:2px;font-size:14px;justify-content:center}
+.dots-grid-8{
+ display:grid;
+ grid-template-columns:repeat(7, 8px 1fr) 8px;
+ grid-template-rows:repeat(7, 8px 1fr) 8px;
+ width:min(100%,344px);aspect-ratio:1;margin:8px auto;
+ align-items:center;justify-items:center;
+}
+.dots-grid-8 .dot-pt{width:7px;height:7px;border-radius:50%;background:#e4e4e7}
+.dots-grid-8 .edge-h{width:100%;height:7px;border-radius:999px;background:rgba(255,255,255,0.13);border:0;padding:0}
+.dots-grid-8 .edge-v{width:7px;height:100%;border-radius:999px;background:rgba(255,255,255,0.13);border:0;padding:0}
+.dots-grid-8 .edge-h.p1,.dots-grid-8 .edge-v.p1{background:#0f84ff}
+.dots-grid-8 .edge-h.p2,.dots-grid-8 .edge-v.p2{background:#f87171}
+.dots-grid-8 .dot-box{width:84%;height:84%;border-radius:6px;font-size:11px;font-weight:800;display:grid;place-items:center}
+.chk-board-8{
+ display:grid;grid-template-columns:repeat(8,1fr);gap:1px;
+ width:min(100%,348px);aspect-ratio:1;margin:8px auto;padding:4px;
+ border-radius:14px;background:#09090b;border:1px solid rgba(255,255,255,0.14);
+}
+.chk-board-8 .chk-cell{font-size:17px;border-radius:4px}
+
 </style>
 </head>
 <body>
@@ -1443,6 +1658,7 @@ header{
     </div>
     <div class="signal-actions">
      <button type="button" class="call-btn small" onclick="startDirectCallFromSignal()">📞 Voice Call</button>
+     <button type="button" class="game-btn small" onclick="openMiniGames('signal')">🎮 Games</button>
      <button type="button" class="secondary small" onclick="promoteSignalToPrivate()">Add to Private Chat</button>
      <button type="button" class="secondary small" onclick="reportSignalPartner()">Report</button>
      <button type="button" class="danger small" onclick="blockSignalPartner()">Block</button>
@@ -1480,7 +1696,7 @@ header{
      <div id="conversationList" style="display:flex;flex-direction:column;gap:8px"><div class="empty" style="padding:12px">No private conversations yet.</div></div>
     </div>
    </div>
-   <div class="card"><div class="row" style="align-items:center;justify-content:space-between;margin-bottom:8px"><h3 id="activeChatTitle" style="margin:0">Select a conversation</h3><button type="button" id="privateCallBtn" class="call-btn small fit hidden" onclick="startDirectCallFromPrivate()">📞 Call</button></div>
+   <div class="card"><div class="row" style="align-items:center;justify-content:space-between;margin-bottom:8px"><h3 id="activeChatTitle" style="margin:0">Select a conversation</h3><div class="fit" style="display:flex;gap:6px"><button type="button" id="privateGameBtn" class="game-btn small fit hidden" onclick="openMiniGames('private')">🎮 Games</button><button type="button" id="privateCallBtn" class="call-btn small fit hidden" onclick="startDirectCallFromPrivate()">📞 Call</button></div></div>
     <div id="privateMessages" class="chat-list"><div class="empty">Your private messages will appear here.</div></div>
     <div id="privateReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="privateReplyName">Replying</strong><p id="privateReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelPrivateReply()">Cancel</button></div></div>
     <textarea id="privateMessageInput" maxlength="2000" placeholder="Write a message..."></textarea>
@@ -2113,7 +2329,7 @@ function openPrivateChat(chatId,otherUid){if(blockedUids.has(otherUid))return;sw
  if(!currentUser||guestMode)return;
  if(activeChatUnsubscribe)activeChatUnsubscribe();
  activeChatId=chatId;activePrivateOtherUid=otherUid;
- const pCallBtn=document.getElementById("privateCallBtn");if(pCallBtn)pCallBtn.classList.remove("hidden");
+ const pCallBtn=document.getElementById("privateCallBtn");if(pCallBtn)pCallBtn.classList.remove("hidden");const pGameBtn=document.getElementById("privateGameBtn");if(pGameBtn)pGameBtn.classList.remove("hidden");
  const chatTitle=document.getElementById("activeChatTitle");chatTitle.textContent="Chat with "+handleFor(otherUid);attachProfileAction(chatTitle,otherUid,handleFor(otherUid));
  document.getElementById("sendPrivateButton").disabled=false;
  const box=document.getElementById("privateMessages");
@@ -2244,7 +2460,7 @@ function attachProfileAction(element,uid,handle){
 async function openPrivateChatByUid(otherUid){
  if(guestMode&&otherUid){
   if(blockedUids.has(otherUid)){const s=document.getElementById("privateChatStatus");if(s)s.textContent="Unblock this account before starting a chat.";return;}
-  activeChatId=otherUid;activePrivateOtherUid=otherUid;switchChatTab("private");const pCallBtn=document.getElementById("privateCallBtn");if(pCallBtn)pCallBtn.classList.remove("hidden");
+  activeChatId=otherUid;activePrivateOtherUid=otherUid;switchChatTab("private");const pCallBtn=document.getElementById("privateCallBtn");if(pCallBtn)pCallBtn.classList.remove("hidden");const pGameBtn=document.getElementById("privateGameBtn");if(pGameBtn)pGameBtn.classList.remove("hidden");
   const ex=DEMO_EXPLORERS.find(e=>e.uid===otherUid)||{handle:handleFor(otherUid)};
   const chatTitle=document.getElementById("activeChatTitle");chatTitle.textContent="Chat with "+ex.handle+" (Preview)";
   document.getElementById("sendPrivateButton").disabled=false;
@@ -3942,6 +4158,543 @@ function endDirectCall(silent=false){
  if(directCallAudio){directCallAudio.pause();directCallAudio.srcObject=null;directCallAudio.remove();directCallAudio=null;}
  directCallState="idle";directCallId=null;directCallPeerUid=null;directCallPeerName="";directCallMuted=false;directCallSecs=0;directCallPendingIce=[];
  updateDirectCallUI();
+}
+
+
+// ---------- IN-CHAT 7-GAME ARCADE (WORKS WHILE ON VOICE CALL & CHATTING) ----------
+let miniGameContext="signal",miniGameTab="ttt";
+
+// 1. Tic-Tac-Toe
+let tttBoard=Array(9).fill(""),tttOver=false,tttWinLine=[],tttScore={you:0,opp:0,draw:0};
+function tttCheckWinner(b){
+ const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ for(const l of lines){if(b[l[0]]&&b[l[0]]===b[l[1]]&&b[l[0]]===b[l[2]])return {w:b[l[0]],line:l};}
+ if(b.every(Boolean))return {w:"DRAW",line:[]};
+ return null;
+}
+function tttPickBotMove(){
+ const empty=tttBoard.map((v,i)=>v?null:i).filter(i=>i!==null);
+ if(!empty.length)return -1;
+ for(const mark of ["O","X"]){
+  for(const idx of empty){
+   tttBoard[idx]=mark;const r=tttCheckWinner(tttBoard);tttBoard[idx]="";
+   if(r&&r.w===mark)return idx;
+  }
+ }
+ if(empty.includes(4)&&Math.random()<0.7)return 4;
+ return empty[Math.floor(Math.random()*empty.length)];
+}
+function tttMove(idx){
+ if(tttOver||tttBoard[idx])return;
+ tttBoard[idx]="X";
+ let res=tttCheckWinner(tttBoard);
+ if(!res){const bot=tttPickBotMove();if(bot>=0)tttBoard[bot]="O";res=tttCheckWinner(tttBoard);}
+ if(res){
+  tttOver=true;tttWinLine=res.line||[];
+  if(res.w==="X"){tttScore.you++;playMatchChime();}else if(res.w==="O")tttScore.opp++;else tttScore.draw++;
+ }
+ renderMiniGamesPanel();
+}
+function tttReset(){tttBoard=Array(9).fill("");tttOver=false;tttWinLine=[];renderMiniGamesPanel();}
+
+// 2. Real Classic Cross Ludo (11x11 board, 40-step outer loop + 3-step home lane + Home)
+const LUDO_PATH=[
+ [9,4],[8,4],[7,4],[6,4],[6,3],[6,2],[6,1],[6,0],[5,0],[4,0],
+ [4,1],[4,2],[4,3],[4,4],[3,4],[2,4],[1,4],[0,4],[0,5],[0,6],
+ [1,6],[2,6],[3,6],[4,6],[4,7],[4,8],[4,9],[4,10],[5,10],[6,10],
+ [6,9],[6,8],[6,7],[6,6],[7,6],[8,6],[9,6],[10,6],[10,5],[10,4]
+];
+const LUDO_STARS=new Set([0,10,20,30]);
+const LUDO_HOME_B=[[9,5],[8,5],[7,5]];
+const LUDO_HOME_R=[[1,5],[2,5],[3,5]];
+const LUDO_YARD_B=[[8,1],[8,2]];
+const LUDO_YARD_R=[[1,1],[1,2]];
+let ludoState={you:[-1,-1],opp:[-1,-1],turn:"you",dice:null,msg:"Roll dice! Get 6 to bring a Blue token out.",over:false,winner:""};
+function ludoReset(){ludoState={you:[-1,-1],opp:[-1,-1],turn:"you",dice:null,msg:"Roll dice! Get 6 to bring a Blue token out.",over:false,winner:""};renderMiniGamesPanel();}
+function ludoCoord(player,prog,tokIdx){
+ if(prog===-1)return player==="you"?LUDO_YARD_B[tokIdx]:LUDO_YARD_R[tokIdx];
+ if(prog>=0&&prog<39){const idx=(player==="you"?prog:(prog+20)%40);return LUDO_PATH[idx];}
+ if(prog>=39&&prog<=41)return (player==="you"?LUDO_HOME_B:LUDO_HOME_R)[prog-39];
+ return [5,5];
+}
+function ludoCanMove(prog,d){return (prog===-1&&d===6)||(prog>=0&&prog+d<=42);}
+function ludoRoll(){
+ if(ludoState.over||ludoState.turn!=="you"||ludoState.dice!==null)return;
+ const d=1+Math.floor(Math.random()*6);
+ ludoState.dice=d;
+ const valid=ludoState.you.some(p=>ludoCanMove(p,d));
+ if(!valid){
+  ludoState.msg="You rolled 🎲 "+d+" — need 6 to unlock. Opponent's turn!";
+  ludoState.dice=null;ludoState.turn="opp";renderMiniGamesPanel();
+  setTimeout(ludoOppTurn,650);return;
+ }
+ ludoState.msg="Rolled 🎲 "+d+"! Tap a glowing Blue token to move.";
+ renderMiniGamesPanel();
+}
+function ludoMoveToken(idx){
+ if(ludoState.over||ludoState.turn!=="you"||ludoState.dice===null)return;
+ const d=ludoState.dice,p=ludoState.you[idx];
+ if(!ludoCanMove(p,d))return;
+ const np=(p===-1)?0:(p+d);
+ ludoState.you[idx]=np;
+ let captured=false;
+ if(np>=0&&np<39&&!LUDO_STARS.has(np)){
+  const [yr,yc]=ludoCoord("you",np,idx);
+  ludoState.opp=ludoState.opp.map((op,oi)=>{
+   if(op>=0&&op<39){const [or,oc]=ludoCoord("opp",op,oi);if(or===yr&&oc===yc){captured=true;return -1;}}
+   return op;
+  });
+ }
+ if(ludoState.you.every(x=>x===42)){ludoState.over=true;ludoState.winner="You";ludoState.dice=null;ludoState.msg="🎉 You won Classic Ludo!";playMatchChime();renderMiniGamesPanel();return;}
+ ludoState.dice=null;
+ if(d===6||captured||np===42){ludoState.msg=(captured?"💥 Captured Red! ":np===42?"🏠 Token Home! ":"🎉 Rolled 6! ")+"Bonus roll — roll again!";renderMiniGamesPanel();}
+ else{ludoState.turn="opp";ludoState.msg="Red is rolling…";renderMiniGamesPanel();setTimeout(ludoOppTurn,650);}
+}
+function ludoOppTurn(){
+ if(ludoState.over||ludoState.turn!=="opp")return;
+ const d=1+Math.floor(Math.random()*6);
+ let movedIdx=-1,captured=false,reachedHome=false;
+ for(let i=0;i<2;i++){if(ludoCanMove(ludoState.opp[i],d)){movedIdx=i;break;}}
+ if(movedIdx>=0){
+  const p=ludoState.opp[movedIdx],np=(p===-1)?0:(p+d);
+  ludoState.opp[movedIdx]=np;if(np===42)reachedHome=true;
+  if(np>=0&&np<39){
+   const gIdx=(np+20)%40;
+   if(!LUDO_STARS.has(gIdx)){
+    const [or,oc]=ludoCoord("opp",np,movedIdx);
+    ludoState.you=ludoState.you.map((yp,yi)=>{
+     if(yp>=0&&yp<39){const [yr,yc]=ludoCoord("you",yp,yi);if(yr===or&&yc===oc){captured=true;return -1;}}
+     return yp;
+    });
+   }
+  }
+ }
+ if(ludoState.opp.every(x=>x===42)){ludoState.over=true;ludoState.winner="Opponent";ludoState.msg="😅 Red won Classic Ludo!";renderMiniGamesPanel();return;}
+ if(movedIdx>=0&&(d===6||captured||reachedHome)){ludoState.msg="Red rolled "+d+(captured?" & captured you!":" (bonus!)");renderMiniGamesPanel();setTimeout(ludoOppTurn,700);return;}
+ ludoState.turn="you";ludoState.msg="Red rolled "+d+". Your turn — roll dice!";renderMiniGamesPanel();
+}
+
+// 3. Real Classic Zig-Zag 6x6 Snakes & Ladders with Drawn SVG Ladders & Curvy Snakes
+const SNL_LADDERS=[[4,14],[9,21],[17,29],[22,33]];
+const SNL_SNAKES=[[16,6],[25,12],[32,19],[35,23]];
+const SNL_JUMPS=Object.fromEntries([...SNL_LADDERS,...SNL_SNAKES]);
+let snlState={you:1,opp:1,turn:"you",dice:null,msg:"Roll dice to race from 1 to 36!",over:false,winner:""};
+function snlReset(){snlState={you:1,opp:1,turn:"you",dice:null,msg:"Roll dice to race from 1 to 36!",over:false,winner:""};renderMiniGamesPanel();}
+function snlTileCenter(n){
+ const idx=n-1,rowFromBottom=Math.floor(idx/6),colInRow=idx%6;
+ const r=5-rowFromBottom;
+ const c=(rowFromBottom%2===0)?colInRow:(5-colInRow);
+ return {x:c*100+50,y:r*100+50};
+}
+function snlBuildSvg(){
+ let svg='<svg class="snl-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">';
+ SNL_LADDERS.forEach(([a,b])=>{
+  const p1=snlTileCenter(a),p2=snlTileCenter(b);
+  const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.hypot(dx,dy)||1;
+  const nx=-dy/len*9,ny=dx/len*9;
+  svg+='<line x1="'+(p1.x+nx)+'" y1="'+(p1.y+ny)+'" x2="'+(p2.x+nx)+'" y2="'+(p2.y+ny)+'" stroke="#34d399" stroke-width="5" stroke-linecap="round" opacity="0.88"/>';
+  svg+='<line x1="'+(p1.x-nx)+'" y1="'+(p1.y-ny)+'" x2="'+(p2.x-nx)+'" y2="'+(p2.y-ny)+'" stroke="#34d399" stroke-width="5" stroke-linecap="round" opacity="0.88"/>';
+  const steps=Math.max(3,Math.floor(len/32));
+  for(let i=1;i<steps;i++){
+   const t=i/steps,rx=p1.x+dx*t,ry=p1.y+dy*t;
+   svg+='<line x1="'+(rx+nx)+'" y1="'+(ry+ny)+'" x2="'+(rx-nx)+'" y2="'+(ry-ny)+'" stroke="#6ee7b7" stroke-width="4" stroke-linecap="round" opacity="0.9"/>';
+  }
+ });
+ const snakeColors=["#f87171","#c084fc","#fb923c","#f472b6"];
+ SNL_SNAKES.forEach(([head,tail],si)=>{
+  const p1=snlTileCenter(head),p2=snlTileCenter(tail);
+  const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+  const c1x=p1.x+(p2.x-p1.x)*0.25+36,c1y=p1.y+(p2.y-p1.y)*0.25-24;
+  const c2x=p1.x+(p2.x-p1.x)*0.75-36,c2y=p1.y+(p2.y-p1.y)*0.75+24;
+  const col=snakeColors[si%snakeColors.length];
+  svg+='<path d="M '+p1.x+' '+p1.y+' C '+c1x+' '+c1y+', '+c2x+' '+c2y+', '+p2.x+' '+p2.y+'" fill="none" stroke="'+col+'" stroke-width="9" stroke-linecap="round" opacity="0.85"/>';
+  svg+='<circle cx="'+p1.x+'" cy="'+p1.y+'" r="11" fill="'+col+'"/>';
+  svg+='<circle cx="'+(p1.x-3.5)+'" cy="'+(p1.y-2)+'" r="2" fill="#09090b"/><circle cx="'+(p1.x+3.5)+'" cy="'+(p1.y-2)+'" r="2" fill="#09090b"/>';
+ });
+ svg+='</svg>';
+ return svg;
+}
+function snlRoll(){
+ if(snlState.over||snlState.turn!=="you")return;
+ const d=1+Math.floor(Math.random()*6);snlState.dice=d;
+ let np=snlState.you+d;if(np>36)np=snlState.you;
+ let note="You rolled 🎲 "+d;
+ if(SNL_JUMPS[np]){const dest=SNL_JUMPS[np];note+=(dest>np?" 🪜 Ladder to ":" 🐍 Snake to ")+dest;np=dest;}
+ snlState.you=np;
+ if(np===36){snlState.over=true;snlState.winner="You";snlState.msg="🎉 You reached 36 and won!";playMatchChime();renderMiniGamesPanel();return;}
+ snlState.turn="opp";snlState.msg=note+". Opponent rolling…";renderMiniGamesPanel();
+ setTimeout(()=>{
+  if(snlState.over)return;
+  const od=1+Math.floor(Math.random()*6);
+  let onp=snlState.opp+od;if(onp>36)onp=snlState.opp;
+  let onote="Opp rolled "+od;
+  if(SNL_JUMPS[onp]){const dest=SNL_JUMPS[onp];onote+=(dest>onp?" 🪜→":" 🐍→")+dest;onp=dest;}
+  snlState.opp=onp;
+  if(onp===36){snlState.over=true;snlState.winner="Opponent";snlState.msg="😅 Opponent reached 36 first!";renderMiniGamesPanel();return;}
+  snlState.turn="you";snlState.msg=onote+". Your turn!";renderMiniGamesPanel();
+ },650);
+}
+
+// 4. Full 8x8 Dots & Boxes (7x7 = 49 boxes)
+const DOTS_N=8,BOX_N=7;
+let dotsState={h:[],v:[],b:[],turn:1,s1:0,s2:0,over:false,msg:"Tap any line to claim a box!"};
+function dotsReset(){
+ dotsState={
+  h:Array.from({length:DOTS_N},()=>Array(BOX_N).fill(0)),
+  v:Array.from({length:BOX_N},()=>Array(DOTS_N).fill(0)),
+  b:Array.from({length:BOX_N},()=>Array(BOX_N).fill(0)),
+  turn:1,s1:0,s2:0,over:false,msg:"Your turn (Blue) — 8×8 Dots!"
+ };
+ renderMiniGamesPanel();
+}
+function dotsCheckBoxes(player){
+ let scored=0;
+ for(let r=0;r<BOX_N;r++){
+  for(let c=0;c<BOX_N;c++){
+   if(!dotsState.b[r][c]&&dotsState.h[r][c]&&dotsState.h[r+1][c]&&dotsState.v[r][c]&&dotsState.v[r][c+1]){
+    dotsState.b[r][c]=player;scored++;
+    if(player===1)dotsState.s1++;else dotsState.s2++;
+   }
+  }
+ }
+ if(dotsState.s1+dotsState.s2===BOX_N*BOX_N){
+  dotsState.over=true;
+  dotsState.msg=dotsState.s1>dotsState.s2?"🎉 You won Dots & Boxes ("+dotsState.s1+"-"+dotsState.s2+")!":(dotsState.s2>dotsState.s1?"😅 Opponent won ("+dotsState.s2+"-"+dotsState.s1+")!":"🤝 Draw!");
+  if(dotsState.s1>dotsState.s2)playMatchChime();
+ }
+ return scored;
+}
+function dotsClickEdge(type,r,c){
+ if(dotsState.over||dotsState.turn!==1)return;
+ if(type==="h"){if(dotsState.h[r][c])return;dotsState.h[r][c]=1;}
+ else{if(dotsState.v[r][c])return;dotsState.v[r][c]=1;}
+ const scored=dotsCheckBoxes(1);
+ if(dotsState.over){renderMiniGamesPanel();return;}
+ if(scored){dotsState.msg="Box claimed! Go again!";renderMiniGamesPanel();}
+ else{dotsState.turn=2;dotsState.msg="Opponent's turn…";renderMiniGamesPanel();setTimeout(dotsBotTurn,380);}
+}
+function dotsBotTurn(){
+ if(dotsState.over||dotsState.turn!==2)return;
+ const moves=[];
+ for(let r=0;r<DOTS_N;r++)for(let c=0;c<BOX_N;c++)if(!dotsState.h[r][c])moves.push(["h",r,c]);
+ for(let r=0;r<BOX_N;r++)for(let c=0;c<DOTS_N;c++)if(!dotsState.v[r][c])moves.push(["v",r,c]);
+ if(!moves.length)return;
+ let chosen=null;
+ for(const [t,r,c] of moves){
+  if(t==="h")dotsState.h[r][c]=2;else dotsState.v[r][c]=2;
+  let completes=false;
+  for(let br=0;br<BOX_N;br++)for(let bc=0;bc<BOX_N;bc++)if(!dotsState.b[br][bc]&&dotsState.h[br][bc]&&dotsState.h[br+1][bc]&&dotsState.v[br][bc]&&dotsState.v[br][bc+1])completes=true;
+  if(t==="h")dotsState.h[r][c]=0;else dotsState.v[r][c]=0;
+  if(completes){chosen=[t,r,c];break;}
+ }
+ if(!chosen)chosen=moves[Math.floor(Math.random()*moves.length)];
+ const [t,r,c]=chosen;
+ if(t==="h")dotsState.h[r][c]=2;else dotsState.v[r][c]=2;
+ const scored=dotsCheckBoxes(2);
+ if(dotsState.over){renderMiniGamesPanel();return;}
+ if(scored){dotsState.msg="Opponent claimed a box!";renderMiniGamesPanel();setTimeout(dotsBotTurn,380);}
+ else{dotsState.turn=1;dotsState.msg="Your turn (Blue) — tap a line!";renderMiniGamesPanel();}
+}
+
+// 5. Memory Card Flip (4x4 = 8 pairs)
+let memState={cards:[],flipped:[],matched:[],turn:"you",sYou:0,sOpp:0,lock:false,msg:"Flip 2 cards to find a match!"};
+function memReset(){
+ const icons=["🍕","🚀","🐼","🎸","⚡","🌶️","🐧","💎"];
+ const deck=[...icons,...icons].sort(()=>Math.random()-0.5);
+ memState={cards:deck,flipped:[],matched:[],turn:"you",sYou:0,sOpp:0,lock:false,msg:"Your turn — flip 2 cards!"};
+ renderMiniGamesPanel();
+}
+function memFlip(idx){
+ if(memState.lock||memState.turn!=="you"||memState.flipped.includes(idx)||memState.matched.includes(idx))return;
+ memState.flipped.push(idx);renderMiniGamesPanel();
+ if(memState.flipped.length<2)return;
+ memState.lock=true;const [a,b]=memState.flipped;
+ setTimeout(()=>{
+  if(memState.cards[a]===memState.cards[b]){
+   memState.matched.push(a,b);memState.sYou++;playMatchChime();memState.flipped=[];memState.lock=false;
+   if(memState.matched.length===16){memState.msg=memState.sYou>memState.sOpp?"🎉 You won Memory ("+memState.sYou+"-"+memState.sOpp+")!":(memState.sOpp>memState.sYou?"😅 Opponent won!":"🤝 Draw!");}
+   else memState.msg="Match found! Flip again!";
+   renderMiniGamesPanel();
+  }else{
+   memState.flipped=[];memState.turn="opp";memState.msg="No match — Opponent's turn…";renderMiniGamesPanel();
+   setTimeout(memBotTurn,650);
+  }
+ },650);
+}
+function memBotTurn(){
+ const avail=memState.cards.map((_,i)=>i).filter(i=>!memState.matched.includes(i));
+ if(avail.length<2){memState.lock=false;memState.turn="you";renderMiniGamesPanel();return;}
+ const a=avail[Math.floor(Math.random()*avail.length)],rest=avail.filter(i=>i!==a),b=rest[Math.floor(Math.random()*rest.length)];
+ memState.flipped=[a,b];renderMiniGamesPanel();
+ setTimeout(()=>{
+  if(memState.cards[a]===memState.cards[b]){
+   memState.matched.push(a,b);memState.sOpp++;memState.flipped=[];
+   if(memState.matched.length===16){memState.lock=false;memState.msg=memState.sYou>memState.sOpp?"🎉 You won Memory!":(memState.sOpp>memState.sYou?"😅 Opponent won Memory!":"🤝 Draw!");renderMiniGamesPanel();return;}
+   memState.msg="Opponent matched! Going again…";renderMiniGamesPanel();setTimeout(memBotTurn,650);
+  }else{memState.flipped=[];memState.lock=false;memState.turn="you";memState.msg="Your turn — flip 2 cards!";renderMiniGamesPanel();}
+ },750);
+}
+
+// 6. Word Chain (15s timer)
+const WC_DICT=["apple","ant","arrow","anchor","banana","bird","bridge","breeze","carrot","cloud","comet","cricket","dolphin","dream","desert","diamond","eagle","earth","echo","energy","fox","flame","forest","friend","guitar","galaxy","garden","glacier","hawk","honey","horizon","harbor","island","icicle","igloo","india","jungle","jacket","jewel","japan","koala","kite","kingdom","knight","lemon","lantern","lagoon","laser","mango","moon","mountain","music","ninja","nebula","nectar","nature","ocean","owl","orange","orbit","panda","penguin","potato","planet","quartz","queen","quiver","quest","river","rocket","rainbow","raven","star","storm","sunset","spark","tiger","tomato","thunder","temple","umbrella","unicorn","universe","urban","viper","valley","velvet","voyage","wolf","wave","winter","wizard","xenon","xylem","yacht","yellow","yogurt","zebra","zenith","zephyr"];
+let wcState={words:[],used:new Set(),score:0,timer:15,over:false,msg:"Type a word starting with the last letter!"};
+let wcInterval=null;
+function stopWcTimer(){if(wcInterval){clearInterval(wcInterval);wcInterval=null;}}
+function wcReset(){
+ stopWcTimer();
+ const start=WC_DICT[Math.floor(Math.random()*WC_DICT.length)];
+ wcState={words:[{w:start,by:"opp"}],used:new Set([start]),score:0,timer:15,over:false,msg:"Start with '"+start.slice(-1).toUpperCase()+"'!"};
+ wcInterval=setInterval(()=>{
+  if(miniGameTab!=="wc"||wcState.over||!document.getElementById("miniGamesOverlay"))return;
+  wcState.timer--;
+  if(wcState.timer<=0){wcState.over=true;wcState.msg="⏰ Time's up! Final streak: "+wcState.score;stopWcTimer();}
+  const tEl=document.getElementById("wcTimerLabel");if(tEl)tEl.textContent="⏱ "+wcState.timer+"s";
+  if(wcState.over)renderMiniGamesPanel();
+ },1000);
+ renderMiniGamesPanel();
+}
+function wcSubmit(){
+ if(wcState.over)return;
+ const inp=document.getElementById("wcWordInput");if(!inp)return;
+ const w=inp.value.trim().toLowerCase().replace(/[^a-z]/g,"");
+ if(w.length<2){wcState.msg="Enter at least 2 letters!";renderMiniGamesPanel();return;}
+ const lastWord=wcState.words[wcState.words.length-1].w,need=lastWord.slice(-1);
+ if(w[0]!==need){wcState.msg="Must start with '"+need.toUpperCase()+"'!";renderMiniGamesPanel();return;}
+ if(wcState.used.has(w)){wcState.msg="'"+w+"' was already used!";renderMiniGamesPanel();return;}
+ wcState.words.push({w,by:"you"});wcState.used.add(w);wcState.score++;wcState.timer=15;playMatchChime();
+ const nextChar=w.slice(-1),reply=WC_DICT.find(cand=>cand[0]===nextChar&&!wcState.used.has(cand));
+ if(reply){wcState.words.push({w:reply,by:"opp"});wcState.used.add(reply);wcState.msg="Opp played '"+reply+"' — now start with '"+reply.slice(-1).toUpperCase()+"'!";}
+ else{wcState.over=true;stopWcTimer();wcState.msg="🎉 Opponent stumped! You win (Streak "+wcState.score+")!";}
+ renderMiniGamesPanel();
+ const ni=document.getElementById("wcWordInput");if(ni&&!wcState.over)ni.focus();
+}
+
+// 7. Full Classic 8x8 Checkers (12 pieces per side, jump captures & King promotion)
+const CHK_N=8;
+let chkState={board:[],sel:null,moves:[],turn:1,over:false,msg:"Your turn (🔵) — classic 8×8 Checkers!"};
+function chkReset(){
+ const b=Array.from({length:CHK_N},()=>Array(CHK_N).fill(0));
+ for(let r=0;r<3;r++)for(let c=0;c<CHK_N;c++)if((r+c)%2===1)b[r][c]=-1;
+ for(let r=5;r<8;r++)for(let c=0;c<CHK_N;c++)if((r+c)%2===1)b[r][c]=1;
+ chkState={board:b,sel:null,moves:[],turn:1,over:false,msg:"Your turn (🔵) — tap a piece!"};
+ renderMiniGamesPanel();
+}
+function chkGetMoves(b,r,c){
+ const p=b[r][c];if(!p)return [];
+ const dirs=Math.abs(p)===2?[[-1,-1],[-1,1],[1,-1],[1,1]]:(p>0?[[-1,-1],[-1,1]]:[[1,-1],[1,1]]);
+ const out=[];
+ for(const [dr,dc] of dirs){
+  const nr=r+dr,nc=c+dc;
+  if(nr>=0&&nr<CHK_N&&nc>=0&&nc<CHK_N){
+   if(b[nr][nc]===0)out.push({r:nr,c:nc,cap:null});
+   else if(Math.sign(b[nr][nc])===-Math.sign(p)){
+    const jr=nr+dr,jc=nc+dc;
+    if(jr>=0&&jr<CHK_N&&jc>=0&&jc<CHK_N&&b[jr][jc]===0)out.push({r:jr,c:jc,cap:[nr,nc]});
+   }
+  }
+ }
+ return out;
+}
+function chkApplyMove(fr,fc,mv){
+ const b=chkState.board,p=b[fr][fc];
+ b[fr][fc]=0;let np=p;
+ if(p===1&&mv.r===0)np=2;
+ if(p===-1&&mv.r===CHK_N-1)np=-2;
+ b[mv.r][mv.c]=np;
+ if(mv.cap){b[mv.cap[0]][mv.cap[1]]=0;playMatchChime();}
+ let p1=0,p2=0;
+ for(let r=0;r<CHK_N;r++)for(let c=0;c<CHK_N;c++){if(b[r][c]>0)p1++;if(b[r][c]<0)p2++;}
+ if(p2===0){chkState.over=true;chkState.msg="🎉 You won 8×8 Checkers!";playMatchChime();}
+ else if(p1===0){chkState.over=true;chkState.msg="😅 Opponent won 8×8 Checkers!";}
+}
+function chkClickCell(r,c){
+ if(chkState.over||chkState.turn!==1)return;
+ const mv=chkState.moves.find(m=>m.r===r&&m.c===c);
+ if(chkState.sel&&mv){
+  chkApplyMove(chkState.sel[0],chkState.sel[1],mv);
+  chkState.sel=null;chkState.moves=[];
+  if(chkState.over){renderMiniGamesPanel();return;}
+  chkState.turn=-1;chkState.msg="Red thinking…";renderMiniGamesPanel();
+  setTimeout(chkBotTurn,500);return;
+ }
+ if(chkState.board[r][c]>0){
+  chkState.sel=[r,c];chkState.moves=chkGetMoves(chkState.board,r,c);
+  chkState.msg=chkState.moves.length?"Tap a green square to move!":"No moves for that piece — pick another.";
+  renderMiniGamesPanel();
+ }
+}
+function chkBotTurn(){
+ if(chkState.over||chkState.turn!==-1)return;
+ const all=[];
+ for(let r=0;r<CHK_N;r++)for(let c=0;c<CHK_N;c++){
+  if(chkState.board[r][c]<0)chkGetMoves(chkState.board,r,c).forEach(mv=>all.push({r,c,mv}));
+ }
+ if(!all.length){chkState.over=true;chkState.msg="🎉 Red stuck — You win!";playMatchChime();renderMiniGamesPanel();return;}
+ const caps=all.filter(x=>x.mv.cap);
+ const pick=(caps.length?caps:all)[Math.floor(Math.random()*(caps.length?caps.length:all.length))];
+ chkApplyMove(pick.r,pick.c,pick.mv);
+ if(!chkState.over){chkState.turn=1;chkState.msg=pick.mv.cap?"Red captured a piece! Your turn.":"Your turn (🔵)!";}
+ renderMiniGamesPanel();
+}
+
+// Shared Arcade Controller
+function sendMiniGameToChat(text){
+ if(!text)return;
+ if(miniGameContext==="signal"){const inp=document.getElementById("signalMessageInput");if(inp){inp.value=text;sendSignalMessage();}}
+ else{const inp=document.getElementById("privateMessageInput");if(inp){inp.value=text;sendPrivateMessage();}}
+}
+function shareCurrentGameScore(){
+ const map={
+  ttt:"🎮 Tic-Tac-Toe — Me: "+tttScore.you+" | Opp: "+tttScore.opp+" | Draws: "+tttScore.draw,
+  ludo:"🎲 Classic Ludo — "+ludoState.msg+" (Home: "+ludoState.you.filter(x=>x===42).length+"/2)",
+  snl:"🐍 Snakes & Ladders — Me: Tile "+snlState.you+"/36 | Opp: Tile "+snlState.opp+"/36",
+  dots:"✏️ Dots & Boxes (8×8) — Me: "+dotsState.s1+" | Opp: "+dotsState.s2,
+  mem:"🃏 Memory Card Flip — Me: "+memState.sYou+" pairs | Opp: "+memState.sOpp+" pairs",
+  wc:"🔤 Word Chain — Streak: "+wcState.score+" words! Last word: "+(wcState.words[wcState.words.length-1]?.w||""),
+  chk:"⚫ 8×8 Checkers — "+chkState.msg
+ };
+ sendMiniGameToChat(map[miniGameTab]||"🎮 Playing Mini-Games on 100m!");
+ closeMiniGames();
+}
+function openMiniGames(ctx){
+ miniGameContext=ctx||"signal";
+ if(dotsState.h.length!==DOTS_N)dotsReset();
+ if(!memState.cards.length)memReset();
+ if(chkState.board.length!==CHK_N)chkReset();
+ if(!wcState.words.length)wcReset();
+ const old=document.getElementById("miniGamesOverlay");if(old)old.remove();
+ const overlay=document.createElement("div");overlay.id="miniGamesOverlay";overlay.className="profile-action-overlay";
+ const panel=document.createElement("div");panel.className="games-modal-panel";panel.id="miniGamesPanel";
+ overlay.appendChild(panel);
+ overlay.addEventListener("click",e=>{if(e.target===overlay)closeMiniGames();});
+ document.body.appendChild(overlay);
+ renderMiniGamesPanel();
+}
+function closeMiniGames(){stopWcTimer();const o=document.getElementById("miniGamesOverlay");if(o)o.remove();}
+function switchMiniGameTab(tab){
+ miniGameTab=tab;
+ if(tab==="wc"){wcReset();return;}
+ else stopWcTimer();
+ renderMiniGamesPanel();
+}
+function renderMiniGamesPanel(){
+ const panel=document.getElementById("miniGamesPanel");if(!panel)return;
+ const partnerLabel=miniGameContext==="signal"?(signalPartnerHandle||"Match"):(document.getElementById("activeChatTitle")?.textContent.replace("Chat with ","").replace(" (Preview)","")||"Partner");
+ const tabs=[
+  ["ttt","❌⭕ X-O"],["ludo","🎲 Ludo"],["snl","🐍 Snakes"],["dots","✏️ Dots 8×8"],
+  ["mem","🃏 Memory"],["wc","🔤 Words"],["chk","⚫ Checkers 8×8"]
+ ];
+ const tabsHtml=tabs.map(([id,lbl])=>'<button type="button" class="games-pill'+(miniGameTab===id?" active":"")+'" onclick="switchMiniGameTab(\''+id+'\')">'+lbl+'</button>').join("");
+ let bodyHtml="";
+ if(miniGameTab==="ttt"){
+  const res=tttCheckWinner(tttBoard);
+  const statusTxt=res?(res.w==="X"?"🎉 You won!":res.w==="O"?"😅 Opponent won!":"🤝 Draw!"):"Your turn (X)";
+  const cells=tttBoard.map((v,i)=>'<button type="button" class="ttt-cell '+(v==="X"?"x":v==="O"?"o":"")+(tttWinLine.includes(i)?" win":"")+'" onclick="tttMove('+i+')">'+(v||"")+"</button>").join("");
+  bodyHtml='<div class="rps-score"><span>YOU: '+tttScore.you+'</span><span>DRAW: '+tttScore.draw+'</span><span>OPP: '+tttScore.opp+'</span></div>'+
+   '<p class="sub" style="text-align:center;margin:4px 0">'+statusTxt+'</p><div class="ttt-grid">'+cells+'</div>'+
+   '<div class="row" style="margin-top:8px"><button type="button" class="secondary small" onclick="tttReset()">New Round</button><button type="button" class="primary small" style="margin:0" onclick="shareCurrentGameScore()">Share Score</button></div>';
+ }else if(miniGameTab==="ludo"){
+  const cellMap={};
+  ludoState.you.forEach((p,i)=>{const [r,c]=ludoCoord("you",p,i);const k=r+","+c;cellMap[k]=cellMap[k]||[];cellMap[k].push({p:"b",i,can:ludoState.dice!==null&&ludoState.turn==="you"&&ludoCanMove(p,ludoState.dice)});});
+  ludoState.opp.forEach((p,i)=>{const [r,c]=ludoCoord("opp",p,i);const k=r+","+c;cellMap[k]=cellMap[k]||[];cellMap[k].push({p:"r",i,can:false});});
+  let cells="";
+  for(let r=0;r<11;r++){
+   for(let c=0;c<11;c++){
+    let cls="";
+    if(r<=3&&c<=3)cls="yard-r";
+    else if(r<=3&&c>=7)cls="yard-g";
+    else if(r>=7&&c<=3)cls="yard-b";
+    else if(r>=7&&c>=7)cls="yard-y";
+    else if(r>=4&&r<=6&&c>=4&&c<=6)cls=(r===5&&c===5)?"center-home":"";
+    else if(c===5&&r>=7&&r<=9)cls="lane-b";
+    else if(c===5&&r>=1&&r<=3)cls="lane-r";
+    const pIdx=LUDO_PATH.findIndex(pt=>pt[0]===r&&pt[1]===c);
+    if(pIdx>=0&&LUDO_STARS.has(pIdx))cls="star";
+    const pawns=cellMap[r+","+c]||[];
+    let inner="";
+    if(pawns.length){
+     inner='<div class="ludo-pawns">'+pawns.map(tk=>'<span class="ludo-pawn p-'+tk.p+(tk.can?" movable":"")+'" '+(tk.can?'onclick="ludoMoveToken('+tk.i+')"':"")+'></span>').join("")+'</div>';
+    }else if(r===5&&c===5)inner="👑";
+    else if(cls==="star")inner="⭐";
+    cells+='<div class="ludo-cell '+cls+'">'+inner+'</div>';
+   }
+  }
+  const can0=ludoState.dice!==null&&ludoCanMove(ludoState.you[0],ludoState.dice);
+  const can1=ludoState.dice!==null&&ludoCanMove(ludoState.you[1],ludoState.dice);
+  bodyHtml='<div class="rps-score"><span>🔵 YOU: '+ludoState.you.filter(x=>x===42).length+'/2 Home</span><span>🔴 RED: '+ludoState.opp.filter(x=>x===42).length+'/2 Home</span></div>'+
+   '<p class="sub" style="text-align:center;margin:4px 0">'+ludoState.msg+'</p><div class="ludo-board">'+cells+'</div>'+
+   '<div class="row" style="margin-top:8px">'+
+    (ludoState.dice!==null
+     ?'<button type="button" class="primary small" style="margin:0" onclick="ludoMoveToken(0)" '+(can0?"":"disabled")+'>Move 🔵 #1</button><button type="button" class="primary small" style="margin:0" onclick="ludoMoveToken(1)" '+(can1?"":"disabled")+'>Move 🔵 #2</button>'
+     :'<button type="button" class="primary small" style="margin:0" onclick="ludoRoll()" '+(ludoState.over||ludoState.turn!=="you"?"disabled":"")+'>🎲 Roll Dice</button>')+
+   '</div>'+
+   '<div class="row" style="margin-top:6px"><button type="button" class="secondary small" onclick="ludoReset()">Reset</button><button type="button" class="secondary small" onclick="shareCurrentGameScore()">Share Score</button></div>';
+ }else if(miniGameTab==="snl"){
+  let sqs="";
+  for(let r=0;r<6;r++){
+   const rowFromBottom=5-r;
+   for(let c=0;c<6;c++){
+    const num=rowFromBottom%2===0?(rowFromBottom*6+c+1):(rowFromBottom*6+(5-c)+1);
+    const cls=num===36?"goal":((r+c)%2===0?"alt0":"alt1");
+    sqs+='<div class="snl-sq '+cls+'"><span>'+(num===36?"🏆36":num)+'</span><div class="snl-tokens">'+(snlState.you===num?"🔵":"")+(snlState.opp===num?"🔴":"")+'</div></div>';
+   }
+  }
+  bodyHtml='<div class="rps-score"><span>🔵 YOU: '+snlState.you+'/36</span><span>🔴 OPP: '+snlState.opp+'/36</span></div>'+
+   '<p class="sub" style="text-align:center;margin:4px 0">'+snlState.msg+'</p>'+
+   '<div class="snl-wrap"><div class="snl-grid-6">'+sqs+'</div>'+snlBuildSvg()+'</div>'+
+   '<div class="row" style="margin-top:8px"><button type="button" class="primary small" style="margin:0" onclick="snlRoll()" '+(snlState.over||snlState.turn!=="you"?"disabled":"")+'>🎲 Roll Dice</button><button type="button" class="secondary small" onclick="snlReset()">Reset</button><button type="button" class="secondary small" onclick="shareCurrentGameScore()">Share</button></div>';
+ }else if(miniGameTab==="dots"){
+  let g="";
+  for(let r=0;r<DOTS_N;r++){
+   for(let c=0;c<DOTS_N;c++){
+    g+='<div class="dot-pt"></div>';
+    if(c<BOX_N){const v=dotsState.h[r][c];g+='<button type="button" class="edge-h'+(v===1?" p1":v===2?" p2":"")+'" onclick="dotsClickEdge(\'h\','+r+','+c+')" '+(v?"disabled":"")+'></button>';}
+   }
+   if(r<BOX_N){
+    for(let c=0;c<DOTS_N;c++){
+     const v=dotsState.v[r][c];g+='<button type="button" class="edge-v'+(v===1?" p1":v===2?" p2":"")+'" onclick="dotsClickEdge(\'v\','+r+','+c+')" '+(v?"disabled":"")+'></button>';
+     if(c<BOX_N){const bv=dotsState.b[r][c];g+='<div class="dot-box'+(bv===1?" p1":bv===2?" p2":"")+'">'+(bv===1?"U":bv===2?"O":"")+'</div>';}
+    }
+   }
+  }
+  bodyHtml='<div class="rps-score"><span>🔵 YOU: '+dotsState.s1+'</span><span>🔴 OPP: '+dotsState.s2+'</span><span>LEFT: '+(49-dotsState.s1-dotsState.s2)+'</span></div>'+
+   '<p class="sub" style="text-align:center;margin:4px 0">'+dotsState.msg+'</p><div class="dots-grid-8">'+g+'</div>'+
+   '<div class="row" style="margin-top:8px"><button type="button" class="secondary small" onclick="dotsReset()">New 8×8 Board</button><button type="button" class="primary small" style="margin:0" onclick="shareCurrentGameScore()">Share Score</button></div>';
+ }else if(miniGameTab==="mem"){
+  const cards=memState.cards.map((ic,i)=>{
+   const isM=memState.matched.includes(i),isO=memState.flipped.includes(i);
+   return '<button type="button" class="mem-card'+(isM?" matched":isO?" open":"")+'" onclick="memFlip('+i+')">'+(isM||isO?ic:"?")+'</button>';
+  }).join("");
+  bodyHtml='<div class="rps-score"><span>YOU: '+memState.sYou+'</span><span>OPP: '+memState.sOpp+'</span></div>'+
+   '<p class="sub" style="text-align:center;margin:4px 0">'+memState.msg+'</p><div class="mem-grid">'+cards+'</div>'+
+   '<div class="row" style="margin-top:8px"><button type="button" class="secondary small" onclick="memReset()">Shuffle</button><button type="button" class="primary small" style="margin:0" onclick="shareCurrentGameScore()">Share Score</button></div>';
+ }else if(miniGameTab==="wc"){
+  const hist=wcState.words.map(x=>'<span class="wc-chip'+(x.by==="opp"?" opp":"")+'">'+x.w+'</span>').join("");
+  bodyHtml='<div class="rps-score"><span>STREAK: '+wcState.score+'</span><span id="wcTimerLabel">⏱ '+wcState.timer+'s</span></div>'+
+   '<p class="sub" style="text-align:center;margin:4px 0">'+wcState.msg+'</p><div class="wc-history">'+hist+'</div>'+
+   '<div class="row" style="margin-top:8px"><input id="wcWordInput" type="text" placeholder="Type next word…" style="margin:0" onkeydown="if(event.key===\'Enter\')wcSubmit()" '+(wcState.over?"disabled":"")+'><button type="button" class="primary small fit" style="margin:0" onclick="wcSubmit()" '+(wcState.over?"disabled":"")+'>Go</button></div>'+
+   '<div class="row" style="margin-top:8px"><button type="button" class="secondary small" onclick="wcReset()">Restart</button><button type="button" class="secondary small" onclick="shareCurrentGameScore()">Share Streak</button></div>';
+ }else if(miniGameTab==="chk"){
+  let cells="",bCnt=0,rCnt=0;
+  for(let r=0;r<CHK_N;r++){
+   for(let c=0;c<CHK_N;c++){
+    const v=chkState.board[r][c],isDark=(r+c)%2===1;
+    if(v>0)bCnt++;if(v<0)rCnt++;
+    const isSel=chkState.sel&&chkState.sel[0]===r&&chkState.sel[1]===c;
+    const isHint=chkState.moves.some(m=>m.r===r&&m.c===c);
+    const tok=v===1?"🔵":v===2?"👑":v===-1?"🔴":v===-2?"😈":"";
+    cells+='<button type="button" class="chk-cell '+(isDark?"dark":"light")+(isSel?" sel":"")+(isHint?" hint":"")+'" onclick="chkClickCell('+r+','+c+')">'+tok+'</button>';
+   }
+  }
+  bodyHtml='<div class="rps-score"><span>🔵 YOU: '+bCnt+'</span><span>🔴 RED: '+rCnt+'</span></div>'+
+   '<p class="sub" style="text-align:center;margin:4px 0">'+chkState.msg+'</p><div class="chk-board-8">'+cells+'</div>'+
+   '<div class="row" style="margin-top:8px"><button type="button" class="secondary small" onclick="chkReset()">New 8×8 Game</button><button type="button" class="primary small" style="margin:0" onclick="shareCurrentGameScore()">Share Result</button></div>';
+ }
+ panel.innerHTML='<div class="row" style="justify-content:space-between;align-items:center">'+
+   '<h3 style="margin:0">🎮 100m Arcade · '+String(partnerLabel).replace(/</g,"&lt;")+'</h3>'+
+   '<button type="button" class="secondary small fit" onclick="closeMiniGames()">✕</button>'+
+  '</div>'+
+  '<div class="games-picker">'+tabsHtml+'</div>'+bodyHtml;
 }
 
 function dismissIntroSplash(){
