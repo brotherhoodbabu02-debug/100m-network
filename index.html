@@ -1184,7 +1184,7 @@ header{
    <span class="auth-badge">PRIVACY-FIRST</span>
    <span class="auth-badge">NO GPS STORED</span>
    <span class="auth-badge">24H AUTO-DELETE</span>
-   <span id="authLiveHourPill" class="auth-badge live-pill">● LIVE HOUR · 9 PM IST</span>
+   <span id="authLiveHourPill" class="auth-badge live-pill">● LIVE HOUR · 8 PM IST</span>
   </div>
  </div>
  <div class="auth-grid">
@@ -1288,10 +1288,10 @@ header{
  <div class="card live-hour-card" id="liveHourCard">
   <div class="live-hour-top">
    <span style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:0.06em">DAILY LIVE HOUR</span>
-   <span id="liveHourBadge" class="live-hour-pill upcoming">9:00 PM IST</span>
+   <span id="liveHourBadge" class="live-hour-pill upcoming">8:00 PM IST</span>
   </div>
   <h3 style="margin-top:8px;font-size:18px" id="liveHourHeadline">Evening Live Voice &amp; Signal Jam</h3>
-  <p class="sub" id="liveHourCountdown" style="margin:4px 0 12px">Everyone gathers daily at 9:00 PM IST so rooms stay buzzing.</p>
+  <p class="sub" id="liveHourCountdown" style="margin:4px 0 12px">Everyone gathers daily at 8:00 PM IST so rooms stay buzzing.</p>
   <div class="row">
    <button type="button" class="secondary small" onclick="go('walkie')">🎙️ Open Voice</button>
    <button type="button" class="whatsapp-btn small" onclick="openInviteModal('home')">📲 Invite Friends</button>
@@ -3655,19 +3655,19 @@ function updateLiveHourBanner(){
  const ist=new Date(utcMs+istOffsetMin*60000);
  const h=ist.getHours(),m=ist.getMinutes();
  const authPill=document.getElementById("authLiveHourPill");
- if(h===21){
+ if(h===20){
   badge.textContent="● LIVE NOW";badge.className="live-hour-pill";
   hl.textContent="Daily Live Hour is ON right now!";
   cd.textContent=(60-m)+" min left in tonight's Voice & Signal Jam — jump in!";
   if(authPill)authPill.textContent="● LIVE HOUR ON NOW ("+(60-m)+"m left)";
  }else{
-  badge.textContent="9:00 PM IST";badge.className="live-hour-pill upcoming";
+  badge.textContent="8:00 PM IST";badge.className="live-hour-pill upcoming";
   hl.textContent="Evening Live Voice & Signal Jam";
-  let minsLeft=(21*60)-(h*60+m);
+  let minsLeft=(20*60)-(h*60+m);
   if(minsLeft<=0)minsLeft+=24*60;
   const hrs=Math.floor(minsLeft/60),mins=minsLeft%60;
-  cd.textContent="Next daily gather starts in "+hrs+"h "+mins+"m — invite friends to join at 9 PM IST.";
-  if(authPill)authPill.textContent="● LIVE HOUR IN "+hrs+"H "+mins+"M (9 PM IST)";
+  cd.textContent="Next daily gather starts in "+hrs+"h "+mins+"m — invite friends to join at 8 PM IST.";
+  if(authPill)authPill.textContent="● LIVE HOUR IN "+hrs+"H "+mins+"M (8 PM IST)";
  }
 }
 function selectNoteTag(btn){
@@ -3684,7 +3684,7 @@ function loadLocalDropNotes(){
  const now=Date.now();
  return [
   {id:"dn_seed1",handle:"SpicyPotato-a4",tag:"Say Hi",text:"First time here — love the clean dark UI and privacy-first ~100m Radar!",createdAt:now-3600000,votes:3,voted:false},
-  {id:"dn_seed2",handle:"ChillPenguin-9c",tag:"Question",text:"Who's joining tonight's 9 PM IST Live Voice Jam?",createdAt:now-1500000,votes:2,voted:false}
+  {id:"dn_seed2",handle:"ChillPenguin-9c",tag:"Question",text:"Who's joining tonight's 8 PM IST Live Voice Jam?",createdAt:now-1500000,votes:2,voted:false}
  ];
 }
 function saveLocalDropNotes(list){
