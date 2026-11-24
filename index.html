@@ -1348,6 +1348,241 @@ header{
 }
 .chk-board-8 .chk-cell{font-size:17px;border-radius:4px}
 
+
+/* ---------- AUTHENTIC LUDO KING STYLE BOARD ---------- */
+.ludo-king-board{
+ display:grid;
+ grid-template-columns:repeat(11,1fr);
+ grid-template-rows:repeat(11,1fr);
+ width:min(100%,352px);
+ aspect-ratio:1;
+ margin:8px auto;
+ background:#cbd5e1;
+ gap:1px;
+ border:4px solid #334155;
+ border-radius:14px;
+ overflow:hidden;
+ box-shadow:0 14px 36px rgba(0,0,0,0.6);
+}
+.lk-yard{
+ display:grid;place-items:center;padding:12%;position:relative;
+}
+.lk-yard.red{grid-area:1/1/5/5;background:#dc2626}
+.lk-yard.green{grid-area:1/8/5/12;background:#16a34a}
+.lk-yard.blue{grid-area:8/1/12/5;background:#2563eb}
+.lk-yard.yellow{grid-area:8/8/12/12;background:#eab308}
+.lk-yard-inner{
+ width:100%;height:100%;background:#ffffff;border-radius:12px;
+ display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+ place-items:center;padding:10%;gap:8%;
+ box-shadow:inset 0 2px 6px rgba(0,0,0,0.18);
+}
+.lk-slot{
+ width:78%;aspect-ratio:1;border-radius:50%;
+ display:grid;place-items:center;position:relative;
+}
+.lk-yard.red .lk-slot{background:rgba(220,38,38,0.18);border:2px solid #dc2626}
+.lk-yard.green .lk-slot{background:rgba(22,163,74,0.18);border:2px solid #16a34a}
+.lk-yard.blue .lk-slot{background:rgba(37,99,235,0.18);border:2px solid #2563eb}
+.lk-yard.yellow .lk-slot{background:rgba(234,179,8,0.2);border:2px solid #eab308}
+.lk-home{
+ grid-area:5/5/8/8;position:relative;overflow:hidden;
+ display:grid;place-items:center;background:#ffffff;
+}
+.lk-home svg{position:absolute;inset:0;width:100%;height:100%}
+.lk-home-crown{position:relative;z-index:2;font-size:22px;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.45))}
+.lk-sq{
+ background:#f8fafc;display:flex;align-items:center;justify-content:center;
+ position:relative;overflow:hidden;font-size:12px;color:#64748b;
+}
+.lk-sq.lane-r{background:#dc2626;color:#ffffff}
+.lk-sq.lane-g{background:#16a34a;color:#ffffff}
+.lk-sq.lane-b{background:#2563eb;color:#ffffff}
+.lk-sq.lane-y{background:#eab308;color:#ffffff}
+.lk-sq.star-sq{background:#fef3c7;color:#d97706}
+.lk-pawn{
+ width:16px;height:16px;border-radius:50%;display:inline-block;
+ border:2px solid #ffffff;
+ box-shadow:0 3px 6px rgba(0,0,0,0.55), inset 0 2px 3px rgba(255,255,255,0.5);
+ position:relative;z-index:3;
+}
+.lk-pawn.p-b{background:radial-gradient(circle at 35% 30%, #60a5fa, #1d4ed8)}
+.lk-pawn.p-r{background:radial-gradient(circle at 35% 30%, #f87171, #b91c1c)}
+.lk-pawn.movable{animation:ping 1.1s ease-out infinite;cursor:pointer;transform:scale(1.18)}
+
+
+/* ---------- LUDO KING 3D ROLLING DICE & 2P OPPOSITE HUD ---------- */
+.lk-hud-row{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ max-width:352px;margin:4px auto;
+}
+.lk-player-box{
+ display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:14px;
+ background:#181922;border:1.5px solid rgba(255,255,255,0.1);
+ transition:border-color .2s, box-shadow .2s;
+}
+.lk-player-box.active-b{border-color:#2563eb;box-shadow:0 0 16px rgba(37,99,235,0.4)}
+.lk-player-box.active-g{border-color:#16a34a;box-shadow:0 0 16px rgba(22,163,74,0.4)}
+.lk-p-av{
+ width:30px;height:30px;border-radius:10px;display:grid;place-items:center;
+ font-size:15px;font-weight:800;color:#ffffff;
+}
+.lk-p-av.blue{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
+.lk-p-av.green{background:linear-gradient(135deg,#22c55e,#15803d)}
+.lk-dice-btn{
+ width:48px;height:48px;padding:4px;border-radius:12px;
+ background:linear-gradient(145deg,#ffffff,#e2e8f0);
+ border:2px solid #94a3b8;
+ box-shadow:0 6px 14px rgba(0,0,0,0.45), inset 0 2px 3px #ffffff;
+ display:grid;place-items:center;
+ transition:transform .12s ease, box-shadow .2s ease;
+}
+.lk-dice-btn.ready{
+ border-color:#38bdf8;
+ box-shadow:0 0 0 4px rgba(56,189,248,0.28), 0 6px 16px rgba(0,0,0,0.5);
+ animation:dicePulse 1.3s ease-in-out infinite;
+}
+.lk-dice-btn.rolling{
+ animation:diceTumble 0.14s linear infinite !important;
+ border-color:#fbbf24;
+}
+.lk-dice-btn svg{width:34px;height:34px;display:block}
+.lk-pawn.p-g{background:radial-gradient(circle at 35% 30%, #4ade80, #15803d)}
+@keyframes diceTumble{
+ 0%{transform:rotate(0deg) scale(1.06)}
+ 25%{transform:rotate(-16deg) scale(1.12)}
+ 50%{transform:rotate(14deg) scale(1.04)}
+ 75%{transform:rotate(-10deg) scale(1.1)}
+ 100%{transform:rotate(0deg) scale(1.06)}
+}
+@keyframes dicePulse{
+ 0%,100%{transform:scale(1)}
+ 50%{transform:scale(1.07)}
+}
+
+
+/* ---------- 100M ORIGINAL SIGNAL-PIN LUDO THEME ---------- */
+.ludo-king-board{
+ background:#0b0d14;
+ gap:1.5px;
+ border:2px solid rgba(56,189,248,0.28);
+ border-radius:18px;
+ box-shadow:0 18px 44px rgba(0,0,0,0.75), inset 0 0 24px rgba(15,132,255,0.08);
+}
+.lk-yard{padding:11%}
+.lk-yard.blue{background:linear-gradient(135deg, rgba(15,132,255,0.34), rgba(15,132,255,0.14))}
+.lk-yard.green{background:linear-gradient(135deg, rgba(16,185,129,0.34), rgba(16,185,129,0.14))}
+.lk-yard.red{background:linear-gradient(135deg, rgba(244,63,94,0.22), rgba(244,63,94,0.08))}
+.lk-yard.yellow{background:linear-gradient(135deg, rgba(245,158,11,0.22), rgba(245,158,11,0.08))}
+.lk-yard-inner{
+ background:rgba(12,14,22,0.88);
+ border:1px solid rgba(255,255,255,0.12);
+ border-radius:14px;
+ box-shadow:inset 0 2px 10px rgba(0,0,0,0.55);
+}
+.lk-yard.blue .lk-slot{background:rgba(15,132,255,0.12);border:1.5px solid rgba(56,189,248,0.5)}
+.lk-yard.green .lk-slot{background:rgba(16,185,129,0.12);border:1.5px solid rgba(52,211,153,0.5)}
+.lk-yard.red .lk-slot{background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.28)}
+.lk-yard.yellow .lk-slot{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.28)}
+.lk-sq{
+ background:#141724;
+ color:rgba(255,255,255,0.38);
+ font-size:11px;font-weight:800;
+}
+.lk-sq.lane-b{background:rgba(15,132,255,0.38);color:#93c5fd;box-shadow:inset 0 0 8px rgba(15,132,255,0.35)}
+.lk-sq.lane-g{background:rgba(16,185,129,0.36);color:#6ee7b7;box-shadow:inset 0 0 8px rgba(16,185,129,0.35)}
+.lk-sq.lane-r{background:rgba(244,63,94,0.22);color:#fda4af}
+.lk-sq.lane-y{background:rgba(245,158,11,0.22);color:#fcd34d}
+.lk-sq.star-sq{background:rgba(251,191,36,0.14);color:#fbbf24}
+.lk-home{background:#0b0d14}
+/* Custom 100m Radar-Pin Teardrop Pawn */
+.lk-pin{
+ width:19px;height:23px;display:inline-flex;align-items:center;justify-content:center;
+ position:relative;z-index:4;transition:transform .14s ease;
+ filter:drop-shadow(0 3px 5px rgba(0,0,0,0.75));
+}
+.lk-pin svg{width:100%;height:100%;display:block}
+.lk-pin.movable{
+ animation:pinBounce 0.75s ease-in-out infinite;
+ cursor:pointer;
+ filter:drop-shadow(0 0 8px rgba(56,189,248,0.95));
+}
+.lk-pin.hopping{
+ animation:pinHop 0.16s ease-out;
+}
+@keyframes pinBounce{
+ 0%,100%{transform:translateY(0) scale(1.06)}
+ 50%{transform:translateY(-4px) scale(1.18)}
+}
+@keyframes pinHop{
+ 0%{transform:translateY(0) scale(1)}
+ 50%{transform:translateY(-7px) scale(1.22)}
+ 100%{transform:translateY(0) scale(1)}
+}
+.lk-hud-row{gap:8px;align-items:center}
+.lk-player-box{padding:6px 10px;border-radius:16px;white-space:nowrap}
+.lk-dice-btn{
+ width:46px;height:46px;border-radius:13px;
+ background:linear-gradient(145deg,#1e2436,#0f131f);
+ border:2px solid rgba(255,255,255,0.2);
+ box-shadow:0 6px 16px rgba(0,0,0,0.55), inset 0 1px 2px rgba(255,255,255,0.22);
+}
+.lk-dice-btn.ready{
+ border-color:#38bdf8;
+ box-shadow:0 0 0 4px rgba(56,189,248,0.25), 0 0 20px rgba(15,132,255,0.45);
+}
+.lk-dice-btn.rolling{
+ animation:diceSpin3D 0.14s linear infinite !important;
+ border-color:#fbbf24;
+ box-shadow:0 0 18px rgba(251,191,36,0.5);
+}
+@keyframes diceSpin3D{
+ 0%{transform:rotate(0deg) scale(1.08)}
+ 33%{transform:rotate(-18deg) scale(1.14)}
+ 66%{transform:rotate(18deg) scale(1.04)}
+ 100%{transform:rotate(0deg) scale(1.08)}
+}
+
+
+/* ---------- STANDARD 15x15 (6x6 YARDS) BRIGHT CLASSIC LUDO ---------- */
+.ludo-king-board{
+ grid-template-columns:repeat(15,1fr);
+ grid-template-rows:repeat(15,1fr);
+ width:min(100%,360px);
+ background:#cbd5e1;
+ gap:1px;
+ border:3px solid #334155;
+ border-radius:14px;
+ box-shadow:0 14px 36px rgba(0,0,0,0.6);
+}
+.lk-yard.red{grid-area:1/1/7/7;background:#dc2626}
+.lk-yard.green{grid-area:1/10/7/16;background:#16a34a}
+.lk-yard.blue{grid-area:10/1/16/7;background:#2563eb}
+.lk-yard.yellow{grid-area:10/10/16/16;background:#eab308}
+.lk-home{grid-area:7/7/10/10;background:#ffffff}
+.lk-yard-inner{
+ background:#ffffff;
+ border:0;
+ border-radius:12px;
+ box-shadow:inset 0 2px 6px rgba(0,0,0,0.18);
+}
+.lk-yard.red .lk-slot{background:rgba(220,38,38,0.18);border:2px solid #dc2626}
+.lk-yard.green .lk-slot{background:rgba(22,163,74,0.18);border:2px solid #16a34a}
+.lk-yard.blue .lk-slot{background:rgba(37,99,235,0.18);border:2px solid #2563eb}
+.lk-yard.yellow .lk-slot{background:rgba(234,179,8,0.2);border:2px solid #eab308}
+.lk-sq{background:#f8fafc;color:#64748b;font-size:10px;font-weight:800}
+.lk-sq.lane-r{background:#dc2626;color:#ffffff;box-shadow:none}
+.lk-sq.lane-g{background:#16a34a;color:#ffffff;box-shadow:none}
+.lk-sq.lane-b{background:#2563eb;color:#ffffff;box-shadow:none}
+.lk-sq.lane-y{background:#eab308;color:#ffffff;box-shadow:none}
+.lk-sq.star-sq{background:#fef3c7;color:#d97706}
+.lk-pin{width:15px;height:18px}
+.lk-dice-btn{
+ background:linear-gradient(145deg,#ffffff,#e2e8f0);
+ border:2px solid #94a3b8;
+ box-shadow:0 6px 14px rgba(0,0,0,0.45), inset 0 2px 3px #ffffff;
+}
+
 </style>
 </head>
 <body>
@@ -4197,81 +4432,213 @@ function tttMove(idx){
 }
 function tttReset(){tttBoard=Array(9).fill("");tttOver=false;tttWinLine=[];renderMiniGamesPanel();}
 
-// 2. Real Classic Cross Ludo (11x11 board, 40-step outer loop + 3-step home lane + Home)
+// 2. Authentic Ludo King 2-Player (Diagonal: Blue Bottom-Left vs Green Top-Right, 4 tokens each, Rolling Dice)
 const LUDO_PATH=[
- [9,4],[8,4],[7,4],[6,4],[6,3],[6,2],[6,1],[6,0],[5,0],[4,0],
- [4,1],[4,2],[4,3],[4,4],[3,4],[2,4],[1,4],[0,4],[0,5],[0,6],
- [1,6],[2,6],[3,6],[4,6],[4,7],[4,8],[4,9],[4,10],[5,10],[6,10],
- [6,9],[6,8],[6,7],[6,6],[7,6],[8,6],[9,6],[10,6],[10,5],[10,4]
+ [13,6],[12,6],[11,6],[10,6],[9,6],
+ [8,5],[8,4],[8,3],[8,2],[8,1],[8,0],
+ [7,0],
+ [6,0],[6,1],[6,2],[6,3],[6,4],[6,5],
+ [5,6],[4,6],[3,6],[2,6],[1,6],[0,6],
+ [0,7],
+ [0,8],[1,8],[2,8],[3,8],[4,8],[5,8],
+ [6,9],[6,10],[6,11],[6,12],[6,13],[6,14],
+ [7,14],
+ [8,14],[8,13],[8,12],[8,11],[8,10],[8,9],
+ [9,8],[10,8],[11,8],[12,8],[13,8],[14,8],
+ [14,7],[14,6]
 ];
-const LUDO_STARS=new Set([0,10,20,30]);
-const LUDO_HOME_B=[[9,5],[8,5],[7,5]];
-const LUDO_HOME_R=[[1,5],[2,5],[3,5]];
-const LUDO_YARD_B=[[8,1],[8,2]];
-const LUDO_YARD_R=[[1,1],[1,2]];
-let ludoState={you:[-1,-1],opp:[-1,-1],turn:"you",dice:null,msg:"Roll dice! Get 6 to bring a Blue token out.",over:false,winner:""};
-function ludoReset(){ludoState={you:[-1,-1],opp:[-1,-1],turn:"you",dice:null,msg:"Roll dice! Get 6 to bring a Blue token out.",over:false,winner:""};renderMiniGamesPanel();}
-function ludoCoord(player,prog,tokIdx){
- if(prog===-1)return player==="you"?LUDO_YARD_B[tokIdx]:LUDO_YARD_R[tokIdx];
- if(prog>=0&&prog<39){const idx=(player==="you"?prog:(prog+20)%40);return LUDO_PATH[idx];}
- if(prog>=39&&prog<=41)return (player==="you"?LUDO_HOME_B:LUDO_HOME_R)[prog-39];
- return [5,5];
+const LUDO_STARS=new Set([0,8,13,21,26,34,39,47]);
+const LUDO_HOME_B=[[13,7],[12,7],[11,7],[10,7],[9,7]];
+const LUDO_HOME_G=[[1,7],[2,7],[3,7],[4,7],[5,7]];
+let ludoState={you:[-1,-1,-1,-1],opp:[-1,-1,-1,-1],turn:"you",dice:null,lastYouDice:6,lastOppDice:6,rolling:false,msg:"Tap your Blue Dice to roll! Get 6 to start.",over:false,winner:""};
+let ludoRollTimer=null;
+
+function playDiceRattle(){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  const ctx=walkieAudioCtx||new AC();walkieAudioCtx=ctx;
+  if(ctx.state==="suspended")ctx.resume().catch(()=>{});
+  const now=ctx.currentTime;
+  // Crisp multi-bounce tactile clatter + soft landing thud
+  [0,0.07,0.14,0.22,0.31,0.41].forEach((dt,i)=>{
+   const osc=ctx.createOscillator(),g=ctx.createGain();
+   osc.type=i===5?"sine":"triangle";
+   const f=i===5?145:(280+Math.random()*240);
+   osc.frequency.setValueAtTime(f,now+dt);
+   osc.frequency.exponentialRampToValueAtTime(f*0.55,now+dt+0.05);
+   g.gain.setValueAtTime(i===5?0.13:0.08,now+dt);
+   g.gain.exponentialRampToValueAtTime(0.001,now+dt+0.055);
+   osc.connect(g);g.connect(ctx.destination);osc.start(now+dt);osc.stop(now+dt+0.06);
+  });
+ }catch(e){}
 }
-function ludoCanMove(prog,d){return (prog===-1&&d===6)||(prog>=0&&prog+d<=42);}
-function ludoRoll(){
- if(ludoState.over||ludoState.turn!=="you"||ludoState.dice!==null)return;
- const d=1+Math.floor(Math.random()*6);
- ludoState.dice=d;
- const valid=ludoState.you.some(p=>ludoCanMove(p,d));
- if(!valid){
-  ludoState.msg="You rolled 🎲 "+d+" — need 6 to unlock. Opponent's turn!";
-  ludoState.dice=null;ludoState.turn="opp";renderMiniGamesPanel();
-  setTimeout(ludoOppTurn,650);return;
- }
- ludoState.msg="Rolled 🎲 "+d+"! Tap a glowing Blue token to move.";
+function playHopPop(stepIdx){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  const ctx=walkieAudioCtx||new AC();walkieAudioCtx=ctx;
+  if(ctx.state==="suspended")ctx.resume().catch(()=>{});
+  const now=ctx.currentTime,osc=ctx.createOscillator(),g=ctx.createGain();
+  const base=380+(stepIdx%6)*45;
+  osc.type="sine";osc.frequency.setValueAtTime(base,now);
+  osc.frequency.exponentialRampToValueAtTime(base*1.35,now+0.07);
+  g.gain.setValueAtTime(0.11,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.08);
+  osc.connect(g);g.connect(ctx.destination);osc.start(now);osc.stop(now+0.09);
+ }catch(e){}
+}
+function playCaptureZap(){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  const ctx=walkieAudioCtx||new AC();walkieAudioCtx=ctx;
+  if(ctx.state==="suspended")ctx.resume().catch(()=>{});
+  const now=ctx.currentTime,osc=ctx.createOscillator(),g=ctx.createGain();
+  osc.type="sawtooth";osc.frequency.setValueAtTime(520,now);
+  osc.frequency.exponentialRampToValueAtTime(120,now+0.22);
+  g.gain.setValueAtTime(0.11,now);g.gain.exponentialRampToValueAtTime(0.001,now+0.24);
+  osc.connect(g);g.connect(ctx.destination);osc.start(now);osc.stop(now+0.25);
+ }catch(e){}
+}
+function renderPinPawnSvg(team){
+ const fill=team==="b"?"#0f84ff":"#10b981";
+ const rim=team==="b"?"#93c5fd":"#6ee7b7";
+ return '<svg viewBox="0 0 28 34"><path d="M14 2C7.4 2 2 7.4 2 14c0 8.5 12 18 12 18s12-9.5 12-18C26 7.4 20.6 2 14 2z" fill="'+fill+'" stroke="#ffffff" stroke-width="2.2"/><circle cx="14" cy="13.5" r="5" fill="#0b0d14" stroke="'+rim+'" stroke-width="1.8"/><circle cx="14" cy="13.5" r="2.2" fill="#ffffff"/></svg>';
+}
+function renderDiceSvg(val,color){
+ const n=Math.max(1,Math.min(6,Number(val)||1));
+ const pipCol=color||"#38bdf8";
+ const pos={
+  1:[[50,50]],
+  2:[[26,26],[74,74]],
+  3:[[26,26],[50,50],[74,74]],
+  4:[[26,26],[74,26],[26,74],[74,74]],
+  5:[[26,26],[74,26],[50,50],[26,74],[74,74]],
+  6:[[26,22],[74,22],[26,50],[74,50],[26,78],[74,78]]
+ }[n];
+ return '<svg viewBox="0 0 100 100">'+pos.map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="11" fill="'+pipCol+'"/>').join("")+'</svg>';
+}
+let ludoHopTimer=null,ludoAnimating=false,ludoHoppingKey="";
+function ludoReset(){
+ if(ludoRollTimer){clearInterval(ludoRollTimer);ludoRollTimer=null;}if(ludoHopTimer){clearTimeout(ludoHopTimer);ludoHopTimer=null;ludoAnimating=false;}
+ if(ludoHopTimer){clearTimeout(ludoHopTimer);ludoHopTimer=null;}
+ ludoAnimating=false;ludoHoppingKey="";
+ ludoState={you:[-1,-1,-1,-1],opp:[-1,-1,-1,-1],turn:"you",dice:null,lastYouDice:6,lastOppDice:6,rolling:false,msg:"Tap your Neon Blue Dice! Roll 6 to launch a Signal Pin.",over:false,winner:""};
  renderMiniGamesPanel();
 }
+function ludoCoord(player,prog){
+ if(prog>=0&&prog<51){const idx=(player==="you"?prog:(prog+26)%52);return LUDO_PATH[idx];}
+ if(prog>=51&&prog<=55)return (player==="you"?LUDO_HOME_B:LUDO_HOME_G)[prog-51];
+ return [7,7];
+}
+function ludoCanMove(prog,d){return (prog===-1&&d===6)||(prog>=0&&prog+d<=56);}
+function ludoAnimateRoll(who,onDone){
+ if(ludoRollTimer){clearInterval(ludoRollTimer);ludoRollTimer=null;}if(ludoHopTimer){clearTimeout(ludoHopTimer);ludoHopTimer=null;ludoAnimating=false;}
+ ludoState.rolling=true;
+ playDiceRattle();
+ let ticks=0;
+ ludoRollTimer=setInterval(()=>{
+  ticks++;
+  const randFace=1+Math.floor(Math.random()*6);
+  if(who==="you")ludoState.lastYouDice=randFace;else ludoState.lastOppDice=randFace;
+  renderMiniGamesPanel();
+  if(ticks>=6){
+   clearInterval(ludoRollTimer);ludoRollTimer=null;
+   ludoState.rolling=false;
+   const finalVal=1+Math.floor(Math.random()*6);
+   if(who==="you")ludoState.lastYouDice=finalVal;else ludoState.lastOppDice=finalVal;
+   onDone(finalVal);
+  }
+ },80);
+}
+function ludoStepHop(who,idx,stepsLeft,stepNum,onFinish){
+ const arr=who==="you"?ludoState.you:ludoState.opp;
+ if(stepsLeft<=0){ludoAnimating=false;ludoHoppingKey="";onFinish(arr[idx]);return;}
+ arr[idx]=(arr[idx]===-1)?0:(arr[idx]+1);
+ ludoHoppingKey=who+"_"+idx;
+ playHopPop(stepNum);
+ renderMiniGamesPanel();
+ ludoHopTimer=setTimeout(()=>ludoStepHop(who,idx,stepsLeft-1,stepNum+1,onFinish),155);
+}
+function ludoRoll(){
+ if(ludoState.over||ludoState.turn!=="you"||ludoState.dice!==null||ludoState.rolling||ludoAnimating)return;
+ ludoState.msg="Rolling dice…";
+ ludoAnimateRoll("you",d=>{
+  ludoState.dice=d;
+  const movableIdxs=ludoState.you.map((p,i)=>ludoCanMove(p,d)?i:-1).filter(i=>i>=0);
+  if(!movableIdxs.length){
+   ludoState.msg="Rolled "+d+" — need 6 to launch. Green's turn!";
+   ludoState.dice=null;ludoState.turn="opp";renderMiniGamesPanel();
+   setTimeout(ludoOppTurn,520);return;
+  }
+  if(movableIdxs.length===1){
+   ludoState.msg="Rolled "+d+"! Moving Signal Pin…";renderMiniGamesPanel();
+   setTimeout(()=>ludoMoveToken(movableIdxs[0]),240);return;
+  }
+  ludoState.msg="Rolled "+d+"! Tap any bouncing Blue pin.";
+  renderMiniGamesPanel();
+ });
+}
 function ludoMoveToken(idx){
- if(ludoState.over||ludoState.turn!=="you"||ludoState.dice===null)return;
+ if(ludoState.over||ludoState.turn!=="you"||ludoState.dice===null||ludoState.rolling||ludoAnimating)return;
  const d=ludoState.dice,p=ludoState.you[idx];
  if(!ludoCanMove(p,d))return;
- const np=(p===-1)?0:(p+d);
- ludoState.you[idx]=np;
- let captured=false;
- if(np>=0&&np<39&&!LUDO_STARS.has(np)){
-  const [yr,yc]=ludoCoord("you",np,idx);
-  ludoState.opp=ludoState.opp.map((op,oi)=>{
-   if(op>=0&&op<39){const [or,oc]=ludoCoord("opp",op,oi);if(or===yr&&oc===yc){captured=true;return -1;}}
-   return op;
-  });
- }
- if(ludoState.you.every(x=>x===42)){ludoState.over=true;ludoState.winner="You";ludoState.dice=null;ludoState.msg="🎉 You won Classic Ludo!";playMatchChime();renderMiniGamesPanel();return;}
- ludoState.dice=null;
- if(d===6||captured||np===42){ludoState.msg=(captured?"💥 Captured Red! ":np===42?"🏠 Token Home! ":"🎉 Rolled 6! ")+"Bonus roll — roll again!";renderMiniGamesPanel();}
- else{ludoState.turn="opp";ludoState.msg="Red is rolling…";renderMiniGamesPanel();setTimeout(ludoOppTurn,650);}
+ ludoState.dice=null;ludoAnimating=true;
+ const hops=(p===-1)?1:d;
+ ludoStepHop("you",idx,hops,0,np=>{
+  let captured=false;
+  if(np>=0&&np<51&&!LUDO_STARS.has(np)){
+   const [yr,yc]=ludoCoord("you",np);
+   ludoState.opp=ludoState.opp.map(op=>{
+    if(op>=0&&op<51){const [or,oc]=ludoCoord("opp",op);if(or===yr&&oc===yc){captured=true;return -1;}}
+    return op;
+   });
+  }
+  if(captured)playCaptureZap();
+  if(ludoState.you.every(x=>x===56)){ludoState.over=true;ludoState.winner="You";ludoState.msg="🎉 You won 100m Ludo!";playMatchChime();renderMiniGamesPanel();return;}
+  if(d===6||captured||np===56){
+   if(np===56)playMatchChime();
+   ludoState.msg=(captured?"⚡ Captured Green! ":np===56?"👑 Pin Home! ":"🎉 Rolled 6! ")+"Bonus roll — tap dice!";
+   renderMiniGamesPanel();
+  }else{
+   ludoState.turn="opp";ludoState.msg="Green is rolling…";renderMiniGamesPanel();
+   setTimeout(ludoOppTurn,480);
+  }
+ });
 }
 function ludoOppTurn(){
- if(ludoState.over||ludoState.turn!=="opp")return;
- const d=1+Math.floor(Math.random()*6);
- let movedIdx=-1,captured=false,reachedHome=false;
- for(let i=0;i<2;i++){if(ludoCanMove(ludoState.opp[i],d)){movedIdx=i;break;}}
- if(movedIdx>=0){
-  const p=ludoState.opp[movedIdx],np=(p===-1)?0:(p+d);
-  ludoState.opp[movedIdx]=np;if(np===42)reachedHome=true;
-  if(np>=0&&np<39){
-   const gIdx=(np+20)%40;
-   if(!LUDO_STARS.has(gIdx)){
-    const [or,oc]=ludoCoord("opp",np,movedIdx);
-    ludoState.you=ludoState.you.map((yp,yi)=>{
-     if(yp>=0&&yp<39){const [yr,yc]=ludoCoord("you",yp,yi);if(yr===or&&yc===oc){captured=true;return -1;}}
-     return yp;
-    });
-   }
+ if(ludoState.over||ludoState.turn!=="opp"||ludoState.rolling||ludoAnimating)return;
+ ludoAnimateRoll("opp",d=>{
+  const valid=ludoState.opp.map((p,i)=>ludoCanMove(p,d)?i:-1).filter(i=>i>=0);
+  if(!valid.length){
+   ludoState.turn="you";ludoState.msg="Green rolled "+d+". Your turn — tap Blue Dice!";renderMiniGamesPanel();return;
   }
- }
- if(ludoState.opp.every(x=>x===42)){ludoState.over=true;ludoState.winner="Opponent";ludoState.msg="😅 Red won Classic Ludo!";renderMiniGamesPanel();return;}
- if(movedIdx>=0&&(d===6||captured||reachedHome)){ludoState.msg="Red rolled "+d+(captured?" & captured you!":" (bonus!)");renderMiniGamesPanel();setTimeout(ludoOppTurn,700);return;}
- ludoState.turn="you";ludoState.msg="Red rolled "+d+". Your turn — roll dice!";renderMiniGamesPanel();
+  let movedIdx=valid[0];
+  for(const i of valid){
+   const p=ludoState.opp[i],np=(p===-1)?0:(p+d);
+   if(np===56){movedIdx=i;break;}
+   if(p>=0&&ludoState.opp[movedIdx]===-1)movedIdx=i;
+  }
+  const startP=ludoState.opp[movedIdx],hops=(startP===-1)?1:d;
+  ludoAnimating=true;
+  ludoStepHop("opp",movedIdx,hops,0,np=>{
+   let captured=false,reachedHome=(np===56);
+   if(np>=0&&np<51){
+    const gIdx=(np+26)%52;
+    if(!LUDO_STARS.has(gIdx)){
+     const [or,oc]=ludoCoord("opp",np);
+     ludoState.you=ludoState.you.map(yp=>{
+      if(yp>=0&&yp<51){const [yr,yc]=ludoCoord("you",yp);if(yr===or&&yc===oc){captured=true;return -1;}}
+      return yp;
+     });
+    }
+   }
+   if(captured)playCaptureZap();
+   if(ludoState.opp.every(x=>x===56)){ludoState.over=true;ludoState.winner="Green";ludoState.msg="😅 Green won 100m Ludo!";renderMiniGamesPanel();return;}
+   if(d===6||captured||reachedHome){
+    ludoState.msg="Green rolled "+d+(captured?" & captured you!":" (bonus roll!)");
+    renderMiniGamesPanel();setTimeout(ludoOppTurn,520);return;
+   }
+   ludoState.turn="you";ludoState.msg="Green rolled "+d+". Your turn — tap Blue Dice!";renderMiniGamesPanel();
+  });
+ });
 }
 
 // 3. Real Classic Zig-Zag 6x6 Snakes & Ladders with Drawn SVG Ladders & Curvy Snakes
@@ -4546,7 +4913,7 @@ function sendMiniGameToChat(text){
 function shareCurrentGameScore(){
  const map={
   ttt:"🎮 Tic-Tac-Toe — Me: "+tttScore.you+" | Opp: "+tttScore.opp+" | Draws: "+tttScore.draw,
-  ludo:"🎲 Classic Ludo — "+ludoState.msg+" (Home: "+ludoState.you.filter(x=>x===42).length+"/2)",
+  ludo:"🎲 Classic Ludo — "+ludoState.msg+" (Home: "+ludoState.you.filter(x=>x===56).length+"/2)",
   snl:"🐍 Snakes & Ladders — Me: Tile "+snlState.you+"/36 | Opp: Tile "+snlState.opp+"/36",
   dots:"✏️ Dots & Boxes (8×8) — Me: "+dotsState.s1+" | Opp: "+dotsState.s2,
   mem:"🃏 Memory Card Flip — Me: "+memState.sYou+" pairs | Opp: "+memState.sOpp+" pairs",
@@ -4570,7 +4937,7 @@ function openMiniGames(ctx){
  document.body.appendChild(overlay);
  renderMiniGamesPanel();
 }
-function closeMiniGames(){stopWcTimer();const o=document.getElementById("miniGamesOverlay");if(o)o.remove();}
+function closeMiniGames(){stopWcTimer();if(ludoRollTimer){clearInterval(ludoRollTimer);ludoRollTimer=null;}if(ludoHopTimer){clearTimeout(ludoHopTimer);ludoHopTimer=null;ludoAnimating=false;}const o=document.getElementById("miniGamesOverlay");if(o)o.remove();}
 function switchMiniGameTab(tab){
  miniGameTab=tab;
  if(tab==="wc"){wcReset();return;}
@@ -4594,41 +4961,86 @@ function renderMiniGamesPanel(){
    '<p class="sub" style="text-align:center;margin:4px 0">'+statusTxt+'</p><div class="ttt-grid">'+cells+'</div>'+
    '<div class="row" style="margin-top:8px"><button type="button" class="secondary small" onclick="tttReset()">New Round</button><button type="button" class="primary small" style="margin:0" onclick="shareCurrentGameScore()">Share Score</button></div>';
  }else if(miniGameTab==="ludo"){
-  const cellMap={};
-  ludoState.you.forEach((p,i)=>{const [r,c]=ludoCoord("you",p,i);const k=r+","+c;cellMap[k]=cellMap[k]||[];cellMap[k].push({p:"b",i,can:ludoState.dice!==null&&ludoState.turn==="you"&&ludoCanMove(p,ludoState.dice)});});
-  ludoState.opp.forEach((p,i)=>{const [r,c]=ludoCoord("opp",p,i);const k=r+","+c;cellMap[k]=cellMap[k]||[];cellMap[k].push({p:"r",i,can:false});});
-  let cells="";
-  for(let r=0;r<11;r++){
-   for(let c=0;c<11;c++){
-    let cls="";
-    if(r<=3&&c<=3)cls="yard-r";
-    else if(r<=3&&c>=7)cls="yard-g";
-    else if(r>=7&&c<=3)cls="yard-b";
-    else if(r>=7&&c>=7)cls="yard-y";
-    else if(r>=4&&r<=6&&c>=4&&c<=6)cls=(r===5&&c===5)?"center-home":"";
-    else if(c===5&&r>=7&&r<=9)cls="lane-b";
-    else if(c===5&&r>=1&&r<=3)cls="lane-r";
+  const trackMap={};
+  ludoState.you.forEach((p,i)=>{
+   if(p>=0&&p<56){
+    const [r,c]=ludoCoord("you",p);const k=r+","+c;
+    trackMap[k]=trackMap[k]||[];
+    trackMap[k].push({p:"b",i,hop:ludoHoppingKey==="you_"+i,can:ludoState.dice!==null&&ludoState.turn==="you"&&!ludoState.rolling&&!ludoAnimating&&ludoCanMove(p,ludoState.dice)});
+   }
+  });
+  ludoState.opp.forEach((p,i)=>{
+   if(p>=0&&p<56){
+    const [r,c]=ludoCoord("opp",p);const k=r+","+c;
+    trackMap[k]=trackMap[k]||[];trackMap[k].push({p:"g",i,hop:ludoHoppingKey==="opp_"+i,can:false});
+   }
+  });
+  const blueSlots=[0,1,2,3].map(i=>{
+   const inBase=ludoState.you[i]===-1;
+   const can=inBase&&ludoState.dice!==null&&ludoState.turn==="you"&&!ludoState.rolling&&!ludoAnimating&&ludoCanMove(-1,ludoState.dice);
+   return '<div class="lk-slot">'+(inBase?'<span class="lk-pin'+(can?" movable":"")+'" '+(can?'onclick="ludoMoveToken('+i+')"':"")+'>'+renderPinPawnSvg("b")+'</span>':'')+'</div>';
+  }).join("");
+  const greenSlots=[0,1,2,3].map(i=>{
+   const inBase=ludoState.opp[i]===-1;
+   return '<div class="lk-slot">'+(inBase?'<span class="lk-pin">'+renderPinPawnSvg("g")+'</span>':'')+'</div>';
+  }).join("");
+  const yardBlue='<div class="lk-yard blue"><div class="lk-yard-inner">'+blueSlots+'</div></div>';
+  const yardGreen='<div class="lk-yard green"><div class="lk-yard-inner">'+greenSlots+'</div></div>';
+  const yardRed='<div class="lk-yard red"><div class="lk-yard-inner"><div class="lk-slot"></div><div class="lk-slot"></div><div class="lk-slot"></div><div class="lk-slot"></div></div></div>';
+  const yardYellow='<div class="lk-yard yellow"><div class="lk-yard-inner"><div class="lk-slot"></div><div class="lk-slot"></div><div class="lk-slot"></div><div class="lk-slot"></div></div></div>';
+  const centerHome='<div class="lk-home"><svg viewBox="0 0 100 100" preserveAspectRatio="none">'+
+   '<polygon points="0,0 100,0 50,50" fill="#16a34a"/>'+
+   '<polygon points="100,0 100,100 50,50" fill="#eab308"/>'+
+   '<polygon points="0,100 100,100 50,50" fill="#2563eb"/>'+
+   '<polygon points="0,0 0,100 50,50" fill="#dc2626"/>'+
+   '<line x1="0" y1="0" x2="100" y2="100" stroke="#ffffff" stroke-width="2"/>'+
+   '<line x1="100" y1="0" x2="0" y2="100" stroke="#ffffff" stroke-width="2"/>'+
+   '</svg><span class="lk-home-crown">👑</span></div>';
+  let trackSquares="";
+  for(let r=0;r<15;r++){
+   for(let c=0;c<15;c++){
+    if((r<=5&&c<=5)||(r<=5&&c>=9)||(r>=9&&c<=5)||(r>=9&&c>=9)||(r>=6&&r<=8&&c>=6&&c<=8))continue;
+    let cls="",arrow="";
+    if(c===7&&r>=9&&r<=13)cls="lane-b";
+    else if(c===7&&r>=1&&r<=5)cls="lane-g";
+    else if(r===7&&c>=1&&c<=5)cls="lane-r";
+    else if(r===7&&c>=9&&c<=13)cls="lane-y";
+    else if(r===13&&c===6)cls="lane-b";
+    else if(r===1&&c===8)cls="lane-g";
+    else if(r===6&&c===1)cls="lane-r";
+    else if(r===8&&c===13)cls="lane-y";
+    if(r===14&&c===7)arrow="↑";
+    else if(r===0&&c===7)arrow="↓";
+    else if(r===7&&c===0)arrow="→";
+    else if(r===7&&c===14)arrow="←";
     const pIdx=LUDO_PATH.findIndex(pt=>pt[0]===r&&pt[1]===c);
-    if(pIdx>=0&&LUDO_STARS.has(pIdx))cls="star";
-    const pawns=cellMap[r+","+c]||[];
+    const isStar=(pIdx>=0&&LUDO_STARS.has(pIdx));
+    if(isStar&&!cls)cls="star-sq";
+    const pawns=trackMap[r+","+c]||[];
     let inner="";
     if(pawns.length){
-     inner='<div class="ludo-pawns">'+pawns.map(tk=>'<span class="ludo-pawn p-'+tk.p+(tk.can?" movable":"")+'" '+(tk.can?'onclick="ludoMoveToken('+tk.i+')"':"")+'></span>').join("")+'</div>';
-    }else if(r===5&&c===5)inner="👑";
-    else if(cls==="star")inner="⭐";
-    cells+='<div class="ludo-cell '+cls+'">'+inner+'</div>';
+     inner='<div class="ludo-pawns">'+pawns.map(tk=>'<span class="lk-pin'+(tk.can?" movable":"")+(tk.hop?" hopping":"")+'" '+(tk.can?'onclick="ludoMoveToken('+tk.i+')"':"")+'>'+renderPinPawnSvg(tk.p)+'</span>').join("")+'</div>';
+    }else if(isStar)inner="★";
+    else if(arrow)inner=arrow;
+    trackSquares+='<div class="lk-sq '+cls+'" style="grid-row:'+(r+1)+';grid-column:'+(c+1)+'">'+inner+'</div>';
    }
   }
-  const can0=ludoState.dice!==null&&ludoCanMove(ludoState.you[0],ludoState.dice);
-  const can1=ludoState.dice!==null&&ludoCanMove(ludoState.you[1],ludoState.dice);
-  bodyHtml='<div class="rps-score"><span>🔵 YOU: '+ludoState.you.filter(x=>x===42).length+'/2 Home</span><span>🔴 RED: '+ludoState.opp.filter(x=>x===42).length+'/2 Home</span></div>'+
-   '<p class="sub" style="text-align:center;margin:4px 0">'+ludoState.msg+'</p><div class="ludo-board">'+cells+'</div>'+
-   '<div class="row" style="margin-top:8px">'+
-    (ludoState.dice!==null
-     ?'<button type="button" class="primary small" style="margin:0" onclick="ludoMoveToken(0)" '+(can0?"":"disabled")+'>Move 🔵 #1</button><button type="button" class="primary small" style="margin:0" onclick="ludoMoveToken(1)" '+(can1?"":"disabled")+'>Move 🔵 #2</button>'
-     :'<button type="button" class="primary small" style="margin:0" onclick="ludoRoll()" '+(ludoState.over||ludoState.turn!=="you"?"disabled":"")+'>🎲 Roll Dice</button>')+
-   '</div>'+
-   '<div class="row" style="margin-top:6px"><button type="button" class="secondary small" onclick="ludoReset()">Reset</button><button type="button" class="secondary small" onclick="shareCurrentGameScore()">Share Score</button></div>';
+  const youCanRoll=!ludoState.over&&ludoState.turn==="you"&&ludoState.dice===null&&!ludoState.rolling&&!ludoAnimating;
+  const oppRolling=ludoState.turn==="opp"&&ludoState.rolling;
+  const youRolling=ludoState.turn==="you"&&ludoState.rolling;
+  const topHud='<div class="lk-hud-row"><div></div><div class="lk-player-box'+(ludoState.turn==="opp"?" active-g":"")+'">'+
+   '<div class="lk-dice-btn'+(oppRolling?" rolling":"")+'" style="pointer-events:none">'+renderDiceSvg(ludoState.lastOppDice,"#15803d")+'</div>'+
+   '<div><strong style="font-size:13px;display:block">Green</strong><small class="muted" style="font-size:11px">'+ludoState.opp.filter(x=>x===56).length+'/4 Home</small></div>'+
+   '<div class="lk-p-av green">⚡</div></div></div>';
+  const bottomHud='<div class="lk-hud-row"><div class="lk-player-box'+(ludoState.turn==="you"?" active-b":"")+'">'+
+   '<div class="lk-p-av blue">📡</div>'+
+   '<div><strong style="font-size:13px;display:block">You</strong><small class="muted" style="font-size:11px">'+ludoState.you.filter(x=>x===56).length+'/4 Home</small></div>'+
+   '<button type="button" class="lk-dice-btn'+(youCanRoll?" ready":"")+(youRolling?" rolling":"")+'" onclick="ludoRoll()" '+(youCanRoll?"":"disabled")+' aria-label="Roll Blue Dice">'+renderDiceSvg(ludoState.lastYouDice,"#1d4ed8")+'</button>'+
+   '</div><div style="display:flex;gap:6px"><button type="button" class="secondary small" onclick="ludoReset()">Reset</button><button type="button" class="secondary small" onclick="shareCurrentGameScore()">Share</button></div></div>';
+  bodyHtml=topHud+
+   '<p class="sub" style="text-align:center;margin:3px 0;font-size:12.5px">'+ludoState.msg+'</p>'+
+   '<div class="ludo-king-board">'+yardRed+yardGreen+yardBlue+yardYellow+centerHome+trackSquares+'</div>'+
+   bottomHud;
  }else if(miniGameTab==="snl"){
   let sqs="";
   for(let r=0;r<6;r++){
