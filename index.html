@@ -4658,6 +4658,35 @@ function showIncomingGamePopup(fromUid,fromHandle,gameId){
   '</div></div>';
  document.body.appendChild(overlay);
 }
+let liveMp={active:false,peerUid:null,peerName:"",role:1,gameId:"",waiting:false,waitingGame:""};
+function isRealMp(){return !!(liveMp.active&&!guestMode&&currentUser&&liveMp.peerUid);}
+function sendMpMove(gameId,payload){
+ if(!isRealMp()||!rtdb)return;
+ const code=("gmv_"+gameId+"_"+payload+"_"+Date.now().toString(36)).slice(0,78);
+ rtdb.ref("directVoiceInbox/"+liveMp.peerUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+}
+function cancelWaitingGameInvite(){
+ if(liveMp.waiting&&liveMp.peerUid&&rtdb&&currentUser){
+  const code="gdec_"+(liveMp.waitingGame||"ludo")+"_"+Date.now();
+  rtdb.ref("directVoiceInbox/"+liveMp.peerUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+ }
+ liveMp={active:false,peerUid:null,peerName:"",role:1,gameId:"",waiting:false,waitingGame:""};
+ miniGameTab="lobby";renderMiniGamesPanel();
+}
+function startRealMpGame(gameId,peerUid,peerName,role){
+ liveMp={active:true,peerUid,peerName:peerName||"Partner",role,gameId,waiting:false,waitingGame:""};
+ // Reset selected game cleanly for real 2-player session (role 1 = You go first, role 2 = Opp goes first)
+ if(gameId==="ttt"){tttBoard=Array(9).fill("");tttOver=false;tttWinLine=[];tttTurn=(role===1?"you":"opp");}
+ else if(gameId==="ludo"){ludoReset();ludoState.turn=(role===1?"you":"opp");ludoState.msg=(role===1?"Your turn (Blue) — tap Blue Dice!":"Waiting for "+liveMp.peerName+" (Green) to roll…");}
+ else if(gameId==="snl"){snlReset();snlState.turn=(role===1?"you":"opp");snlState.msg=(role===1?"Your turn — tap Blue Dice!":"Waiting for "+liveMp.peerName+" to roll…");}
+ else if(gameId==="dots"){dotsReset();dotsState.turn=(role===1?1:2);dotsState.msg=(role===1?"Your turn (Blue) — tap any line!":"Waiting for "+liveMp.peerName+"…");}
+ else if(gameId==="mem"){memReset();memState.turn=(role===1?"you":"opp");memState.msg=(role===1?"Your turn — flip 2 cards!":"Waiting for "+liveMp.peerName+"…");}
+ else if(gameId==="wc"){wcReset();wcState.turn=(role===1?"you":"opp");wcState.msg=(role===1?"Your turn — type a word!":"Waiting for "+liveMp.peerName+" to type a word…");}
+ else if(gameId==="chk"){chkReset();chkState.turn=(role===1?1:-1);chkState.msg=(role===1?"Your turn (🔵) — tap a piece!":"Waiting for "+liveMp.peerName+" (🔴)…");}
+ if(!document.getElementById("miniGamesOverlay"))openMiniGames(signalState==="matched"?"signal":"private");
+ miniGameTab=gameId;
+ renderMiniGamesPanel();
+}
 function respondGameInvite(accepted){
  const inv=pendingGameInvite;pendingGameInvite=null;closeIncomingPopup();
  if(!inv)return;
@@ -4666,25 +4695,111 @@ function respondGameInvite(accepted){
   rtdb.ref("directVoiceInbox/"+inv.fromUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
  }
  if(accepted){
-  openMiniGames(signalState==="matched"?"signal":"private");
-  switchMiniGameTab(inv.gameId);
+  startRealMpGame(inv.gameId,inv.fromUid,inv.fromHandle,2);
  }
 }
 function sendGameInviteAndOpen(gameId){
  const targetUid=(miniGameContext==="signal")?signalPartnerUid:activePrivateOtherUid;
+ const targetName=(miniGameContext==="signal")?(signalPartnerHandle||"Match"):(document.getElementById("activeChatTitle")?.textContent.replace("Chat with ","").replace(" (Preview)","")||"Partner");
  const gName=GAME_NAME_MAP[gameId]||"Mini-Game";
  if(guestMode){
+  liveMp={active:false,peerUid:null,peerName:"",role:1,gameId:"",waiting:false,waitingGame:""};
   const st=document.getElementById(miniGameContext==="signal"?"signalStatusText":"privateChatStatus");
-  if(st)st.textContent="Preview: Invited partner to "+gName+" — Accepted!";
+  if(st)st.textContent="Preview Mode: playing "+gName+" locally.";
   switchMiniGameTab(gameId);return;
  }
- if(currentUser&&rtdb&&targetUid){
-  const code="ginv_"+gameId+"_"+Date.now();
-  rtdb.ref("directVoiceInbox/"+targetUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+ if(!currentUser||!rtdb||!targetUid){
   const st=document.getElementById(miniGameContext==="signal"?"signalStatusText":"privateChatStatus");
-  if(st)st.textContent="Game invite sent for "+gName+"! Waiting for them to accept…";
+  if(st)st.textContent="Connect with a real partner in Signal Match or Private Chat first.";
+  return;
  }
- switchMiniGameTab(gameId);
+ // Strict Accept-Only Gate: send invite & wait until the real partner accepts!
+ liveMp={active:false,peerUid:targetUid,peerName:targetName,role:1,gameId,waiting:true,waitingGame:gameId};
+ const code="ginv_"+gameId+"_"+Date.now();
+ rtdb.ref("directVoiceInbox/"+targetUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+ miniGameTab="waiting";
+ renderMiniGamesPanel();
+}
+function handleIncomingMpMove(parts){
+ // parts = ["gmv", gameId, ...payload, ts]
+ if(!isRealMp())return;
+ const gId=parts[1];
+ if(gId==="ttt"){
+  const idx=Number(parts[2]);
+  if(!tttOver&&!tttBoard[idx]){
+   tttBoard[idx]="O";playHopPop(1);
+   const res=tttCheckWinner(tttBoard);
+   if(res){tttOver=true;tttWinLine=res.line||[];if(res.w==="O")tttScore.opp++;else tttScore.draw++;}
+   else tttTurn="you";
+   renderMiniGamesPanel();
+  }
+ }else if(gId==="ludo"){
+  const tokIdx=Number(parts[2]),d=Number(parts[3]);
+  ludoState.lastOppDice=d;
+  if(tokIdx>=0&&tokIdx<4){
+   const startP=ludoState.opp[tokIdx],hops=(startP===-1)?1:d;
+   ludoAnimating=true;
+   ludoStepHop("opp",tokIdx,hops,0,np=>{
+    let captured=false,reachedHome=(np===56);
+    if(np>=0&&np<51){
+     const gIdx=(np+26)%52;
+     if(!LUDO_STARS.has(gIdx)){
+      const [or,oc]=ludoCoord("opp",np);
+      ludoState.you=ludoState.you.map(yp=>{
+       if(yp>=0&&yp<51){const [yr,yc]=ludoCoord("you",yp);if(yr===or&&yc===oc){captured=true;return -1;}}
+       return yp;
+      });
+     }
+    }
+    if(captured)playCaptureZap();
+    if(ludoState.opp.every(x=>x===56)){ludoState.over=true;ludoState.winner=liveMp.peerName;ludoState.msg="😅 "+liveMp.peerName+" won Ludo!";renderMiniGamesPanel();return;}
+    if(d===6||captured||reachedHome){ludoState.turn="opp";ludoState.msg=liveMp.peerName+" rolled "+d+" (bonus roll!)";}
+    else{ludoState.turn="you";ludoState.msg=liveMp.peerName+" rolled "+d+". Your turn — tap Blue Dice!";}
+    renderMiniGamesPanel();
+   });
+  }else{
+   ludoState.turn="you";ludoState.msg=liveMp.peerName+" rolled "+d+" (no move). Your turn!";renderMiniGamesPanel();
+  }
+ }else if(gId==="snl"){
+  const d=Number(parts[2]);snlState.oppDice=d;
+  snlExecuteTurn("opp",d);
+ }else if(gId==="dots"){
+  const t=parts[2],r=Number(parts[3]),c=Number(parts[4]);
+  if(t==="h")dotsState.h[r][c]=2;else dotsState.v[r][c]=2;
+  const scored=dotsCheckBoxes(2);
+  if(!dotsState.over){
+   if(scored){dotsState.turn=2;dotsState.msg=liveMp.peerName+" claimed a box! Their turn again.";}
+   else{dotsState.turn=1;dotsState.msg="Your turn (Blue) — tap any line!";}
+  }
+  renderMiniGamesPanel();
+ }else if(gId==="mem"){
+  const a=Number(parts[2]),b=Number(parts[3]);
+  memState.flipped=[a,b];renderMiniGamesPanel();
+  setTimeout(()=>{
+   if(memState.cards[a]===memState.cards[b]){
+    memState.matched.push(a,b);memState.sOpp++;memState.flipped=[];
+    if(memState.matched.length===16)memState.msg=memState.sYou>memState.sOpp?"🎉 You won Memory!":(memState.sOpp>memState.sYou?"😅 "+liveMp.peerName+" won Memory!":"🤝 Draw!");
+    else memState.msg=liveMp.peerName+" matched! Their turn again.";
+   }else{
+    memState.flipped=[];memState.turn="you";memState.msg="Your turn — flip 2 cards!";
+   }
+   renderMiniGamesPanel();
+  },700);
+ }else if(gId==="wc"){
+  const w=String(parts[2]||"").toLowerCase();
+  if(w&&!wcState.used.has(w)){
+   wcState.words.push({w,by:"opp"});wcState.used.add(w);wcState.turn="you";wcState.timer=15;playHopPop(2);
+   wcState.msg=liveMp.peerName+" played '"+w+"' — start with '"+w.slice(-1).toUpperCase()+"'!";
+   renderMiniGamesPanel();
+  }
+ }else if(gId==="chk"){
+  // Mirror opponent's coordinates (7-r, 7-c) so both players always see themselves at the bottom!
+  const fr=7-Number(parts[2]),fc=7-Number(parts[3]),tr=7-Number(parts[4]),tc=7-Number(parts[5]);
+  const cap=(Math.abs(tr-fr)===2)?[(fr+tr)/2,(fc+tc)/2]:null;
+  chkApplyMove(fr,fc,{r:tr,c:tc,cap});
+  if(!chkState.over){chkState.turn=1;chkState.msg="Your turn (🔵) — tap a piece!";}
+  renderMiniGamesPanel();
+ }
 }
 function initDirectCallInbox(){
  if(directCallInboxRef&&directCallInboxListener)directCallInboxRef.off("child_added",directCallInboxListener);
@@ -4701,15 +4816,19 @@ function initDirectCallInbox(){
   }
   if(cid.startsWith("gacc_")){
    const gId=cid.split("_")[1]||"ludo";
-   const st=document.getElementById("signalStatusText"),st2=document.getElementById("privateChatStatus");
-   const msg="🎮 "+fromName+" accepted your "+(GAME_NAME_MAP[gId]||"Game")+" invite!";
-   if(st)st.textContent=msg;if(st2)st2.textContent=msg;playMatchChime();return;
+   playMatchChime();
+   startRealMpGame(gId,inv.from,fromName,1);return;
   }
   if(cid.startsWith("gdec_")){
    const gId=cid.split("_")[1]||"ludo";
-   const st=document.getElementById("signalStatusText"),st2=document.getElementById("privateChatStatus");
    const msg=fromName+" declined the "+(GAME_NAME_MAP[gId]||"Game")+" invite.";
-   if(st)st.textContent=msg;if(st2)st2.textContent=msg;return;
+   const st=document.getElementById("signalStatusText"),st2=document.getElementById("privateChatStatus");
+   if(st)st.textContent=msg;if(st2)st2.textContent=msg;
+   if(liveMp.waiting){liveMp.waiting=false;miniGameTab="lobby";renderMiniGamesPanel();}
+   return;
+  }
+  if(cid.startsWith("gmv_")){
+   handleIncomingMpMove(cid.split("_"));return;
   }
   if(directCallState!=="idle")return;
   directCallId=cid;directCallPeerUid=inv.from;directCallPeerName=fromName;
@@ -4785,7 +4904,7 @@ function endDirectCall(silent=false){
 let miniGameContext="signal",miniGameTab="ttt";
 
 // 1. Tic-Tac-Toe
-let tttBoard=Array(9).fill(""),tttOver=false,tttWinLine=[],tttScore={you:0,opp:0,draw:0};
+let tttBoard=Array(9).fill(""),tttOver=false,tttWinLine=[],tttScore={you:0,opp:0,draw:0},tttTurn="you";
 function tttCheckWinner(b){
  const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
  for(const l of lines){if(b[l[0]]&&b[l[0]]===b[l[1]]&&b[l[0]]===b[l[2]])return {w:b[l[0]],line:l};}
@@ -4806,8 +4925,15 @@ function tttPickBotMove(){
 }
 function tttMove(idx){
  if(tttOver||tttBoard[idx])return;
- tttBoard[idx]="X";
+ if(isRealMp()&&tttTurn!=="you")return;
+ tttBoard[idx]="X";playHopPop(1);
  let res=tttCheckWinner(tttBoard);
+ if(isRealMp()){
+  sendMpMove("ttt",String(idx));
+  if(res){tttOver=true;tttWinLine=res.line||[];if(res.w==="X"){tttScore.you++;playMatchChime();}else tttScore.draw++;}
+  else tttTurn="opp";
+  renderMiniGamesPanel();return;
+ }
  if(!res){const bot=tttPickBotMove();if(bot>=0)tttBoard[bot]="O";res=tttCheckWinner(tttBoard);}
  if(res){
   tttOver=true;tttWinLine=res.line||[];
@@ -4950,7 +5076,7 @@ function ludoRoll(){
   const movableIdxs=ludoState.you.map((p,i)=>ludoCanMove(p,d)?i:-1).filter(i=>i>=0);
   if(!movableIdxs.length){
    ludoState.msg="Rolled "+d+" — need 6 to launch. Green's turn!";
-   ludoState.dice=null;ludoState.turn="opp";renderMiniGamesPanel();
+   ludoState.dice=null;ludoState.turn="opp";if(isRealMp()){sendMpMove("ludo","-1_"+d);ludoState.msg="Rolled "+d+" (no move). Waiting for "+liveMp.peerName+"…";renderMiniGamesPanel();return;}renderMiniGamesPanel();
    setTimeout(ludoOppTurn,520);return;
   }
   if(movableIdxs.length===1){
@@ -4967,6 +5093,7 @@ function ludoMoveToken(idx){
  if(!ludoCanMove(p,d))return;
  ludoState.dice=null;ludoAnimating=true;
  const hops=(p===-1)?1:d;
+ if(isRealMp())sendMpMove("ludo",idx+"_"+d);
  ludoStepHop("you",idx,hops,0,np=>{
   let captured=false;
   if(np>=0&&np<51&&!LUDO_STARS.has(np)){
@@ -4983,8 +5110,8 @@ function ludoMoveToken(idx){
    ludoState.msg=(captured?"⚡ Captured Green! ":np===56?"👑 Pin Home! ":"🎉 Rolled 6! ")+"Bonus roll — tap dice!";
    renderMiniGamesPanel();
   }else{
-   ludoState.turn="opp";ludoState.msg="Green is rolling…";renderMiniGamesPanel();
-   setTimeout(ludoOppTurn,480);
+   ludoState.turn="opp";ludoState.msg=isRealMp()?("Waiting for "+liveMp.peerName+" to roll…"):"Green is rolling…";renderMiniGamesPanel();
+   if(!isRealMp())setTimeout(ludoOppTurn,480);
   }
  });
 }
@@ -5220,8 +5347,8 @@ function snlCheckWinOrNext(who){
 function snlFinishTurn(who){
  // Strictly 1 roll each — always alternate turns!
  if(who==="you"){
-  snlState.turn="opp";snlState.msg="Opponent's turn — rolling…";renderMiniGamesPanel();
-  snlAnimTimer=setTimeout(snlOppTurn,480);
+  snlState.turn="opp";snlState.msg=isRealMp()?("Waiting for "+liveMp.peerName+" to roll…"):"Opponent's turn — rolling…";renderMiniGamesPanel();
+  if(!isRealMp())snlAnimTimer=setTimeout(snlOppTurn,480);
  }else{
   snlState.turn="you";snlState.msg="Your turn — tap Blue Dice!";renderMiniGamesPanel();
  }
@@ -5229,7 +5356,7 @@ function snlFinishTurn(who){
 function snlRoll(){
  if(snlState.over||snlState.turn!=="you"||snlState.rolling||snlState.animating)return;
  snlState.msg="Rolling your dice…";
- snlAnimateRoll("you",d=>snlExecuteTurn("you",d));
+ snlAnimateRoll("you",d=>{if(isRealMp())sendMpMove("snl",String(d));snlExecuteTurn("you",d);});
 }
 function snlOppTurn(){
  if(miniGameTab!=="snl"||!document.getElementById("miniGamesOverlay")||snlState.over||snlState.turn!=="opp"||snlState.rolling||snlState.animating)return;
@@ -5271,8 +5398,9 @@ function dotsClickEdge(type,r,c){
  else{if(dotsState.v[r][c])return;dotsState.v[r][c]=1;}
  const scored=dotsCheckBoxes(1);
  if(dotsState.over){renderMiniGamesPanel();return;}
+ if(isRealMp())sendMpMove("dots",type+"_"+r+"_"+c);
  if(scored){dotsState.msg="Box claimed! Go again!";renderMiniGamesPanel();}
- else{dotsState.turn=2;dotsState.msg="Opponent's turn…";renderMiniGamesPanel();setTimeout(dotsBotTurn,380);}
+ if(!scored){dotsState.turn=2;dotsState.msg=isRealMp()?("Waiting for "+liveMp.peerName+"…"):"Opponent's turn…";renderMiniGamesPanel();if(!isRealMp())setTimeout(dotsBotTurn,380);}
 }
 function dotsBotTurn(){
  if(dotsState.over||dotsState.turn!==2)return;
@@ -5310,6 +5438,7 @@ function memFlip(idx){
  memState.flipped.push(idx);renderMiniGamesPanel();
  if(memState.flipped.length<2)return;
  memState.lock=true;const [a,b]=memState.flipped;
+ if(isRealMp())sendMpMove("mem",a+"_"+b);
  setTimeout(()=>{
   if(memState.cards[a]===memState.cards[b]){
    memState.matched.push(a,b);memState.sYou++;playMatchChime();memState.flipped=[];memState.lock=false;
@@ -5317,8 +5446,8 @@ function memFlip(idx){
    else memState.msg="Match found! Flip again!";
    renderMiniGamesPanel();
   }else{
-   memState.flipped=[];memState.turn="opp";memState.msg="No match — Opponent's turn…";renderMiniGamesPanel();
-   setTimeout(memBotTurn,650);
+   memState.flipped=[];memState.turn="opp";memState.msg=isRealMp()?("No match — waiting for "+liveMp.peerName+"…"):"No match — Opponent's turn…";renderMiniGamesPanel();
+   if(!isRealMp())setTimeout(memBotTurn,650);
   }
  },650);
 }
@@ -5362,7 +5491,9 @@ function wcSubmit(){
  const lastWord=wcState.words[wcState.words.length-1].w,need=lastWord.slice(-1);
  if(w[0]!==need){wcState.msg="Must start with '"+need.toUpperCase()+"'!";renderMiniGamesPanel();return;}
  if(wcState.used.has(w)){wcState.msg="'"+w+"' was already used!";renderMiniGamesPanel();return;}
+ if(isRealMp()&&wcState.turn==="opp")return;
  wcState.words.push({w,by:"you"});wcState.used.add(w);wcState.score++;wcState.timer=15;playMatchChime();
+ if(isRealMp()){sendMpMove("wc",w);wcState.turn="opp";wcState.msg="Sent '"+w+"' — waiting for "+liveMp.peerName+"…";renderMiniGamesPanel();return;}
  const nextChar=w.slice(-1),reply=WC_DICT.find(cand=>cand[0]===nextChar&&!wcState.used.has(cand));
  if(reply){wcState.words.push({w:reply,by:"opp"});wcState.used.add(reply);wcState.msg="Opp played '"+reply+"' — now start with '"+reply.slice(-1).toUpperCase()+"'!";}
  else{wcState.over=true;stopWcTimer();wcState.msg="🎉 Opponent stumped! You win (Streak "+wcState.score+")!";}
@@ -5412,11 +5543,13 @@ function chkClickCell(r,c){
  if(chkState.over||chkState.turn!==1)return;
  const mv=chkState.moves.find(m=>m.r===r&&m.c===c);
  if(chkState.sel&&mv){
-  chkApplyMove(chkState.sel[0],chkState.sel[1],mv);
+  const _fr=chkState.sel[0],_fc=chkState.sel[1];
+  chkApplyMove(_fr,_fc,mv);
+  if(isRealMp())sendMpMove("chk",_fr+"_"+_fc+"_"+mv.r+"_"+mv.c);
   chkState.sel=null;chkState.moves=[];
   if(chkState.over){renderMiniGamesPanel();return;}
-  chkState.turn=-1;chkState.msg="Red thinking…";renderMiniGamesPanel();
-  setTimeout(chkBotTurn,500);return;
+  chkState.turn=-1;chkState.msg=isRealMp()?("Waiting for "+liveMp.peerName+"…"):"Red thinking…";renderMiniGamesPanel();
+  if(!isRealMp())setTimeout(chkBotTurn,500);return;
  }
  if(chkState.board[r][c]>0){
   chkState.sel=[r,c];chkState.moves=chkGetMoves(chkState.board,r,c);
@@ -5488,6 +5621,7 @@ function switchMiniGameTab(tab){
  if(tab==="wc"){wcReset();return;}
  renderMiniGamesPanel();
 }
+const closeSvgIcon='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 function renderMiniGamesPanel(){
  const panel=document.getElementById("miniGamesPanel");if(!panel)return;
  const partnerLabel=miniGameContext==="signal"?(signalPartnerHandle||"Match"):(document.getElementById("activeChatTitle")?.textContent.replace("Chat with ","").replace(" (Preview)","")||"Partner");
@@ -5521,10 +5655,24 @@ function renderMiniGamesPanel(){
    '</div>';
   return;
  }
+ if(miniGameTab==="waiting"){
+  const gName=GAME_NAME_MAP[liveMp.waitingGame]||"Game";
+  panel.innerHTML='<div class="row" style="justify-content:space-between;align-items:center">'+
+   '<h3 style="margin:0">🎮 Game Invite Sent</h3>'+
+   '<button type="button" class="modal-close-x fit" onclick="cancelWaitingGameInvite()" aria-label="Cancel">'+closeSvgIcon+'</button>'+
+  '</div>'+
+  '<div class="signal-scanner" style="padding:28px 12px">'+
+   '<div class="signal-pulse-ring">🎮</div>'+
+   '<strong style="font-size:17px">Waiting for '+String(liveMp.peerName||"Partner").replace(/</g,"&lt;")+'…</strong>'+
+   '<p class="sub" style="margin:0">Sent invite for <strong>'+gName+'</strong>. Game will start only when they tap Accept!</p>'+
+   '<button type="button" class="danger small" style="margin-top:8px" onclick="cancelWaitingGameInvite()">Cancel Invite</button>'+
+  '</div>';
+  return;
+ }
  let bodyHtml="";
  if(miniGameTab==="ttt"){
   const res=tttCheckWinner(tttBoard);
-  const statusTxt=res?(res.w==="X"?"🎉 You won!":res.w==="O"?"😅 Opponent won!":"🤝 Draw!"):"Your turn (X)";
+  const statusTxt=res?(res.w==="X"?"🎉 You won!":res.w==="O"?"😅 "+(isRealMp()?liveMp.peerName:"Opponent")+" won!":"🤝 Draw!"):(isRealMp()&&tttTurn==="opp"?"Waiting for "+liveMp.peerName+" (O)…":"Your turn (X)");
   const cells=tttBoard.map((v,i)=>'<button type="button" class="ttt-cell '+(v==="X"?"x":v==="O"?"o":"")+(tttWinLine.includes(i)?" win":"")+'" onclick="tttMove('+i+')">'+(v||"")+"</button>").join("");
   bodyHtml='<div class="rps-score"><span>YOU: '+tttScore.you+'</span><span>DRAW: '+tttScore.draw+'</span><span>OPP: '+tttScore.opp+'</span></div>'+
    '<p class="sub" style="text-align:center;margin:4px 0">'+statusTxt+'</p><div class="ttt-grid">'+cells+'</div>'+
