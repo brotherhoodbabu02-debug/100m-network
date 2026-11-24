@@ -3649,7 +3649,34 @@ const voiceIceServers=[
  {urls:"stun:stun.cloudflare.com:3478"},
  {urls:"stun:global.stun.twilio.com:3478"}
 ];
-const voiceIceConfig={iceServers:voiceIceServers,iceCandidatePoolSize:10,bundlePolicy:"max-bundle"};
+const METERED_TURN_API_KEY=""; // Optional: paste free Metered.ca OpenRelay API key for 100% Jio/Airtel 4G TURN relay
+let voiceIceConfig={iceServers:voiceIceServers,iceCandidatePoolSize:10,bundlePolicy:"max-bundle"};
+let turnLoaded=false;
+async function ensureTurnIceConfig(){
+ if(turnLoaded||!METERED_TURN_API_KEY)return voiceIceConfig;
+ try{
+  const res=await fetch("https://100m.metered.live/api/v1/turn/credentials?apiKey="+encodeURIComponent(METERED_TURN_API_KEY));
+  if(res.ok){
+   const servers=await res.json();
+   if(Array.isArray(servers)&&servers.length){
+    voiceIceConfig={iceServers:[...voiceIceServers,...servers],iceCandidatePoolSize:10,bundlePolicy:"max-bundle"};
+    turnLoaded=true;
+   }
+  }
+ }catch(e){}
+ return voiceIceConfig;
+}
+function optimizeOpusSdp(sdp){
+ if(!sdp)return sdp;
+ try{
+  const m=sdp.match(/a=rtpmap:(\d+)\s+opus\/48000/i);
+  if(!m)return sdp;
+  const pt=m[1],fmtpRe=new RegExp("(a=fmtp:"+pt+"\\s+[^\\r\\n]+)","i");
+  const params="minptime=10;useinbandfec=1;usedtx=1;stereo=0;maxaveragebitrate=36000";
+  if(fmtpRe.test(sdp))return sdp.replace(fmtpRe,"$1;"+params);
+  return sdp.replace(m[0],m[0]+"\r\na=fmtp:"+pt+" "+params);
+ }catch(e){return sdp;}
+}
 const voiceReconnectTimers={};
 let pttStream=null,liveVoiceJoined=false,liveVoiceMuted=false,walkieAudioCtx=null,voiceMeterTimer=null,voiceLastSpeaking=false;
 
@@ -3842,7 +3869,7 @@ function scheduleVoiceReconnect(peerUid){
 async function createNearbyVoicePeer(peerUid,shouldOffer){
  if(!currentUser||!peerUid||peerUid===currentUser.uid||!inNearbyVoiceRoom())return null;
  if(voicePeers[peerUid])return voicePeers[peerUid];
- const pc=new RTCPeerConnection(voiceIceConfig);
+ await ensureTurnIceConfig();const pc=new RTCPeerConnection(voiceIceConfig);
  const peer={pc,sender:null,remoteSet:false,offerStarted:false};
  voicePeers[peerUid]=peer;voicePendingCandidates[peerUid]=voicePendingCandidates[peerUid]||[];
  if(pttStream){
@@ -3874,7 +3901,7 @@ async function createNearbyVoicePeer(peerUid,shouldOffer){
  if(shouldOffer){
   try{
    peer.offerStarted=true;
-   const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+   const offer=await pc.createOffer();offer.sdp=optimizeOpusSdp(offer.sdp);await pc.setLocalDescription(offer);
    await sendNearbyVoiceSignal(peerUid,{type:"offer",sdp:pc.localDescription.sdp});
   }catch(e){setPttStatus("Could not start live voice: "+e.message);}
  }
@@ -4512,7 +4539,7 @@ async function startDirectCall(peerUid,peerName){
   directCallState="calling";directCallNote="Requesting microphone…";updateDirectCallUI();
   directCallStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:{ideal:true},noiseSuppression:{ideal:true},autoGainControl:{ideal:true},channelCount:1,sampleRate:48000},video:false});
   directCallId="call_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
-  const pc=new RTCPeerConnection(voiceIceConfig);directCallPC=pc;directCallPendingIce=[];directCallSeenIce=new Set();
+  await ensureTurnIceConfig();const pc=new RTCPeerConnection(voiceIceConfig);directCallPC=pc;directCallPendingIce=[];directCallSeenIce=new Set();
   directCallStream.getAudioTracks().forEach(t=>pc.addTrack(t,directCallStream));
   const localIceQueue=[];let roomCreated=false;
   pc.onicecandidate=e=>{
@@ -4529,7 +4556,7 @@ async function startDirectCall(peerUid,peerName){
    if(pc.connectionState==="connected"){directCallNote="";updateDirectCallUI();}
    else if(pc.connectionState==="failed"){directCallNote="Mobile network blocked P2P audio — try Wi-Fi.";updateDirectCallUI();}
   };
-  const offer=await pc.createOffer();await pc.setLocalDescription(offer);
+  const offer=await pc.createOffer();offer.sdp=optimizeOpusSdp(offer.sdp);await pc.setLocalDescription(offer);
   directCallRoomRef=rtdb.ref("directVoiceCalls/"+directCallId);
   await directCallRoomRef.onDisconnect().remove();
   await directCallRoomRef.set({caller:currentUser.uid,callerHandle:globalHandle(),callee:peerUid,status:"ringing",offer:pc.localDescription.sdp,createdAt:firebase.database.ServerValue.TIMESTAMP});
@@ -4699,7 +4726,7 @@ async function acceptDirectCall(){
   directCallStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:{ideal:true},noiseSuppression:{ideal:true},autoGainControl:{ideal:true},channelCount:1,sampleRate:48000},video:false});
   const snap=await rtdb.ref("directVoiceCalls/"+directCallId).once("value");
   const data=snap.val();if(!data||!data.offer){endDirectCall(true);showDirectCallError("Call expired before answering.");return;}
-  const pc=new RTCPeerConnection(voiceIceConfig);directCallPC=pc;directCallPendingIce=[];directCallSeenIce=new Set();
+  await ensureTurnIceConfig();const pc=new RTCPeerConnection(voiceIceConfig);directCallPC=pc;directCallPendingIce=[];directCallSeenIce=new Set();
   directCallStream.getAudioTracks().forEach(t=>pc.addTrack(t,directCallStream));
   pc.onicecandidate=e=>{
    if(e.candidate&&directCallId&&rtdb){
@@ -4721,7 +4748,7 @@ async function acceptDirectCall(){
     try{const cand=typeof raw==="string"?JSON.parse(raw):raw;await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(()=>{});}catch(err){}
    }
   }
-  const answer=await pc.createAnswer();await pc.setLocalDescription(answer);
+  const answer=await pc.createAnswer();answer.sdp=optimizeOpusSdp(answer.sdp);await pc.setLocalDescription(answer);
   await rtdb.ref("directVoiceCalls/"+directCallId).update({status:"connected",answer:pc.localDescription.sdp});
   listenDirectCallRoom(directCallId,false);
   directCallState="connected";directCallNote="";startDirectCallClock();updateDirectCallUI();
