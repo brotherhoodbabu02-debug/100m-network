@@ -2485,6 +2485,7 @@ body.light-mode .brand-v2{color:#09090b}
  <button class="primary" id="editProfileButton" onclick="openEditProfile()">✎ Edit Profile</button>
  <div class="tile" style="margin-top:16px"><h3>Blocked Accounts</h3><p class="sub">Accounts you block appear here. You can unblock them whenever you choose.</p><div id="blockedAccountsList" class="empty">Sign in to view blocked accounts.</div><p id="blockStatus" class="message muted"></p><button class="secondary small" type="button" onclick="loadBlockedAccounts()">Refresh list</button></div>
  <button class="secondary" style="width:100%;margin-top:10px" onclick="go('safety')">Safety &amp; Report</button>
+ <button class="secondary" style="width:100%;margin-top:8px" onclick="openInfoModal('privacy')">Privacy Policy</button>
  <button class="logout" onclick="logout()">Logout</button>
  <p id="profileMessage"></p></div>
  <div class="card hidden" id="editProfileCard"><h3>Edit Your Profile</h3>
@@ -2930,12 +2931,21 @@ function openInfoModal(topic){
  const old=document.getElementById("infoModalOverlay");if(old)old.remove();
  const content={
   about:{title:"About 100m Network",paragraphs:["100m Network is a real-time, username-first communication web app built for fast, low-noise conversations.","It brings together a privacy-safe ~100m Zone Radar, Global 1-on-1 Signal Match, hands-free Live Voice rooms (up to 8 speakers), and 24-hour auto-deleting community chats."]},
-  privacy:{title:"Privacy Policy",paragraphs:["Your exact GPS coordinates, compass direction, and meter distance are never stored or shared. When Radar is ON, your browser hashes an approximate ~100m zone cell locally on-device.","Global and Radar group messages older than 24 hours are automatically cleared, and Global Signal Match sessions clear when ended. You can use any username instead of your real name."]},
+  privacy:{title:"Privacy Policy — 100m Network",paragraphs:[
+ "Effective Date: November 2026 · Website: https://100m-network.vercel.app",
+ "1. Information We Collect: When you create an account or sign in with Google, we store your email address, chosen username, optional profile fields (bio, country, interests), public 100m Chat ID, and your curated anonymous handle via Google Firebase Authentication & Cloud Firestore. You do not need to share your real full name.",
+ "2. ~100m Privacy Radar (Zero GPS Stored): When you turn Radar ON, your browser requests device location solely to compute an approximate ~100m grid hash locally on your device. Exact GPS coordinates, street address, compass direction, and exact meter distance are NEVER sent to or stored on our servers. Turning Radar OFF immediately removes your active zone presence.",
+ "3. Messages & 24-Hour Auto-Delete: Global Chat, Shared Radar Chat, and 24h Drop Notes are automatically filtered/cleared after 24 hours. Global Signal Match 1-on-1 sessions clear when ended. Private Messages remain visible only to the two participants.",
+ "4. Voice Calls & Microphone Access: Live Voice Room and 1-on-1 Voice Calls use peer-to-peer WebRTC audio. Microphone access is used only while you are actively in a voice room or call. Voice audio is never recorded or stored on our servers.",
+ "5. Safety, Blocking & Reporting: Reports submitted through Safety are stored to review abuse or spam. Blocking an account hides their messages, Radar presence, and call/game invites immediately.",
+ "6. Third-Party Services: 100m Network uses Google Firebase (Authentication, Firestore, Realtime Database) and Vercel for hosting. We do not sell your personal data or run third-party ad trackers.",
+ "7. Your Rights & Data Removal: You can update your profile, shuffle your anonymous handle, unblock accounts, or stop using the service at any time. To request full account deletion, contact the developer through the Safety & Report section."
+]},
   terms:{title:"Terms of Use",paragraphs:["Be respectful in chats and voice rooms. Harassment, spam, bullying, impersonation, or sharing private personal details is not allowed.","Accounts reported for unsafe behavior may be reviewed or restricted. You can block any member at any time from their avatar menu."]},
   safety:{title:"Community Safety",paragraphs:["Never share personal phone numbers, home addresses, or financial details in public or anonymous chats.","Tap or long-press any member avatar in Radar, Voice, or Chats to instantly Report or Block them."]}
  }[topic]||{title:"100m Network",paragraphs:["Anonymous real-time community."]};
  const overlay=document.createElement("div");overlay.id="infoModalOverlay";overlay.className="profile-action-overlay";
- const panel=document.createElement("div");panel.className="profile-action-panel";panel.style.maxWidth="420px";
+ const panel=document.createElement("div");panel.className="profile-action-panel";panel.style.maxWidth="460px";panel.style.maxHeight="84vh";panel.style.overflowY="auto";
  const h=document.createElement("h3");h.textContent=content.title;
  const body=document.createElement("div");body.className="info-modal-body";
  content.paragraphs.forEach(t=>{const p=document.createElement("p");p.textContent=t;body.appendChild(p);});
