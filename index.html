@@ -1920,6 +1920,49 @@ body.light-mode .brand-hero-img{
  box-shadow:0 4px 14px rgba(15,23,42,0.16);
 }
 
+
+/* ---------- 06 · BUBBLE FLOAT BOTTOM TAB TRANSITION ---------- */
+nav.bottom-nav{overflow:visible !important}
+.bottom-nav button{overflow:visible !important}
+.bottom-nav button.bubble-pop .nav-icon,
+.bottom-nav button.bubble-pop .nav-mic-icon{
+ animation:tabClayPop 0.42s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes tabClayPop{
+ 0%{transform:scale(0.84) translateY(2px)}
+ 45%{transform:scale(1.18) translateY(-4px)}
+ 75%{transform:scale(0.96) translateY(0)}
+ 100%{transform:scale(1) translateY(0)}
+}
+.nav-float-bubble{
+ position:absolute;
+ left:50%;
+ top:6px;
+ border-radius:50%;
+ pointer-events:none;
+ z-index:40;
+ box-shadow:inset -2px -2px 4px rgba(0,0,0,0.22), inset 2px 2px 4px rgba(255,255,255,0.65), 0 4px 10px rgba(0,0,0,0.25);
+ animation:bubbleRisePop var(--bdur,0.7s) cubic-bezier(0.22,1,0.36,1) forwards;
+}
+@keyframes bubbleRisePop{
+ 0%{
+  opacity:0;
+  transform:translate(-50%, 4px) scale(0.25);
+ }
+ 22%{
+  opacity:1;
+  transform:translate(calc(-50% + var(--bx1, 0px)), -16px) scale(1.08);
+ }
+ 78%{
+  opacity:0.95;
+  transform:translate(calc(-50% + var(--bx2, 0px)), var(--by, -48px)) scale(1.12);
+ }
+ 100%{
+  opacity:0;
+  transform:translate(calc(-50% + var(--bx2, 0px)), calc(var(--by, -48px) - 10px)) scale(1.45);
+ }
+}
+
 </style>
 </head>
 <body>
@@ -3790,6 +3833,42 @@ if(auth)auth.onAuthStateChanged(user=>{
  if(user){if(!currentUser||currentUser.uid!==user.uid)handleSignedIn(user)}
  else{currentUser=null;if(guestMode)return;cleanupSession();updateRadarStatusUI(false,"Sign in to control your private status.");document.getElementById("authPage").style.display="block";document.getElementById("app").style.display="none"}
 });
+
+function spawnNavBubbles(btn){
+ if(!btn)return;
+ btn.classList.remove("bubble-pop");
+ void btn.offsetWidth;
+ btn.classList.add("bubble-pop");
+ const colors=[
+  "radial-gradient(circle at 32% 30%, #93c5fd, #0f84ff)",
+  "radial-gradient(circle at 32% 30%, #fef08a, #d4af37)",
+  "radial-gradient(circle at 32% 30%, #6ee7b7, #10b981)",
+  "radial-gradient(circle at 32% 30%, #ffffff, #cbd5e1)",
+  "radial-gradient(circle at 32% 30%, #bae6fd, #38bdf8)"
+ ];
+ const specs=[
+  {size:11,x1:-10,x2:-18,y:-44,dur:"0.68s",delay:"0s"},
+  {size:14,x1:4,x2:10,y:-56,dur:"0.76s",delay:"0.04s"},
+  {size:8,x1:-2,x2:-6,y:-62,dur:"0.72s",delay:"0.08s"},
+  {size:10,x1:12,x2:20,y:-42,dur:"0.64s",delay:"0.05s"},
+  {size:7,x1:-14,x2:-22,y:-52,dur:"0.70s",delay:"0.10s"}
+ ];
+ specs.forEach((sp,i)=>{
+  const b=document.createElement("span");
+  b.className="nav-float-bubble";
+  b.style.width=sp.size+"px";
+  b.style.height=sp.size+"px";
+  b.style.background=colors[i%colors.length];
+  b.style.setProperty("--bx1",sp.x1+"px");
+  b.style.setProperty("--bx2",sp.x2+"px");
+  b.style.setProperty("--by",sp.y+"px");
+  b.style.setProperty("--bdur",sp.dur);
+  b.style.animationDelay=sp.delay;
+  btn.appendChild(b);
+  setTimeout(()=>{if(b.parentNode)b.remove();},880);
+ });
+}
+
 function go(id,btn){
  const target=document.getElementById(id);
  const alreadyActive=!!(target&&target.classList.contains("active"));
@@ -3797,7 +3876,7 @@ function go(id,btn){
  if(target)target.classList.add("active");
  document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));
  const activeButton=btn||document.querySelector('.bottom-nav button[data-page="'+id+'"]');
- if(activeButton)activeButton.classList.add("active");
+ if(activeButton){activeButton.classList.add("active");spawnNavBubbles(activeButton);}
  if(!alreadyActive)window.scrollTo(0,0);
 }
 async function loadBlockedAccounts(){
