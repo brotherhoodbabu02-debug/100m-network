@@ -4970,7 +4970,12 @@ function startDirectCallFromPrivate(){
  startDirectCall(activePrivateOtherUid,ex?ex.handle:handleFor(activePrivateOtherUid));
 }
 async function startDirectCall(peerUid,peerName){
- if(!peerUid||directCallState!=="idle")return;
+ if(!peerUid)return;
+ if(directCallState!=="idle"){
+  const bar=document.getElementById("directCallBar");
+  if(!bar||bar.classList.contains("hidden"))endDirectCall(true);
+  else return;
+ }
  directCallPeerUid=peerUid;directCallPeerName=peerName||"Explorer";directCallMuted=false;directCallNote="";
  unlockWalkieAudio(false);
  if(guestMode){
@@ -5167,7 +5172,11 @@ function sendGameInviteAndOpen(gameId){
  // Strict Accept-Only Gate: send invite & wait until the real partner accepts!
  liveMp={active:false,peerUid:targetUid,peerName:targetName,role:1,gameId,waiting:true,waitingGame:gameId};
  const code="ginv_"+gameId+"_"+Date.now();
- rtdb.ref("directVoiceInbox/"+targetUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+ rtdb.ref("directVoiceInbox/"+targetUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(err=>{
+  liveMp.waiting=false;miniGameTab="lobby";renderMiniGamesPanel();
+  const st=document.getElementById(miniGameContext==="signal"?"signalStatusText":"privateChatStatus");
+  if(st)st.textContent="Game invite failed: "+(err&&err.message?err.message:"Update Firebase RTDB Rules for directVoiceInbox");
+ });
  miniGameTab="waiting";
  renderMiniGamesPanel();
 }
@@ -5259,7 +5268,7 @@ function initDirectCallInbox(){
  directCallInboxListener=snap=>{
   const inv=snap.val()||{};snap.ref.remove().catch(()=>{});
   if(!inv.callId||!inv.from||blockedUids.has(inv.from))return;
-  if(Number(inv.createdAt||0)&&Date.now()-Number(inv.createdAt)>60000)return;
+  if(Number(inv.createdAt||0)&&(Date.now()-Number(inv.createdAt))>300000)return;
   const cid=String(inv.callId),fromName=String(inv.fromHandle||handleFor(inv.from));
   if(cid.startsWith("ginv_")){
    const gId=cid.split("_")[1]||"ludo";
@@ -5286,7 +5295,10 @@ function initDirectCallInbox(){
   directCallState="incoming";directCallNote="";updateDirectCallUI();
   showIncomingCallPopup(fromName);
  };
- directCallInboxRef.on("child_added",directCallInboxListener,()=>{});
+ directCallInboxRef.on("child_added",directCallInboxListener,err=>{
+  const st=document.getElementById("privateChatStatus");
+  if(st&&err&&/permission/i.test(err.message))st.textContent="Calls/Games need updated Firebase RTDB Rules (directVoiceInbox).";
+ });
 }
 async function acceptDirectCall(){
  if(directCallState!=="incoming"||!directCallId||!currentUser||!rtdb)return;
