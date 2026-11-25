@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "100m Network",
+  "short_name": "100m.",
+  "description": "Privacy-first ~100m Radar, Global Signal Match, Live Voice Room, and 2-Player Arcade.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "categories": ["social", "communication", "games"],
+  "icons": [
+    {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
