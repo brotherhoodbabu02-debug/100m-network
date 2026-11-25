@@ -63,6 +63,7 @@ jobs:
               "path": "./android.keystore",
               "alias": "android"
             },
+            "appVersion": "1.0.0",
             "appVersionName": "1.0.0",
             "appVersionCode": 1,
             "shortcuts": [],
@@ -86,8 +87,8 @@ jobs:
           BUBBLEWRAP_KEYSTORE_PASSWORD: 100mPass123
           BUBBLEWRAP_KEY_PASSWORD: 100mPass123
         run: |
-          bubblewrap update --skipPwaValidation
-          bubblewrap build
+          yes "" | bubblewrap update --skipVersionUpgrade --skipPwaValidation
+          yes "" | bubblewrap build --skipPwaValidation
           SHA=$(keytool -list -v -keystore android.keystore -alias android -storepass 100mPass123 | grep "SHA256:" | awk '{print $2}')
           cat << EOF > assetlinks.json
           [{
