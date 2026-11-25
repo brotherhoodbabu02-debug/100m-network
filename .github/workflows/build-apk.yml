@@ -21,6 +21,16 @@ jobs:
       - name: Install Google Bubblewrap
         run: npm install -g @bubblewrap/cli
 
+      - name: Configure Bubblewrap Paths
+        run: |
+          mkdir -p ~/.bubblewrap
+          cat << EOF > ~/.bubblewrap/config.json
+          {
+            "jdkPath": "$JAVA_HOME",
+            "androidSdkPath": "$ANDROID_HOME"
+          }
+          EOF
+
       - name: Create Keystore & TWA Manifest
         run: |
           mkdir -p twa-build
@@ -75,6 +85,7 @@ jobs:
         working-directory: twa-build
         run: |
           bubblewrap update --skipVersionUpgrade --skipPwaValidation
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
           chmod +x gradlew
           ./gradlew assembleRelease
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)
