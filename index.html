@@ -2236,7 +2236,7 @@ body.light-mode .brand-v2{color:#09090b}
    <span class="home-live-dot"></span>
    <div class="home-greet-text">Hey, <span id="homeHandleText">SpicyPotato</span> 👋</div>
   </div>
-  <button type="button" class="secondary small fit" onclick="shuffleAnonymousHandle()" title="Shuffle safe handle">🎲 Shuffle</button>
+  <div class="fit" style="display:flex;gap:6px"><button type="button" class="secondary small fit" onclick="openEditHandleModal()" title="Customize anonymous handle">✏️ Edit</button><button type="button" class="secondary small fit" onclick="shuffleAnonymousHandle()" title="Shuffle safe handle">🎲</button></div>
  </div>
 
  <div class="bento-grid">
@@ -2305,7 +2305,7 @@ body.light-mode .brand-v2{color:#09090b}
     <div class="avatar" style="margin:0;width:48px;height:48px;font-size:20px">👤</div>
     <div><h3 id="radarAnonymousHandle" style="color:var(--cyan);margin:0">SpicyPotato</h3><p class="sub" style="margin:2px 0 0;font-size:12px">Safe anonymous handle</p></div>
    </div>
-   <button type="button" class="secondary small fit" onclick="shuffleAnonymousHandle()">🎲 Shuffle</button>
+   <div class="fit" style="display:flex;gap:6px"><button type="button" class="secondary small fit" onclick="openEditHandleModal()">✏️ Edit</button><button type="button" class="secondary small fit" onclick="shuffleAnonymousHandle()">🎲 Shuffle</button></div>
   </div>
   <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
   <p id="radarStatusText" class="message muted">Radar is OFF.</p>
@@ -2478,7 +2478,7 @@ body.light-mode .brand-v2{color:#09090b}
  <h2>Your Profile</h2><p class="sub">Your identity on 100m.</p>
  <div class="card"><div class="avatar" id="profileAvatar">U</div><h3 class="user-name" id="profileName">Explorer</h3><p class="sub" id="profileEmail"></p>
  <div class="profile-row"><div class="profile-label">MY PUBLIC CHAT ID</div><div class="row" style="align-items:center;gap:8px"><div class="profile-value" id="myPublicChatId">Creating your Chat ID…</div><button class="secondary small" id="copyPublicChatId" onclick="copyMyChatId()">Copy</button></div><p class="sub" style="margin:4px 0">Share this ID so someone can find you for a private chat.</p></div>
- <div class="profile-row"><div class="profile-label">ANONYMOUS HANDLE</div><div class="row" style="align-items:center;gap:8px"><div class="profile-value" id="profileAnonymousHandle" style="color:var(--cyan);font-weight:800">SpicyPotato</div><button type="button" class="secondary small fit" onclick="shuffleAnonymousHandle()">🎲 Shuffle</button></div><p class="sub" style="margin:4px 0">Curated safe handles only — Block &amp; Report always stay tied to account IDs.</p></div>
+ <div class="profile-row"><div class="profile-label">ANONYMOUS HANDLE</div><div class="row" style="align-items:center;gap:8px"><div class="profile-value" id="profileAnonymousHandle" style="color:var(--cyan);font-weight:800">SpicyPotato</div><button type="button" class="secondary small fit" onclick="openEditHandleModal()">✏️ Edit</button><button type="button" class="secondary small fit" onclick="shuffleAnonymousHandle()">🎲 Shuffle</button></div><p class="sub" style="margin:4px 0">Curated safe handles only — Block &amp; Report always stay tied to account IDs.</p></div>
  <div class="profile-row"><div class="profile-label">BIO</div><div class="profile-value" id="profileBio">No bio added yet.</div></div>
  <div class="profile-row"><div class="profile-label">COUNTRY</div><div class="profile-value" id="profileCountry">Not added</div></div>
  <div class="profile-row"><div class="profile-label">INTERESTS</div><div class="profile-value" id="profileInterests">Not added</div></div>
@@ -2553,20 +2553,14 @@ function syncMyHandleUI(){
  const pEl=document.getElementById("profileAnonymousHandle");if(pEl)pEl.textContent=h;
  const hEl=document.getElementById("homeHandleText");if(hEl)hEl.textContent=h;
 }
-async function shuffleAnonymousHandle(){
- const baseUid=guestMode?DEMO_UID:(currentUser?currentUser.uid:"guest");
- const tag=String(baseUid).slice(-2).toLowerCase().replace(/[^a-z0-9]/g,"9")||"99";
- let next=myCustomHandle;
- for(let tries=0;tries<6&&next===myCustomHandle;tries++){
-  const adj=CRAZY_ADJ[Math.floor(Math.random()*CRAZY_ADJ.length)];
-  const noun=CRAZY_NOUN[Math.floor(Math.random()*CRAZY_NOUN.length)];
-  next=(adj+noun+"-"+tag).slice(0,28);
- }
+
+const BLOCKED_HANDLE_WORDS=["admin","moderator","official","support","100m","fuck","shit","bitch","porn","sex","nude","kill","rape","chutiya","madarchod","behenchod","bhosdike","randi","harami","lauda"];
+async function applyAnonymousHandle(next){
  myCustomHandle=next;
  syncMyHandleUI();
  playHopPop(2);
- const pMsg=document.getElementById("profileMessage");if(pMsg)pMsg.textContent="Safe anonymous handle changed to "+next+"!";
- if(guestMode){return;}
+ const pMsg=document.getElementById("profileMessage");if(pMsg)pMsg.textContent="Anonymous handle updated to "+next+"!";
+ if(guestMode)return;
  if(currentUser&&db){
   db.collection("users").doc(currentUser.uid).set({anonymousHandle:next,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
  }
@@ -2577,6 +2571,50 @@ async function shuffleAnonymousHandle(){
    rtdb.ref("nearbyChat/members/"+currentUser.uid+"/handle").set(next).catch(()=>{});
   }
  }
+}
+function openEditHandleModal(){
+ const old=document.getElementById("editHandleModal");if(old)old.remove();
+ const current=guestMode?(myCustomHandle||"CrispyTomato-99"):(currentUser?handleFor(currentUser.uid):"SpicyPotato");
+ const overlay=document.createElement("div");overlay.id="editHandleModal";overlay.className="profile-action-overlay";overlay.style.zIndex="1450";
+ const panel=document.createElement("div");panel.className="profile-action-panel";
+ const title=document.createElement("h3");title.textContent="Edit Anonymous Handle";
+ const sub=document.createElement("p");sub.className="sub";sub.style.marginBottom="10px";
+ sub.textContent="For your privacy, avoid your real name, phone number, or social IDs (letters, numbers & _ only, 3–20 chars).";
+ const inp=document.createElement("input");inp.type="text";inp.maxLength=20;inp.value=current;inp.placeholder="Example: NightOwl_24";
+ const err=document.createElement("p");err.className="message error";err.style.minHeight="18px";
+ const save=document.createElement("button");save.type="button";save.className="primary";save.textContent="Save Handle";
+ const shuf=document.createElement("button");shuf.type="button";shuf.className="secondary";shuf.textContent="🎲 Pick Random Safe Handle";
+ const cancel=document.createElement("button");cancel.type="button";cancel.className="secondary";cancel.textContent="Cancel";
+ save.onclick=async()=>{
+  const raw=inp.value.trim();
+  if(!/^[A-Za-z0-9_-]{3,20}$/.test(raw)){err.textContent="Use 3–20 characters (letters, numbers, _ or - only, no spaces).";return;}
+  if(/\d{6,}/.test(raw)){err.textContent="For privacy, phone numbers or long digits are not allowed.";return;}
+  const low=raw.toLowerCase();
+  if(BLOCKED_HANDLE_WORDS.some(w=>low.includes(w))){err.textContent="That handle is not allowed. Choose a safe nickname.";return;}
+  const realName=(document.getElementById("profileName")?.textContent||"").trim().toLowerCase();
+  if(realName&&realName.length>=4&&realName!=="explorer"&&realName!=="guest explorer"&&low.includes(realName)){
+   err.textContent="Privacy tip: avoid using your account username here.";return;
+  }
+  await applyAnonymousHandle(raw);
+  overlay.remove();
+ };
+ shuf.onclick=async()=>{await shuffleAnonymousHandle();overlay.remove();};
+ cancel.onclick=()=>overlay.remove();
+ overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.remove();});
+ panel.append(title,sub,inp,err,save,shuf,cancel);overlay.appendChild(panel);document.body.appendChild(overlay);
+ inp.focus();inp.select();
+}
+
+async function shuffleAnonymousHandle(){
+ const baseUid=guestMode?DEMO_UID:(currentUser?currentUser.uid:"guest");
+ const tag=String(baseUid).slice(-2).toLowerCase().replace(/[^a-z0-9]/g,"9")||"99";
+ let next=myCustomHandle;
+ for(let tries=0;tries<6&&next===myCustomHandle;tries++){
+  const adj=CRAZY_ADJ[Math.floor(Math.random()*CRAZY_ADJ.length)];
+  const noun=CRAZY_NOUN[Math.floor(Math.random()*CRAZY_NOUN.length)];
+  next=(adj+noun+"-"+tag).slice(0,28);
+ }
+ await applyAnonymousHandle(next);
 }
 function toggleAuth(){
  isLogin=!isLogin;
