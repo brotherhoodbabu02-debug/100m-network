@@ -2487,6 +2487,7 @@ body.light-mode .brand-v2{color:#09090b}
  <button class="secondary" style="width:100%;margin-top:10px" onclick="go('safety')">Safety &amp; Report</button>
  <button class="secondary" style="width:100%;margin-top:8px" onclick="openInfoModal('privacy')">Privacy Policy</button>
  <button class="logout" onclick="logout()">Logout</button>
+ <button type="button" class="danger" style="width:100%;margin-top:8px" onclick="deleteMyAccount()">Delete Account</button>
  <p id="profileMessage"></p></div>
  <div class="card hidden" id="editProfileCard"><h3>Edit Your Profile</h3>
  <label class="form-label" for="editUsername">Username</label><input id="editUsername" maxlength="25" placeholder="Your username">
@@ -3032,6 +3033,47 @@ async function saveProfile(){
  }catch(e){document.getElementById("editMessage").textContent="Could not save: "+e.message}
  finally{b.disabled=false;b.textContent="Save Changes"}
 }
+
+async function deleteMyAccount(){
+ if(guestMode){
+  if(await showConfirmModal("Exit Preview Mode? (Preview data is only local.)"))exitGuestPreview();
+  return;
+ }
+ if(!currentUser||!auth)return;
+ const confirmed=await showConfirmModal("Permanently delete your 100m Network account, profile, Chat ID, and Radar status? This cannot be undone.");
+ if(!confirmed)return;
+ const msgEl=document.getElementById("profileMessage");
+ if(msgEl){msgEl.textContent="Deleting your account…";msgEl.className="message muted";}
+ const uid=currentUser.uid,chatIdToDel=myPublicChatId;
+ try{
+  try{await setRadarStatus(false);}catch(e){}
+  try{await stopGlobalChat(true);}catch(e){}
+  try{await stopSignalMatch(true);}catch(e){}
+  if(rtdb){
+   await rtdb.ref("radarPublic/"+uid).remove().catch(()=>{});
+   await rtdb.ref("globalChat/members/"+uid).remove().catch(()=>{});
+   await rtdb.ref("nearbyChat/members/"+uid).remove().catch(()=>{});
+   await rtdb.ref("directVoiceInbox/"+uid).remove().catch(()=>{});
+   if(chatIdToDel)await rtdb.ref("publicChatIds/"+chatIdToDel).remove().catch(()=>{});
+  }
+  if(db){
+   try{
+    const blk=await db.collection("users").doc(uid).collection("blocked").get();
+    for(const d of blk.docs)await d.ref.delete().catch(()=>{});
+   }catch(e){}
+   await db.collection("users").doc(uid).delete().catch(()=>{});
+  }
+  await currentUser.delete();
+  if(msgEl){msgEl.textContent="Account deleted.";msgEl.className="message good";}
+ }catch(e){
+  if(e&&e.code==="auth/requires-recent-login"){
+   if(msgEl){msgEl.textContent="For security, please Logout and Login again, then tap Delete Account.";msgEl.className="message warning";}
+  }else{
+   if(msgEl){msgEl.textContent="Could not delete account: "+(e&&e.message?e.message:"please try again.");msgEl.className="message error";}
+  }
+ }
+}
+
 async function logout(){
  if(guestMode){exitGuestPreview();return;}
  if(currentUser){try{await setRadarStatus(false)}catch(e){}}
