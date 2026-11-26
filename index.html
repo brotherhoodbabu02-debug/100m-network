@@ -2255,6 +2255,21 @@ button,.bento-tile,.arcade-card,.bottom-nav button,.lk-pin,.lk-dice-btn,.chk-cel
  touch-action:manipulation;
 }
 
+
+/* ---------- ANDROID CHROME SMOOTH VERTICAL SCROLL FIX ---------- */
+html{
+ overflow-x:visible !important;
+ overflow-y:auto !important;
+ overscroll-behavior-y:contain;
+ touch-action:pan-y;
+}
+body{
+ overflow-x:clip !important;
+ overflow-y:visible !important;
+ overscroll-behavior-y:auto !important;
+ touch-action:pan-y;
+}
+
 </style>
 </head>
 <body>
