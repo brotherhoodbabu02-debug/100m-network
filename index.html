@@ -4425,9 +4425,10 @@ async function stopGlobalChat(silent=false){
 }
 
 function handleSignedIn(user){
- guestMode=false;const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();initDropNotes();
+ currentUser=user;guestMode=false;const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();initDropNotes();initDirectCallInbox();
 }
 function cleanupSession(){
+ if(directCallInboxRef&&directCallInboxListener){directCallInboxRef.off("child_added",directCallInboxListener);directCallInboxRef=null;directCallInboxListener=null;}
  stopRadarGeoWatch();stopRadarRoomListener();stopNearbyRoomListeners();stopGlobalChatListeners();stopNearbyVoiceRoom();stopSignalMatch(true);endDirectCall(true);radarIsOn=false;
  if(activeChatUnsubscribe){activeChatUnsubscribe();activeChatUnsubscribe=null}
  if(conversationsUnsubscribe){conversationsUnsubscribe();conversationsUnsubscribe=null}
@@ -5499,8 +5500,8 @@ async function startDirectCall(peerUid,peerName){
   };
   const offer=await pc.createOffer();offer.sdp=optimizeOpusSdp(offer.sdp);await pc.setLocalDescription(offer);
   directCallRoomRef=rtdb.ref("directVoiceCalls/"+directCallId);
-  await directCallRoomRef.onDisconnect().remove();
   await directCallRoomRef.set({caller:currentUser.uid,callerHandle:globalHandle(),callee:peerUid,status:"ringing",offer:pc.localDescription.sdp,createdAt:firebase.database.ServerValue.TIMESTAMP});
+  directCallRoomRef.onDisconnect().remove().catch(()=>{});
   roomCreated=true;
   for(const s of localIceQueue){rtdb.ref("directVoiceCalls/"+directCallId+"/iceCaller").push(s).catch(()=>{});}
   await rtdb.ref("directVoiceInbox/"+peerUid+"/"+directCallId).set({callId:directCallId,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP});
