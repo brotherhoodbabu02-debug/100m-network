@@ -5331,8 +5331,9 @@ function sendGameInviteAndOpen(gameId){
   switchMiniGameTab(gameId);return;
  }
  if(!currentUser||!rtdb||!targetUid){
-  const st=document.getElementById(miniGameContext==="signal"?"signalStatusText":"privateChatStatus");
-  if(st)st.textContent="Connect with a real partner in Signal Match or Private Chat first.";
+  // Opened from Home 2P Arcade without a live partner yet -> launch Solo Practice mode immediately so games always open!
+  liveMp={active:false,peerUid:null,peerName:"",role:1,gameId:"",waiting:false,waitingGame:""};
+  switchMiniGameTab(gameId);
   return;
  }
  // Strict Accept-Only Gate: send invite & wait until the real partner accepts!
@@ -6273,7 +6274,7 @@ function renderMiniGamesPanel(){
   const myWins=tttScore.you+(ludoState.winner==="You"?1:0)+(snlState.winner==="You"?1:0)+(dotsState.over&&dotsState.s1>dotsState.s2?1:0)+(memState.matched.length===16&&memState.sYou>memState.sOpp?1:0);
   const oppWins=tttScore.opp+(ludoState.winner==="Green"?1:0)+(snlState.winner==="Opponent"?1:0)+(dotsState.over&&dotsState.s2>dotsState.s1?1:0)+(memState.matched.length===16&&memState.sOpp>memState.sYou?1:0);
   panel.innerHTML='<div class="row" style="justify-content:space-between;align-items:center">'+
-    '<div><h3 style="margin:0;font-size:18px">🎮 2 Player Games</h3><p class="muted" style="font-size:12px;margin:2px 0 0">Playing with '+String(partnerLabel).replace(/</g,"&lt;")+'</p></div>'+
+    '<div><h3 style="margin:0;font-size:18px">🎮 2 Player Games</h3><p class="muted" style="font-size:12px;margin:2px 0 0">'+((!guestMode&&((miniGameContext==="signal"&&signalPartnerUid)||(miniGameContext==="private"&&activePrivateOtherUid)))?("Live 2P with "+String(partnerLabel).replace(/</g,"&lt;")):"Solo Practice · Match in Signal or Private for Live 2P")+'</p></div>'+
     '<button type="button" class="modal-close-x fit" onclick="closeMiniGames()" aria-label="Close games"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'+
    '</div>'+
    '<div class="arcade-grid">'+gridHtml+'</div>'+
