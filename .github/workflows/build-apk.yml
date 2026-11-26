@@ -72,7 +72,7 @@ jobs:
             "fallbackType": "customtabs",
             "features": {},
             "alphaDependencies": { "enabled": false },
-            "enableSiteSettingsShortcut": false,
+            "enableSiteSettingsShortcut": true,
             "isChromeOSOnly": false,
             "isMetaQuest": false,
             "fullScopeUrl": "https://100m-network.vercel.app/",
