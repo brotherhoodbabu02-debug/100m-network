@@ -2270,6 +2270,37 @@ body{
  touch-action:pan-y;
 }
 
+
+/* ---------- GLOBAL CHAT FULL-SCREEN IMMERSIVE MODE ---------- */
+#globalchat.is-fullscreen{
+ position:fixed !important;
+ inset:0 !important;
+ z-index:1150 !important;
+ margin:0 !important;
+ border-radius:0 !important;
+ border:0 !important;
+ width:100% !important;
+ height:100dvh !important;
+ max-height:100dvh !important;
+ padding:max(12px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom)) !important;
+ display:flex !important;
+ flex-direction:column !important;
+ gap:8px !important;
+ overflow:hidden !important;
+}
+#globalchat.is-fullscreen .global-chat-layout{
+ flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;
+}
+#globalchat.is-fullscreen .global-chat-messages{
+ flex:1 !important;height:auto !important;min-height:0 !important;max-height:none !important;
+}
+#globalchat.is-fullscreen > p.sub,
+#globalchat.is-fullscreen .global-online-wrap,
+#globalchat.is-fullscreen .global-fs-hide{
+ display:none !important;
+}
+body.gc-fs-open nav.bottom-nav{display:none !important}
+
 </style>
 </head>
 <body>
@@ -2655,16 +2686,16 @@ body{
  <div class="chats-split">
   <div class="chats-col" id="globalChatCol">
    <div class="card global-chat-layout" id="globalchat">
-    <h2>100m Global Chat</h2><p class="sub">One shared live room for the 100m community. Only anonymous handles are shown.</p>
+    <div class="row" style="align-items:center;justify-content:space-between;gap:8px"><h2 style="margin:0">100m Global Chat</h2><button type="button" id="globalFsBtn" class="secondary small fit" onclick="toggleGlobalChatFullscreen()" aria-label="Toggle Global Chat Full Screen">⛶ Full Screen</button></div><p class="sub">One shared live room for the 100m community. Only anonymous handles are shown.</p>
     <div class="global-chat-layout">
      <div class="global-chat-header"><h3>● Global Room</h3><span id="globalOnlineCount" class="live-count">0 online</span></div>
      <p id="globalChatStatus" class="message muted">Connecting to Global Chat...</p>
-     <div><p class="comment-note">Online members</p><div id="globalOnlineMembers" class="global-online-list"><span class="muted">Loading...</span></div></div>
+     <div class="global-online-wrap"><p class="comment-note">Online members</p><div id="globalOnlineMembers" class="global-online-list"><span class="muted">Loading...</span></div></div>
      <div id="globalTypingStatus" class="typing-slot" aria-live="polite"></div>
      <div id="globalChatMessages" class="global-chat-messages"><div class="empty">Loading messages...</div></div>
      <div id="globalReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="globalReplyName">Replying</strong><p id="globalReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelGlobalReply()">Cancel</button></div></div>
      <div class="global-chat-input"><textarea id="globalMessageInput" maxlength="500" placeholder="Write a message to everyone..." oninput="handleGlobalTyping()"></textarea><button class="primary" style="width:auto;margin:0" id="globalSendButton" onclick="sendGlobalMessage()" aria-label="Send message"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="#ffffff" stroke="#ffffff"/></svg></button></div>
-     <p class="comment-note">Messages are shared with all signed-in members. Messages older than 24 hours are automatically deleted.</p>
+     <p class="comment-note global-fs-hide">Messages are shared with all signed-in members. Messages older than 24 hours are automatically deleted.</p>
     </div>
    </div>
   </div>
@@ -4116,6 +4147,18 @@ function stopGlobalChatListeners(){
  globalMembersRef=globalMembersListener=globalMessagesRef=globalMessagesListener=globalTypingRef=globalTypingListener=globalReactionRef=globalReactionListener=null;
  if(globalTypingTimer)clearTimeout(globalTypingTimer);globalTypingTimer=null;globalTypingActive=false;
 }
+
+function toggleGlobalChatFullscreen(forceOff){
+ const card=document.getElementById("globalchat"),btn=document.getElementById("globalFsBtn");
+ if(!card)return;
+ const next=forceOff===false?false:!card.classList.contains("is-fullscreen");
+ card.classList.toggle("is-fullscreen",next);
+ document.body.classList.toggle("gc-fs-open",next);
+ if(btn)btn.textContent=next?"✕ Exit Full":"⛶ Full Screen";
+ const box=document.getElementById("globalChatMessages");
+ if(box)setTimeout(()=>{box.scrollTop=box.scrollHeight;},60);
+}
+
 async function startGlobalChat(){
  if(!currentUser||guestMode)return;
  stopGlobalChatListeners();
