@@ -2347,6 +2347,36 @@ body.dark-mode #privacyCurtain{background:rgba(24,31,25,.97)}
 
 .profile-vibe-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .profile-vibe-chip{padding:4px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text)}
+
+/* === GUYS-FRIENDLY & GAMIFICATION PACK (QUESTS, STATUS CHIPS, HOT TAKE PRESETS, IN-GAME BANTER, ARCADE FLEX) === */
+.quest-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.streak-pill{padding:5px 11px;border-radius:999px;background:rgba(201,111,79,.16);border:1px solid rgba(201,111,79,.38);color:var(--accent);font-size:12px;font-weight:800;white-space:nowrap}
+.quest-bar-bg{height:7px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin-bottom:10px;border:1px solid var(--border)}
+.quest-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--sage,#6B7F5B),var(--accent,#C96F4F));border-radius:999px;transition:width .3s ease}
+.quest-list{display:flex;flex-direction:column;gap:6px}
+.quest-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 11px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);font-size:12.5px;font-weight:700;color:var(--text)}
+.quest-item.done{opacity:.78;border-color:var(--sage,#6B7F5B)}
+.quest-check{font-size:14px;flex-shrink:0}
+.quest-go{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer;width:auto;margin:0}
+
+.status-chip-row{display:flex;gap:6px;overflow-x:auto;padding:4px 0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.status-chip-row::-webkit-scrollbar{display:none}
+.status-chip{flex:0 0 auto;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;width:auto;margin:0;white-space:nowrap;transition:transform .14s ease,background .14s ease,border-color .14s ease}
+.status-chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.status-chip:active{transform:scale(.95)}
+.active-status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:rgba(107,127,91,.16);border:1px solid rgba(107,127,91,.35);color:var(--text);font-size:11.5px;font-weight:700;margin-top:4px}
+
+.poll-preset-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;grid-column:1 / -1}
+.poll-preset-btn{border:1px dashed var(--border);background:var(--surface-2);color:var(--muted);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;width:auto;margin:0}
+.poll-preset-btn:active{transform:scale(.95)}
+
+.banter-bar{display:flex;gap:5px;overflow-x:auto;padding:8px 0 2px;margin-top:8px;border-top:1px solid var(--border);-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.banter-bar::-webkit-scrollbar{display:none}
+.banter-chip{flex:0 0 auto;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;width:auto;margin:0;white-space:nowrap}
+.banter-chip:active{transform:scale(.94)}
+.banter-toast{margin-top:6px;padding:6px 10px;border-radius:10px;background:rgba(201,111,79,.16);border:1px solid rgba(201,111,79,.35);color:var(--text);font-size:12px;font-weight:800;text-align:center;animation:banterPop .22s ease}
+@keyframes banterPop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.arcade-flex-strip{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:8px 10px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);font-size:12px;font-weight:700}
 </style>
 </head>
 <body>
@@ -2576,6 +2606,18 @@ body.dark-mode #privacyCurtain{background:rgba(24,31,25,.97)}
   </div>
  </div>
 
+ <div class="card" id="dailyQuestsCard">
+  <div class="quest-card-top">
+   <div>
+    <h3 style="margin:0">🎯 Daily Quests</h3>
+    <p id="questSubtitle" class="sub" style="margin:2px 0 0">Complete 3 quick tasks to keep your streak alive.</p>
+   </div>
+   <span id="dailyStreakPill" class="streak-pill">🔥 Day 1</span>
+  </div>
+  <div class="quest-bar-bg"><div id="questBarFill" class="quest-bar-fill"></div></div>
+  <div id="dailyQuestList" class="quest-list"></div>
+ </div>
+
  <div class="card" id="dropNotesCard">
   <div class="live-hour-top">
    <div>
@@ -2590,6 +2632,7 @@ body.dark-mode #privacyCurtain{background:rgba(24,31,25,.97)}
    <button type="button" class="note-tag-btn" data-note-tag="Question" onclick="selectNoteTag(this)">❓ Question</button>
    <button type="button" class="note-tag-btn" data-note-tag="Local" onclick="selectNoteTag(this)">📍 Local</button>
    <button type="button" class="note-tag-btn" data-note-tag="Confess" onclick="selectNoteTag(this)">🌸 Confess</button>
+   <button type="button" class="note-tag-btn" data-note-tag="Hot Take" onclick="selectNoteTag(this)">🔥 Hot Take</button>
   </div>
   <div class="global-chat-input" style="margin-top:6px">
    <textarea id="dropNoteInput" maxlength="180" style="min-height:46px" placeholder="Leave a 24h note, confession, or question…"></textarea>
@@ -2602,6 +2645,11 @@ body.dark-mode #privacyCurtain{background:rgba(24,31,25,.97)}
   <div id="dropPollBuilder" class="poll-builder hidden">
    <input id="pollOpt1" maxlength="36" placeholder="Option A (e.g. Chai ☕)">
    <input id="pollOpt2" maxlength="36" placeholder="Option B (e.g. Coffee 🧋)">
+   <div class="poll-preset-row">
+    <button type="button" class="poll-preset-btn" onclick="applyPollPreset('Ultimate dinner debate 👇','Biryani 🍛','Shawarma 🌯')">🍛 Biryani vs Shawarma</button>
+    <button type="button" class="poll-preset-btn" onclick="applyPollPreset('Cricket mood right now 🏏','IPL 🔥','World Cup 🏆')">🏏 IPL vs WC</button>
+    <button type="button" class="poll-preset-btn" onclick="applyPollPreset('Dream weekend ride?','Bikes 🏍️','Cars 🚗')">🏍️ Bikes vs Cars</button>
+   </div>
   </div>
   <p id="dropNoteStatus" class="comment-note" style="margin-top:6px"></p>
   <div id="dropNotesList" class="drop-notes-list"><div class="empty">Loading recent 24h notes…</div></div>
@@ -2621,6 +2669,17 @@ body.dark-mode #privacyCurtain{background:rgba(24,31,25,.97)}
    <div class="fit" style="display:flex;gap:6px"><button type="button" class="secondary small fit" onclick="openEditHandleModal()">✏️ Edit</button><button type="button" class="secondary small fit" onclick="shuffleAnonymousHandle()">🎲 Shuffle</button></div>
   </div>
   <div class="row"><button class="primary" style="margin-top:0" id="radarOnButton" onclick="setRadarStatus(true)">Turn ON Radar</button><button class="secondary" id="radarOffButton" onclick="setRadarStatus(false)">Turn OFF</button></div>
+  <div style="margin:8px 0 4px">
+   <p class="comment-note" style="margin:0 0 4px;font-weight:700">⚡ I'm Free For (1-tap live status):</p>
+   <div id="freeForChips" class="status-chip-row" role="group" aria-label="Quick status">
+    <button type="button" class="status-chip" data-status="☕ Chai Break" onclick="setFreeForStatus(this)">☕ Chai Break</button>
+    <button type="button" class="status-chip" data-status="🎮 Ludo Anyone?" onclick="setFreeForStatus(this)">🎮 Ludo Anyone?</button>
+    <button type="button" class="status-chip" data-status="🏏 Cricket Talk" onclick="setFreeForStatus(this)">🏏 Cricket Talk</button>
+    <button type="button" class="status-chip" data-status="🎬 Movie Buff" onclick="setFreeForStatus(this)">🎬 Movie Buff</button>
+    <button type="button" class="status-chip" data-status="😴 Bored — Ping Me" onclick="setFreeForStatus(this)">😴 Bored — Ping Me</button>
+   </div>
+   <div id="activeStatusPreview" class="active-status-pill hidden"></div>
+  </div>
   <p id="radarStatusText" class="message muted">Radar is OFF.</p>
  </div>
  <div class="card"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">LIVE Network <span id="liveMemberCount" class="live-count">0 online</span></h3><button class="secondary small fit" id="refreshRadarButton" onclick="refreshRadarList()">Refresh</button></div><p id="radarRefreshTime" class="message muted" style="margin:6px 0">Waiting for live updates…</p><div id="liveMembersList" class="radar-stage"><div class="radar-center">RADAR</div><div class="radar-empty">Sign in and turn Radar ON to see online profiles.</div></div>
@@ -2826,6 +2885,7 @@ body.dark-mode #privacyCurtain{background:rgba(24,31,25,.97)}
  <div class="profile-row"><div class="profile-label">COUNTRY</div><div class="profile-value" id="profileCountry">Not added</div></div>
  <div class="profile-row"><div class="profile-label">INTERESTS</div><div class="profile-value" id="profileInterests">Not added</div></div>
  <div class="profile-row"><div class="profile-label">VIBE BADGES SHARED</div><div id="profileVibeBadges" class="profile-vibe-chips"><span class="profile-vibe-chip">✨ Respectful · 0</span><span class="profile-vibe-chip">🌿 Good Listener · 0</span><span class="profile-vibe-chip">😄 Fun Vibe · 0</span></div></div>
+ <div class="profile-row"><div class="profile-label">ARCADE RANK &amp; STREAK</div><div id="profileArcadeStats" class="profile-vibe-chips"><span class="profile-vibe-chip">🏅 Rookie</span><span class="profile-vibe-chip">🔥 Streak · 0</span><span class="profile-vibe-chip">🏆 Wins · 0</span></div></div>
  <button class="primary" id="editProfileButton" onclick="openEditProfile()">✎ Edit Profile</button>
  <div class="tile" style="margin-top:16px"><h3>Blocked Accounts</h3><p class="sub">Accounts you block appear here. You can unblock them whenever you choose.</p><div id="blockedAccountsList" class="empty">Sign in to view blocked accounts.</div><p id="blockStatus" class="message muted"></p><button class="secondary small" type="button" onclick="loadBlockedAccounts()">Refresh list</button></div>
  <button class="secondary" style="width:100%;margin-top:10px" onclick="go('safety')">Safety &amp; Report</button>
@@ -4341,6 +4401,7 @@ function renderGlobalMessages(){
 async function setGlobalTyping(on){if(!currentUser)return;const ref=rtdb.ref("globalChat/typing/"+currentUser.uid);try{if(on){if(globalTypingActive&&Date.now()-globalTypingLast<3000)return;if(!globalTypingActive)await ref.onDisconnect().remove();globalTypingLast=Date.now();globalTypingActive=true;await ref.set({typing:true,handle:globalHandle(),updatedAt:firebase.database.ServerValue.TIMESTAMP})}else{globalTypingActive=false;await ref.onDisconnect().cancel();await ref.remove()}}catch(e){console.log("Global typing:",e.message)}}
 function handleGlobalTyping(){const gIn=document.getElementById("globalMessageInput"),sIn=document.getElementById("signalMessageInput");const hasVal=(gIn&&gIn.value.trim())||(sIn&&sIn.value.trim());if(!currentUser)return;if(globalTypingTimer)clearTimeout(globalTypingTimer);if(!hasVal){setGlobalTyping(false);return}setGlobalTyping(true);globalTypingTimer=setTimeout(()=>setGlobalTyping(false),2200)}
 async function sendGlobalMessage(){
+ completeDailyQuest("chat");
  const input=document.getElementById("globalMessageInput"),value=input.value.trim(),button=document.getElementById("globalSendButton"),status=document.getElementById("globalChatStatus");
  if(guestMode){
   if(!value)return;
@@ -5025,6 +5086,7 @@ function setSignalReply(id,handle,text){
 }
 function cancelSignalReply(){signalReplyTarget=null;const p=document.getElementById("signalReplyPreview");if(p)p.classList.add("hidden");}
 async function sendSignalMessage(){
+ completeDailyQuest("chat");
  if(guestMode&&signalState==="matched"){
   const input=document.getElementById("signalMessageInput"),val=input.value.trim();if(!val)return;
   const msg={id:"ds_"+Date.now(),uid:DEMO_UID,handle:"You",text:val,createdAt:Date.now()};
@@ -5276,6 +5338,7 @@ async function postDropNote(){
  const input=document.getElementById("dropNoteInput"),st=document.getElementById("dropNoteStatus");
  const val=(input&&input.value||"").trim();
  if(!val)return;
+ completeDailyQuest("note");
  const o1El=document.getElementById("pollOpt1"),o2El=document.getElementById("pollOpt2");
  const opt1=(o1El&&o1El.value||"").trim(),opt2=(o2El&&o2El.value||"").trim();
  const pollObj=(opt1&&opt2)?{opt1,opt2,v1:0,v2:0,myChoice:0}:null;
@@ -6473,6 +6536,7 @@ function shareCurrentGameScore(){
  closeMiniGames();
 }
 function openMiniGames(ctx){
+ completeDailyQuest("game");
  miniGameContext=ctx||"signal";
  miniGameTab="lobby";
  if(dotsState.h.length!==DOTS_N)dotsReset();
@@ -6534,7 +6598,8 @@ function renderMiniGamesPanel(){
     '<div class="arcade-side"><span class="arcade-badge-num b">'+myWins+'</span><span>You</span></div>'+
     '<span style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--amber);font-weight:700">🏆 ARCADE</span>'+
     '<div class="arcade-side"><span>Opp</span><span class="arcade-badge-num g">'+oppWins+'</span></div>'+
-   '</div>';
+   '</div>'+
+   renderArcadeFlexBarHtml(myWins);
   return;
  }
  if(miniGameTab==="waiting"){
@@ -6726,7 +6791,15 @@ function renderMiniGamesPanel(){
    '<button type="button" class="secondary small fit" onclick="switchMiniGameTab(\'lobby\')">← Games</button>'+
    '<strong style="font-size:15px;text-align:center">'+(gameTitles[miniGameTab]||"100m Arcade")+'</strong>'+
    '<button type="button" class="modal-close-x fit" onclick="closeMiniGames()" aria-label="Close games"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'+
-  '</div>'+bodyHtml;
+  '</div>'+bodyHtml+
+   '<div id="inGameBanterToast"></div>'+
+   '<div class="banter-bar" aria-label="Quick game reactions">'+
+    '<button type="button" class="banter-chip" onclick="sendGameBanter(\'😂 Lucky Roll!\')">😂 Lucky Roll!</button>'+
+    '<button type="button" class="banter-chip" onclick="sendGameBanter(\'🔥 Nice Move!\')">🔥 Nice Move!</button>'+
+    '<button type="button" class="banter-chip" onclick="sendGameBanter(\'💀 RIP\')">💀 RIP</button>'+
+    '<button type="button" class="banter-chip" onclick="sendGameBanter(\'🤝 GG!\')">🤝 GG!</button>'+
+    '<button type="button" class="banter-chip" onclick="sendGameBanter(\'🔄 Rematch?\')">🔄 Rematch?</button>'+
+   '</div>';
 }
 
 
@@ -6881,6 +6954,156 @@ async function voteDropNotePoll(id,choice){
 }
 applyProfileAvatarUI();
 renderProfileVibeBadges();
+
+// ---------- GUYS-FRIENDLY & GAMIFICATION PACK (QUESTS, STATUS CHIPS, HOT TAKE PRESETS, IN-GAME BANTER, ARCADE FLEX) ----------
+const QUESTS_STORAGE_KEY="100m_daily_quests_v1";
+const ARCADE_STATS_KEY="100m_arcade_stats_v1";
+const FREE_FOR_KEY="100m_free_for_v1";
+let lastTrackedSessionWins=0;
+let myFreeForStatus="";
+try{myFreeForStatus=localStorage.getItem(FREE_FOR_KEY)||"";}catch(e){}
+
+function getTodayKey(){
+ const d=new Date();
+ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function loadQuestState(){
+ const today=getTodayKey();
+ try{
+  const raw=localStorage.getItem(QUESTS_STORAGE_KEY);
+  if(raw){
+   const s=JSON.parse(raw);
+   if(s&&s.date===today)return s;
+   if(s&&s.date&&s.date!==today){
+    const prevDone=(s.game&&s.note&&s.chat);
+    const nextStreak=prevDone?(Number(s.streak||1)+1):1;
+    const fresh={date:today,streak:nextStreak,game:false,note:false,chat:false};
+    localStorage.setItem(QUESTS_STORAGE_KEY,JSON.stringify(fresh));
+    return fresh;
+   }
+  }
+ }catch(e){}
+ return {date:today,streak:1,game:false,note:false,chat:false};
+}
+function saveQuestState(s){try{localStorage.setItem(QUESTS_STORAGE_KEY,JSON.stringify(s));}catch(e){}}
+function completeDailyQuest(key){
+ const s=loadQuestState();
+ if(!s[key]){s[key]=true;saveQuestState(s);renderDailyQuests();}
+}
+function renderDailyQuests(){
+ const list=document.getElementById("dailyQuestList");
+ const pill=document.getElementById("dailyStreakPill");
+ const fill=document.getElementById("questBarFill");
+ const sub=document.getElementById("questSubtitle");
+ if(!list)return;
+ const s=loadQuestState();
+ const doneCount=(s.game?1:0)+(s.note?1:0)+(s.chat?1:0);
+ if(pill)pill.textContent="🔥 Day "+Number(s.streak||1);
+ if(fill)fill.style.width=Math.round((doneCount/3)*100)+"%";
+ if(sub)sub.textContent=doneCount===3?"🏆 All Daily Quests complete! Streak secured.":"Complete "+doneCount+"/3 quick tasks to keep your streak alive.";
+ const items=[
+  {k:"game",label:"🎮 Play 1 Arcade game",act:"go('chats');switchChatTab('signal');openMiniGames('signal')",cta:"Play"},
+  {k:"note",label:"🔥 Drop a Note or Hot Take",act:"document.getElementById('dropNoteInput')?.focus()",cta:"Drop"},
+  {k:"chat",label:"💬 Say Hi in Global or Signal",act:"go('chats');switchChatTab('global')",cta:"Chat"}
+ ];
+ list.innerHTML=items.map(it=>{
+  const ok=!!s[it.k];
+  return '<div class="quest-item'+(ok?' done':'')+'"><span><span class="quest-check">'+(ok?'✅':'⬜')+'</span> '+it.label+'</span>'+(ok?'<span style="font-size:11px;color:var(--sage,#6B7F5B)">Done</span>':'<button type="button" class="quest-go" onclick="'+it.act+'">'+it.cta+' →</button>')+'</div>';
+ }).join("");
+}
+
+function applyPollPreset(promptTxt,optA,optB){
+ const inp=document.getElementById("dropNoteInput");
+ const o1=document.getElementById("pollOpt1"),o2=document.getElementById("pollOpt2");
+ if(inp)inp.value=promptTxt;
+ if(o1)o1.value=optA;
+ if(o2)o2.value=optB;
+ const hotBtn=document.querySelector('.note-tag-btn[data-note-tag="Hot Take"]');
+ if(hotBtn)selectNoteTag(hotBtn);
+}
+
+function setFreeForStatus(btn){
+ const val=btn.dataset.status||"";
+ myFreeForStatus=(myFreeForStatus===val)?"":val;
+ try{localStorage.setItem(FREE_FOR_KEY,myFreeForStatus);}catch(e){}
+ renderFreeForUI();
+}
+function renderFreeForUI(){
+ document.querySelectorAll("#freeForChips .status-chip").forEach(b=>{
+  b.classList.toggle("active",!!myFreeForStatus&&(b.dataset.status===myFreeForStatus));
+ });
+ const prev=document.getElementById("activeStatusPreview");
+ if(prev){
+  if(myFreeForStatus){prev.textContent="Active Status: "+myFreeForStatus;prev.classList.remove("hidden");}
+  else{prev.classList.add("hidden");}
+ }
+}
+
+function loadArcadeStats(){
+ try{
+  const raw=localStorage.getItem(ARCADE_STATS_KEY);
+  if(raw){const o=JSON.parse(raw);if(o&&typeof o==="object")return o;}
+ }catch(e){}
+ return {wins:0,streak:0,bestStreak:0};
+}
+function getArcadeRankTitle(wins){
+ if(wins>=15)return "👑 100m Legend";
+ if(wins>=7)return "⚡ Game Beast";
+ if(wins>=3)return "🔥 Radar Regular";
+ return "🏅 Rookie";
+}
+function syncArcadeWins(sessionWins){
+ const st=loadArcadeStats();
+ if(sessionWins>lastTrackedSessionWins){
+  const diff=sessionWins-lastTrackedSessionWins;
+  st.wins=Number(st.wins||0)+diff;
+  st.streak=Number(st.streak||0)+diff;
+  st.bestStreak=Math.max(Number(st.bestStreak||0),st.streak);
+  lastTrackedSessionWins=sessionWins;
+  try{localStorage.setItem(ARCADE_STATS_KEY,JSON.stringify(st));}catch(e){}
+  renderProfileArcadeStats();
+ }
+ return st;
+}
+function renderProfileArcadeStats(){
+ const box=document.getElementById("profileArcadeStats");if(!box)return;
+ const st=loadArcadeStats();
+ const rank=getArcadeRankTitle(Number(st.wins||0));
+ box.innerHTML='<span class="profile-vibe-chip">'+rank+'</span>'+
+  '<span class="profile-vibe-chip">🔥 Streak · '+Number(st.streak||0)+'</span>'+
+  '<span class="profile-vibe-chip">🏆 Wins · '+Number(st.wins||0)+'</span>';
+}
+function renderArcadeFlexBarHtml(sessionWins){
+ const st=syncArcadeWins(sessionWins);
+ const rank=getArcadeRankTitle(Number(st.wins||0));
+ return '<div class="arcade-flex-strip">'+
+  '<span>'+rank+' · 🔥 '+Number(st.streak||0)+' Streak ('+Number(st.wins||0)+'W)</span>'+
+  '<button type="button" class="secondary small fit" style="margin:0" onclick="flexArcadeToGlobal()">📣 Flex in Global</button>'+
+ '</div>';
+}
+function flexArcadeToGlobal(){
+ const st=loadArcadeStats();
+ const rank=getArcadeRankTitle(Number(st.wins||0));
+ const msg="🏆 "+rank+" | 🔥 "+Number(st.streak||0)+"-Win Streak ("+Number(st.wins||0)+" Arcade Wins) — Who wants a Ludo or Checkers match? 🎮";
+ closeMiniGames();
+ go("chats");
+ switchChatTab("global");
+ const gInp=document.getElementById("globalMessageInput");
+ if(gInp){gInp.value=msg;gInp.focus();}
+}
+function sendGameBanter(txt){
+ const toastBox=document.getElementById("inGameBanterToast");
+ if(toastBox){
+  toastBox.innerHTML='<div class="banter-toast">You: '+String(txt).replace(/</g,"&lt;")+'</div>';
+  setTimeout(()=>{if(toastBox)toastBox.innerHTML="";},2400);
+ }
+ if(typeof sendMiniGameToChat==="function"&&((miniGameContext==="signal"&&signalPartnerUid)||(miniGameContext==="private"&&activePrivateOtherUid))){
+  try{sendMiniGameToChat("🎮 "+txt);}catch(e){}
+ }
+}
+renderDailyQuests();
+renderFreeForUI();
+renderProfileArcadeStats();
 </script>
 <div id="privacyCurtain" class="hidden" onclick="togglePrivacyCurtain(false)" role="dialog" aria-label="Privacy Screen">
  <div class="privacy-curtain-card">
