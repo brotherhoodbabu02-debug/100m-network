@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#09090b">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
@@ -2169,6 +2169,69 @@ body:not(.light-mode) nav.bottom-nav{
 }
 .bento-tile:active,.primary:active:not(:disabled),.secondary:active:not(:disabled),.arcade-card:active{
  transform:scale(0.95) translateY(1px) !important;
+}
+
+
+/* ---------- UNIVERSAL RESPONSIVE LAYOUT (ALL PHONES, TABLETS & DESKTOP) ---------- */
+html,body{max-width:100%;overflow-x:hidden}
+body{min-height:100dvh}
+main{width:100%;padding:clamp(12px,3vw,24px) clamp(12px,3.2vw,24px)}
+header{padding:12px clamp(12px,3vw,24px);gap:8px}
+.header-right{gap:6px;flex-shrink:0}
+.brand-v2{min-width:0}
+
+/* Small phones (320px - 375px) */
+@media(max-width:379px){
+ .brand-v2.header-sz .v2-emblem{width:24px;height:24px;flex-basis:24px}
+ .brand-v2.header-sz .v2-top{font-size:15.5px}
+ .brand-v2.header-sz .v2-bot{font-size:6.5px;letter-spacing:0.26em}
+ .status{font-size:10px;padding:4px 8px}
+ #theme-toggle-button,#theme-toggle-button svg{width:46px;height:29px}
+ .bento-grid{gap:9px}
+ .bento-tile{padding:13px 11px;min-height:108px}
+ .bento-title{font-size:14px}
+ .bento-sub{font-size:11px}
+ .home-greet-bar{padding:10px 12px;flex-wrap:wrap}
+ .games-modal-panel,.profile-action-panel,.incoming-modal-card{padding:14px}
+ .arcade-grid{gap:8px}
+ .arcade-card{min-height:116px;padding:10px 8px}
+ .ludo-king-board,.snl-wrap,.dots-grid-8,.chk-board-8{width:100%;max-width:min(86vw,340px)}
+ .lk-hud-row{gap:6px}
+ .lk-player-box{padding:5px 8px}
+ .lk-dice-btn{width:40px;height:40px}
+ .lk-dice-btn svg{width:28px;height:28px}
+ nav.bottom-nav{width:calc(100% - 16px);padding:6px 4px}
+ .bottom-nav button{min-width:44px;font-size:9.5px}
+ .nav-mic-icon{width:48px;height:48px}
+}
+
+/* Tablets & Small Laptops (768px+) */
+@media(min-width:768px){
+ main{max-width:860px}
+ .bento-grid{grid-template-columns:repeat(4,1fr);gap:14px}
+ .bento-tile{min-height:132px}
+ .arcade-grid{grid-template-columns:repeat(3,1fr)}
+ .games-modal-panel{width:min(94vw,540px);padding:24px}
+ .ludo-king-board,.snl-wrap,.dots-grid-8,.chk-board-8{max-width:380px}
+ nav.bottom-nav{width:min(92%,520px)}
+}
+
+/* Large Desktops / Monitors (1100px+) */
+@media(min-width:1100px){
+ main{max-width:980px}
+ main:has(#chats.active){max-width:1240px}
+ .auth-page{max-width:1020px;margin:48px auto 24px}
+}
+
+/* Safe viewport height handling for modals & landscape phones */
+.profile-action-overlay{
+ overflow-y:auto;
+ padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));
+}
+.games-modal-panel,.profile-action-panel{
+ max-height:min(90dvh,760px);
+ overflow-y:auto;
+ -webkit-overflow-scrolling:touch;
 }
 
 </style>
