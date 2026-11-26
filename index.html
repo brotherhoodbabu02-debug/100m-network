@@ -2234,6 +2234,27 @@ header{padding:12px clamp(12px,3vw,24px);gap:8px}
  -webkit-overflow-scrolling:touch;
 }
 
+
+/* ---------- NATIVE ANDROID APP FEEL (NO PULL-TO-REFRESH, NO LONG-PRESS COPY MENU) ---------- */
+html,body{
+ overscroll-behavior-y:contain;
+ overscroll-behavior-x:none;
+ -webkit-user-select:none;
+ user-select:none;
+ -webkit-touch-callout:none;
+}
+input,textarea,select,#myPublicChatId,.drop-note-text,.chat-msg span,.global-chat-msg .body{
+ -webkit-user-select:text;
+ user-select:text;
+ -webkit-touch-callout:default;
+}
+button,.bento-tile,.arcade-card,.bottom-nav button,.lk-pin,.lk-dice-btn,.chk-cell,.edge-h,.edge-v,.mem-card{
+ -webkit-user-select:none !important;
+ user-select:none !important;
+ -webkit-touch-callout:none !important;
+ touch-action:manipulation;
+}
+
 </style>
 </head>
 <body>
@@ -6553,6 +6574,11 @@ function toggleDayNightMode(isNight){
  try{saved=localStorage.getItem("100m_theme_mode")||"day";}catch(e){}
  toggleDayNightMode(saved!=="day");
 })();
+
+
+document.addEventListener("contextmenu",e=>{
+ if(!e.target.closest("input,textarea"))e.preventDefault();
+},{passive:false});
 
 function dismissIntroSplash(){
  const el=document.getElementById("introSplash");
