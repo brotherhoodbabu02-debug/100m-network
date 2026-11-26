@@ -4561,7 +4561,12 @@ const voiceIceServers=[
  {urls:"stun:global.stun.twilio.com:3478"}
 ];
 const METERED_TURN_API_KEY=""; // Optional: paste free Metered.ca OpenRelay API key for 100% Jio/Airtel 4G TURN relay
-let voiceIceConfig={iceServers:voiceIceServers,iceCandidatePoolSize:10,bundlePolicy:"max-bundle"};
+const FREE_PUBLIC_TURN=[
+ {urls:"turn:openrelay.metered.ca:80",username:"openrelayproject",credential:"openrelayproject"},
+ {urls:"turn:openrelay.metered.ca:443",username:"openrelayproject",credential:"openrelayproject"},
+ {urls:"turn:openrelay.metered.ca:443?transport=tcp",username:"openrelayproject",credential:"openrelayproject"}
+];
+let voiceIceConfig={iceServers:[...voiceIceServers,...FREE_PUBLIC_TURN],iceCandidatePoolSize:10,bundlePolicy:"max-bundle"};
 let turnLoaded=false;
 async function ensureTurnIceConfig(){
  if(turnLoaded||!METERED_TURN_API_KEY)return voiceIceConfig;
@@ -5436,15 +5441,23 @@ function startDirectCallClock(){
  directCallSecs=0;
  directCallTimer=setInterval(()=>{directCallSecs++;updateDirectCallUI();},1000);
 }
-function attachDirectCallAudio(stream){
+function ensureDirectCallAudioEl(){
  if(!directCallAudio){
   directCallAudio=document.createElement("audio");
-  directCallAudio.autoplay=true;directCallAudio.playsInline=true;directCallAudio.volume=1;
+  directCallAudio.autoplay=true;directCallAudio.playsInline=true;directCallAudio.volume=1;directCallAudio.muted=false;
   directCallAudio.setAttribute("playsinline","");directCallAudio.setAttribute("webkit-playsinline","");
-  directCallAudio.style.display="none";document.body.appendChild(directCallAudio);
+  directCallAudio.style.cssText="position:fixed;bottom:0;right:0;width:1px;height:1px;opacity:0.01;pointer-events:none;";
+  document.body.appendChild(directCallAudio);
  }
- directCallAudio.srcObject=stream;
- directCallAudio.play().catch(()=>{directCallNote="Tap 🔊 Audio button to hear voice";updateDirectCallUI();});
+ return directCallAudio;
+}
+function attachDirectCallAudio(stream){
+ const el=ensureDirectCallAudioEl();
+ el.muted=false;el.volume=1;el.srcObject=stream;
+ const p=el.play();
+ if(p&&typeof p.catch==="function"){
+  p.then(()=>{directCallNote="";updateDirectCallUI();}).catch(()=>{directCallNote="Tap 🔊 Audio button to hear voice";updateDirectCallUI();});
+ }
 }
 function startDirectCallFromSignal(){
  if(signalState!=="matched"||!signalPartnerUid)return;
@@ -5494,11 +5507,13 @@ async function startDirectCall(peerUid,peerName){
    const stream=(e.streams&&e.streams[0])||new MediaStream([e.track]);
    attachDirectCallAudio(stream);
   };
+  ensureDirectCallAudioEl();
   pc.onconnectionstatechange=()=>{
    if(pc.connectionState==="connected"){directCallNote="";updateDirectCallUI();}
-   else if(pc.connectionState==="failed"){directCallNote="Mobile network blocked P2P audio — try Wi-Fi.";updateDirectCallUI();}
+   else if(pc.connectionState==="failed"){directCallNote="Network blocked audio relay — tap 🔊 Audio or try Wi-Fi.";updateDirectCallUI();}
+   else if(pc.connectionState==="disconnected"||pc.connectionState==="closed"){setTimeout(()=>{if(directCallPC===pc&&(pc.connectionState==="disconnected"||pc.connectionState==="closed"||pc.connectionState==="failed"))endDirectCall(true);},2500);}
   };
-  const offer=await pc.createOffer();offer.sdp=optimizeOpusSdp(offer.sdp);await pc.setLocalDescription(offer);
+  const offer=await pc.createOffer({offerToReceiveAudio:true});offer.sdp=optimizeOpusSdp(offer.sdp);await pc.setLocalDescription(offer);
   directCallRoomRef=rtdb.ref("directVoiceCalls/"+directCallId);
   await directCallRoomRef.set({caller:currentUser.uid,callerHandle:globalHandle(),callee:peerUid,status:"ringing",offer:pc.localDescription.sdp,createdAt:firebase.database.ServerValue.TIMESTAMP});
   directCallRoomRef.onDisconnect().remove().catch(()=>{});
@@ -5777,6 +5792,10 @@ function initDirectCallInbox(){
   if(cid.startsWith("gmv_")){
    handleIncomingMpMove(cid.split("_"));return;
   }
+  if(cid.startsWith("cend_")){
+   if(directCallState!=="idle")endDirectCall(true);
+   return;
+  }
   if(directCallState!=="idle")return;
   directCallId=cid;directCallPeerUid=inv.from;directCallPeerName=fromName;
   directCallState="incoming";directCallNote="";updateDirectCallUI();
@@ -5806,9 +5825,11 @@ async function acceptDirectCall(){
    const stream=(e.streams&&e.streams[0])||new MediaStream([e.track]);
    attachDirectCallAudio(stream);
   };
+  ensureDirectCallAudioEl();
   pc.onconnectionstatechange=()=>{
    if(pc.connectionState==="connected"){directCallNote="";updateDirectCallUI();}
-   else if(pc.connectionState==="failed"){directCallNote="Mobile network blocked P2P audio — try Wi-Fi.";updateDirectCallUI();}
+   else if(pc.connectionState==="failed"){directCallNote="Network blocked audio relay — tap 🔊 Audio or try Wi-Fi.";updateDirectCallUI();}
+   else if(pc.connectionState==="disconnected"||pc.connectionState==="closed"){setTimeout(()=>{if(directCallPC===pc&&(pc.connectionState==="disconnected"||pc.connectionState==="closed"||pc.connectionState==="failed"))endDirectCall(true);},2500);}
   };
   await pc.setRemoteDescription({type:"offer",sdp:data.offer});
   if(data.iceCaller){
@@ -5838,9 +5859,16 @@ function endDirectCall(silent=false){
  if(directCallDemoTimer){clearTimeout(directCallDemoTimer);directCallDemoTimer=null;}
  if(directCallTimer){clearInterval(directCallTimer);directCallTimer=null;}
  if(directCallRoomRef&&directCallRoomListener){directCallRoomRef.off("value",directCallRoomListener);}
- if(!silent&&directCallId&&rtdb&&!guestMode){
-  rtdb.ref("directVoiceCalls/"+directCallId).update({status:"ended"}).catch(()=>{});
-  if(directCallPeerUid)rtdb.ref("directVoiceInbox/"+directCallPeerUid+"/"+directCallId).remove().catch(()=>{});
+ const _cid=directCallId,_peer=directCallPeerUid;
+ if(!silent&&_cid&&rtdb&&!guestMode){
+  rtdb.ref("directVoiceCalls/"+_cid).update({status:"ended"}).catch(()=>{});
+  if(_peer){
+   rtdb.ref("directVoiceInbox/"+_peer+"/"+_cid).remove().catch(()=>{});
+   if(currentUser){
+    const hId="cend_"+_cid.slice(0,48);
+    rtdb.ref("directVoiceInbox/"+_peer+"/"+hId).set({callId:hId,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+   }
+  }
  }
  if(directCallPC){try{directCallPC.close();}catch(e){}directCallPC=null;}
  if(directCallStream){directCallStream.getTracks().forEach(t=>t.stop());directCallStream=null;}
