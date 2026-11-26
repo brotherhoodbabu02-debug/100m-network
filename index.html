@@ -2301,6 +2301,52 @@ body{
 }
 body.gc-fs-open nav.bottom-nav{display:none !important}
 
+
+/* === GIRLS-FRIENDLY & ENGAGEMENT PACK (PRIVACY CURTAIN, AVATARS, POLLS, VIBES, ICEBREAKERS) === */
+.privacy-hide-btn{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);display:inline-flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;box-shadow:var(--clay-pill);transition:transform .16s ease,background .16s ease;padding:0;margin:0;flex-shrink:0}
+.privacy-hide-btn:active{transform:scale(.94)}
+#privacyCurtain{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(248,246,238,.96);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);cursor:pointer;transition:opacity .2s ease}
+body.dark-mode #privacyCurtain{background:rgba(24,31,25,.97)}
+#privacyCurtain.hidden{display:none!important}
+.privacy-curtain-card{max-width:340px;width:100%;text-align:center;padding:28px 22px;border-radius:24px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--clay-card)}
+.privacy-curtain-icon{font-size:38px;margin-bottom:10px}
+.privacy-curtain-card h3{margin:0 0 6px;color:var(--text);font-size:18px}
+.privacy-curtain-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.privacy-curtain-pill{display:inline-block;margin-top:16px;padding:8px 16px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:700}
+
+.avatar-picker{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:10px 0 14px}
+.avatar-opt{width:40px;height:40px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text);font-size:18px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;margin:0;box-shadow:var(--clay-pill);transition:transform .15s ease,border-color .15s ease,background .15s ease}
+.avatar-opt:active{transform:scale(.93)}
+.avatar-opt.active{border-color:var(--accent);background:rgba(201,111,79,.16);transform:translateY(-1px)}
+
+.vibe-pill-row{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+.vibe-pill{border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;width:auto;margin:0;box-shadow:var(--clay-pill);transition:transform .14s ease,background .14s ease,border-color .14s ease}
+.vibe-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.vibe-pill:active{transform:scale(.95)}
+
+.icebreaker-row{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;margin-top:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.icebreaker-row::-webkit-scrollbar{display:none}
+.ice-chip{flex:0 0 auto;border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;width:auto;margin:0;white-space:nowrap}
+.ice-chip:active{transform:scale(.95)}
+
+.vibe-badge-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;padding:8px 10px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border)}
+.vibe-badge-label{font-size:11px;font-weight:700;color:var(--muted);margin-right:2px}
+.vibe-badge-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;width:auto;margin:0}
+.vibe-badge-btn:active{transform:scale(.95)}
+
+.poll-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.poll-builder{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.poll-builder input{margin:0;padding:10px 12px;font-size:13px}
+.drop-poll-wrap{display:flex;flex-direction:column;gap:6px;margin:8px 0 4px}
+.drop-poll-opt{position:relative;overflow:hidden;width:100%;text-align:left;padding:9px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:12.5px;font-weight:700;cursor:pointer;margin:0;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.drop-poll-opt.voted{border-color:var(--accent)}
+.drop-poll-fill{position:absolute;inset:0 auto 0 0;background:rgba(107,127,91,.22);pointer-events:none;transition:width .25s ease}
+.drop-poll-opt.voted .drop-poll-fill{background:rgba(201,111,79,.24)}
+.drop-poll-text,.drop-poll-pct{position:relative;z-index:1}
+.drop-poll-pct{font-size:11.5px;color:var(--muted);font-weight:800}
+
+.profile-vibe-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.profile-vibe-chip{padding:4px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text)}
 </style>
 </head>
 <body>
@@ -2342,7 +2388,7 @@ body.gc-fs-open nav.bottom-nav{display:none !important}
  <div class="splash-sub">100M NETWORK</div>
  <div class="splash-bar"><i></i></div>
 </div>
-<header><div class="logo"><div class="brand-v2 header-sz" aria-label="100m network"><span class="v2-emblem"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="41" stroke="currentColor" stroke-width="6.5"/><circle cx="50" cy="50" r="24" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="50" r="8.5" fill="currentColor"/><g class="brand-orbit"><circle cx="79" cy="21" r="6" fill="currentColor"/><circle cx="15" cy="71" r="6" fill="currentColor"/></g></svg></span><span class="v2-text"><span class="v2-top">100m</span><span class="v2-bot">network</span></span></div></div><div class="header-right"><label id="theme-toggle-button" aria-label="Toggle Day and Night mode" title="Day / Night Mode">
+<header><div class="logo"><div class="brand-v2 header-sz" aria-label="100m network"><span class="v2-emblem"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="41" stroke="currentColor" stroke-width="6.5"/><circle cx="50" cy="50" r="24" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="50" r="8.5" fill="currentColor"/><g class="brand-orbit"><circle cx="79" cy="21" r="6" fill="currentColor"/><circle cx="15" cy="71" r="6" fill="currentColor"/></g></svg></span><span class="v2-text"><span class="v2-top">100m</span><span class="v2-bot">network</span></span></div></div><div class="header-right"><button type="button" id="privacyHideBtn" class="privacy-hide-btn" onclick="togglePrivacyCurtain(true)" aria-label="Quick Privacy Hide" title="Quick Privacy Hide">👁️</button><label id="theme-toggle-button" aria-label="Toggle Day and Night mode" title="Day / Night Mode">
   <input type="checkbox" id="toggle" checked onchange="toggleDayNightMode(this.checked)">
   <svg viewBox="0 0 69.667 44" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
     <g transform="translate(3.5 3.5)" data-name="Component 15 – 1" id="Component_15_1">
@@ -2543,10 +2589,19 @@ body.gc-fs-open nav.bottom-nav{display:none !important}
    <button type="button" class="note-tag-btn" data-note-tag="Say Hi" onclick="selectNoteTag(this)">👋 Say Hi</button>
    <button type="button" class="note-tag-btn" data-note-tag="Question" onclick="selectNoteTag(this)">❓ Question</button>
    <button type="button" class="note-tag-btn" data-note-tag="Local" onclick="selectNoteTag(this)">📍 Local</button>
+   <button type="button" class="note-tag-btn" data-note-tag="Confess" onclick="selectNoteTag(this)">🌸 Confess</button>
   </div>
   <div class="global-chat-input" style="margin-top:6px">
-   <textarea id="dropNoteInput" maxlength="180" style="min-height:46px" placeholder="Leave a 24h note for the next person who visits…"></textarea>
+   <textarea id="dropNoteInput" maxlength="180" style="min-height:46px" placeholder="Leave a 24h note, confession, or question…"></textarea>
    <button type="button" class="primary" style="width:auto;margin:0;padding:12px 16px" onclick="postDropNote()">Drop</button>
+  </div>
+  <div class="poll-toggle-row">
+   <button type="button" id="pollToggleBtn" class="secondary small fit" onclick="toggleDropPollBuilder()">📊 + Add 2-Option Poll</button>
+   <span class="comment-note" style="margin:0">Optional quick vote</span>
+  </div>
+  <div id="dropPollBuilder" class="poll-builder hidden">
+   <input id="pollOpt1" maxlength="36" placeholder="Option A (e.g. Chai ☕)">
+   <input id="pollOpt2" maxlength="36" placeholder="Option B (e.g. Coffee 🧋)">
   </div>
   <p id="dropNoteStatus" class="comment-note" style="margin-top:6px"></p>
   <div id="dropNotesList" class="drop-notes-list"><div class="empty">Loading recent 24h notes…</div></div>
@@ -2634,6 +2689,13 @@ body.gc-fs-open nav.bottom-nav{display:none !important}
    </div>
 
    <div id="signalIdleView" style="margin-top:14px">
+    <p class="comment-note" style="margin:0 0 6px;font-weight:700">Pick your vibe (optional):</p>
+    <div id="signalVibeRow" class="vibe-pill-row" role="group" aria-label="Signal Vibe">
+     <button type="button" class="vibe-pill active" data-vibe="☕ Chai &amp; Chill" onclick="selectSignalVibe(this)">☕ Chai &amp; Chill</button>
+     <button type="button" class="vibe-pill" data-vibe="🎧 Music" onclick="selectSignalVibe(this)">🎧 Music</button>
+     <button type="button" class="vibe-pill" data-vibe="🎮 Just Games" onclick="selectSignalVibe(this)">🎮 Just Games</button>
+     <button type="button" class="vibe-pill" data-vibe="💭 Deep Talks" onclick="selectSignalVibe(this)">💭 Deep Talks</button>
+    </div>
     <button type="button" class="primary" id="findSignalBtn" onclick="startSignalMatch()">Find Random Signal</button>
     <p class="comment-note">No 100m limit — connects globally with any signed-in member searching right now. Messages auto-clear when the chat ends.</p>
    </div>
@@ -2661,6 +2723,7 @@ body.gc-fs-open nav.bottom-nav{display:none !important}
       <div><strong id="signalPartnerName" style="color:var(--cyan)">Connected</strong><p id="signalRoomNote" class="comment-note" style="margin-top:2px">Anonymous global 1-on-1 session</p></div>
       <div class="signal-actions" style="margin-top:0">
        <button type="button" class="secondary small" onclick="nextSignalMatch()">Next</button>
+       <button type="button" class="danger small" onclick="skipAndBlockSignal()" title="Block &amp; jump to next match">🛡️ Skip &amp; Block</button>
        <button type="button" class="danger small" onclick="stopSignalMatch()">End</button>
       </div>
      </div>
@@ -2668,9 +2731,21 @@ body.gc-fs-open nav.bottom-nav{display:none !important}
     <div id="signalMessages" class="signal-messages"><div class="empty">Signal locked! Say hello.</div></div>
     <div id="signalTypingStatus" class="typing-slot" aria-live="polite"></div>
     <div id="signalReplyPreview" class="tile hidden"><div class="row"><div style="flex:1"><strong id="signalReplyName">Replying</strong><p id="signalReplyText" class="comment-note"></p></div><button class="secondary small fit" onclick="cancelSignalReply()">Cancel</button></div></div>
+    <div id="signalIcebreakers" class="icebreaker-row" aria-label="Quick icebreakers">
+     <button type="button" class="ice-chip" onclick="sendSignalIcebreaker('☕ Chai or Coffee?')">☕ Chai or Coffee?</button>
+     <button type="button" class="ice-chip" onclick="sendSignalIcebreaker('🎧 Last song you played?')">🎧 Last song played?</button>
+     <button type="button" class="ice-chip" onclick="sendSignalIcebreaker('📊 Rate your day 1–10?')">📊 Rate your day 1–10?</button>
+     <button type="button" class="ice-chip" onclick="sendSignalIcebreaker('✨ What is your vibe today?')">✨ What is your vibe today?</button>
+    </div>
     <div class="global-chat-input">
      <textarea id="signalMessageInput" maxlength="500" placeholder="Message your random match..." oninput="handleGlobalTyping()"></textarea>
      <button type="button" class="primary" style="width:auto;margin:0;padding:12px 16px" id="signalSendBtn" onclick="sendSignalMessage()">Send</button>
+    </div>
+    <div id="signalVibeBadges" class="vibe-badge-strip">
+     <span class="vibe-badge-label">Send Vibe Badge:</span>
+     <button type="button" class="vibe-badge-btn" onclick="sendVibeCompliment('✨ Respectful')">✨ Respectful</button>
+     <button type="button" class="vibe-badge-btn" onclick="sendVibeCompliment('🌿 Good Listener')">🌿 Good Listener</button>
+     <button type="button" class="vibe-badge-btn" onclick="sendVibeCompliment('😄 Fun Vibe')">😄 Fun Vibe</button>
     </div>
     <div class="signal-actions">
      <button type="button" class="call-btn small" onclick="startDirectCallFromSignal()">📞 Voice Call</button>
@@ -2734,12 +2809,23 @@ body.gc-fs-open nav.bottom-nav{display:none !important}
 
 <section class="page" id="profile">
  <h2>Your Profile</h2><p class="sub">Your identity on 100m.</p>
- <div class="card"><div class="avatar" id="profileAvatar">U</div><h3 class="user-name" id="profileName">Explorer</h3><p class="sub" id="profileEmail"></p>
+ <div class="card"><div class="avatar" id="profileAvatar">U</div>
+ <div id="avatarPicker" class="avatar-picker" role="group" aria-label="Choose cute avatar">
+  <button type="button" class="avatar-opt" data-avatar="" onclick="selectProfileAvatar('')" title="Initial letter">Aa</button>
+  <button type="button" class="avatar-opt" data-avatar="🦋" onclick="selectProfileAvatar('🦋')" title="Butterfly">🦋</button>
+  <button type="button" class="avatar-opt" data-avatar="☕" onclick="selectProfileAvatar('☕')" title="Chai">☕</button>
+  <button type="button" class="avatar-opt" data-avatar="🎧" onclick="selectProfileAvatar('🎧')" title="Music">🎧</button>
+  <button type="button" class="avatar-opt" data-avatar="🌙" onclick="selectProfileAvatar('🌙')" title="Moon">🌙</button>
+  <button type="button" class="avatar-opt" data-avatar="🌻" onclick="selectProfileAvatar('🌻')" title="Sunflower">🌻</button>
+  <button type="button" class="avatar-opt" data-avatar="🐱" onclick="selectProfileAvatar('🐱')" title="Cat">🐱</button>
+ </div>
+ <h3 class="user-name" id="profileName">Explorer</h3><p class="sub" id="profileEmail"></p>
  <div class="profile-row"><div class="profile-label">MY PUBLIC CHAT ID</div><div class="row" style="align-items:center;gap:8px"><div class="profile-value" id="myPublicChatId">Creating your Chat ID…</div><button class="secondary small" id="copyPublicChatId" onclick="copyMyChatId()">Copy</button></div><p class="sub" style="margin:4px 0">Share this ID so someone can find you for a private chat.</p></div>
  <div class="profile-row"><div class="profile-label">ANONYMOUS HANDLE</div><div class="row" style="align-items:center;gap:8px"><div class="profile-value" id="profileAnonymousHandle" style="color:var(--cyan);font-weight:800">SpicyPotato</div><button type="button" class="secondary small fit" onclick="openEditHandleModal()">✏️ Edit</button><button type="button" class="secondary small fit" onclick="shuffleAnonymousHandle()">🎲 Shuffle</button></div><p class="sub" style="margin:4px 0">Curated safe handles only — Block &amp; Report always stay tied to account IDs.</p></div>
  <div class="profile-row"><div class="profile-label">BIO</div><div class="profile-value" id="profileBio">No bio added yet.</div></div>
  <div class="profile-row"><div class="profile-label">COUNTRY</div><div class="profile-value" id="profileCountry">Not added</div></div>
  <div class="profile-row"><div class="profile-label">INTERESTS</div><div class="profile-value" id="profileInterests">Not added</div></div>
+ <div class="profile-row"><div class="profile-label">VIBE BADGES SHARED</div><div id="profileVibeBadges" class="profile-vibe-chips"><span class="profile-vibe-chip">✨ Respectful · 0</span><span class="profile-vibe-chip">🌿 Good Listener · 0</span><span class="profile-vibe-chip">😄 Fun Vibe · 0</span></div></div>
  <button class="primary" id="editProfileButton" onclick="openEditProfile()">✎ Edit Profile</button>
  <div class="tile" style="margin-top:16px"><h3>Blocked Accounts</h3><p class="sub">Accounts you block appear here. You can unblock them whenever you choose.</p><div id="blockedAccountsList" class="empty">Sign in to view blocked accounts.</div><p id="blockStatus" class="message muted"></p><button class="secondary small" type="button" onclick="loadBlockedAccounts()">Refresh list</button></div>
  <button class="secondary" style="width:100%;margin-top:10px" onclick="go('safety')">Safety &amp; Report</button>
@@ -3299,7 +3385,7 @@ function displayProfile(data){
  document.getElementById("profileBio").textContent=data.bio||"No bio added yet.";
  document.getElementById("profileCountry").textContent=data.country||"Not added";
  document.getElementById("profileInterests").textContent=data.interests||"Not added";
- document.getElementById("profileAvatar").textContent=username.trim().charAt(0).toUpperCase()||"U";
+ if(data&&typeof data.avatarIcon==="string"){myAvatarIcon=data.avatarIcon;try{localStorage.setItem(AVATAR_STORAGE_KEY,myAvatarIcon);}catch(e){}}applyProfileAvatarUI(username);
 }
 function openEditProfile(){
  if(!currentUser&&!guestMode)return;
@@ -4798,7 +4884,7 @@ async function startSignalMatch(){
    signalRoomId="demo_sig";signalPartnerUid=match.uid;signalPartnerHandle=match.handle;
    const nameEl=document.getElementById("signalPartnerName"),noteEl=document.getElementById("signalRoomNote");
    if(nameEl)nameEl.textContent="Connected to "+match.handle;
-   if(noteEl)noteEl.textContent="Preview 1-on-1 · Anonymous session";
+   if(noteEl)noteEl.textContent="Preview 1-on-1 · Vibe: "+selectedSignalVibe;
    demoSignalMsgs=[{id:"ds0",uid:match.uid,handle:match.handle,text:"Hey! Signal locked. Say hi or tap Next to test matching!",createdAt:Date.now()}];
    setSignalUI("matched","");playMatchChime();demoRenderSignalMsgs();
   },1200);
@@ -4814,7 +4900,7 @@ async function startSignalMatch(){
   await myInviteRef.remove().catch(()=>{});
   const myQueueRef=rtdb.ref("globalChat/signalQueue/"+myUid);
   await myQueueRef.onDisconnect().remove();
-  await myQueueRef.set({uid:myUid,handle:myHandle,createdAt:firebase.database.ServerValue.TIMESTAMP});
+  await myQueueRef.set({uid:myUid,handle:myHandle,vibe:selectedSignalVibe,createdAt:firebase.database.ServerValue.TIMESTAMP});
 
   // 1. Listen for incoming match invite
   signalInviteRef=myInviteRef;
@@ -4882,7 +4968,7 @@ async function enterSignalRoom(roomId,partnerUid,partnerHandle){
  signalRoomId=roomId;signalPartnerUid=partnerUid;signalPartnerHandle=partnerHandle;signalMatchingBusy=false;
  const nameEl=document.getElementById("signalPartnerName"),noteEl=document.getElementById("signalRoomNote"),box=document.getElementById("signalMessages");
  if(nameEl)nameEl.textContent="Connected to "+partnerHandle;
- if(noteEl)noteEl.textContent="Global 1-on-1 · Anonymous session";
+ if(noteEl)noteEl.textContent="Global 1-on-1 · Vibe: "+selectedSignalVibe;
  if(box){box.innerHTML="";const em=document.createElement("div");em.className="empty";em.textContent="Signal locked with "+partnerHandle+"! Say hello.";box.appendChild(em);}
  setSignalUI("matched","");
  const myOnlineRef=rtdb.ref("globalChat/signalRooms/"+roomId+"/online/"+currentUser.uid);
@@ -5119,8 +5205,9 @@ function loadLocalDropNotes(){
  }catch(e){}
  const now=Date.now();
  return [
-  {id:"dn_seed1",handle:"SpicyPotato-a4",tag:"Say Hi",text:"First time here — love the clean dark UI and privacy-first ~100m Radar!",createdAt:now-3600000,votes:3,voted:false},
-  {id:"dn_seed2",handle:"ChillPenguin-9c",tag:"Question",text:"Who's joining tonight's 8 PM IST Live Voice Jam?",createdAt:now-1500000,votes:2,voted:false}
+  {id:"dn_seed1",handle:"SpicyPotato-a4",tag:"Question",text:"Evening mood check — what keeps you going today?",createdAt:now-1200000,votes:4,voted:false,poll:{opt1:"Hot Chai ☕",opt2:"Cold Coffee 🧋",v1:7,v2:5,myChoice:0}},
+  {id:"dn_seed2",handle:"ChillPenguin-9c",tag:"Confess",text:"Lowkey love that nobody sees my real name or location here — feels super peaceful 🌸",createdAt:now-2400000,votes:5,voted:false},
+  {id:"dn_seed3",handle:"VelvetLotus-2b",tag:"Say Hi",text:"Who's joining tonight's 8 PM IST Live Voice Jam?",createdAt:now-3600000,votes:2,voted:false}
  ];
 }
 function saveLocalDropNotes(list){
@@ -5144,12 +5231,28 @@ function renderDropNotes(){
   const right=document.createElement("span");right.textContent=timeTxt;
   head.append(left,right);
   const body=document.createElement("div");body.className="drop-note-text";body.textContent=String(n.text||"");
+  let pollWrap=null;
+  if(n.poll&&n.poll.opt1&&n.poll.opt2){
+   pollWrap=document.createElement("div");pollWrap.className="drop-poll-wrap";
+   const c1=Number(n.poll.v1||0),c2=Number(n.poll.v2||0),tot=c1+c2;
+   const p1=tot?Math.round((c1/tot)*100):0,p2=tot?Math.round((c2/tot)*100):0;
+   [[1,n.poll.opt1,p1,c1],[2,n.poll.opt2,p2,c2]].forEach(([idx,label,pct,cntV])=>{
+    const b=document.createElement("button");b.type="button";
+    b.className="drop-poll-opt"+(Number(n.poll.myChoice)===idx?" voted":"");
+    const fill=document.createElement("span");fill.className="drop-poll-fill";fill.style.width=(tot?pct:0)+"%";
+    const txt=document.createElement("span");txt.className="drop-poll-text";txt.textContent=String(label);
+    const pc=document.createElement("span");pc.className="drop-poll-pct";pc.textContent=tot?(pct+"% ("+cntV+")"):"Tap to vote";
+    b.append(fill,txt,pc);
+    b.onclick=()=>voteDropNotePoll(n.id,idx);
+    pollWrap.appendChild(b);
+   });
+  }
   const foot=document.createElement("div");foot.className="drop-note-foot";
   const up=document.createElement("button");up.type="button";up.className="upvote-btn"+(n.voted?" active":"");
   up.textContent="▲ "+(Number(n.votes)||0);
   up.onclick=()=>toggleDropNoteVote(n.id);
   foot.appendChild(up);
-  card.append(head,body,foot);
+  if(pollWrap)card.append(head,body,pollWrap,foot);else card.append(head,body,foot);
   box.appendChild(card);
  });
 }
@@ -5161,7 +5264,7 @@ function initDropNotes(){
  dropNotesRef=rtdb.ref("globalChat/dropNotes").orderByChild("createdAt").limitToLast(30);
  dropNotesListener=snap=>{
   const arr=[];
-  snap.forEach(c=>{const v=c.val()||{};arr.push({id:c.key,handle:v.handle||"Explorer",tag:v.tag||"Thought",text:v.text||"",createdAt:Number(v.createdAt||Date.now()),votes:Number(v.votes||0),voted:!!(v.voters&&currentUser&&v.voters[currentUser.uid])});});
+  snap.forEach(c=>{const v=c.val()||{};let poll=null;if(v.poll&&v.poll.opt1&&v.poll.opt2){poll={opt1:String(v.poll.opt1),opt2:String(v.poll.opt2),v1:Number(v.poll.v1||0),v2:Number(v.poll.v2||0),myChoice:Number((v.poll.voters&&currentUser&&v.poll.voters[currentUser.uid])||0)};}arr.push({id:c.key,handle:v.handle||"Explorer",tag:v.tag||"Thought",text:v.text||"",createdAt:Number(v.createdAt||Date.now()),votes:Number(v.votes||0),voted:!!(v.voters&&currentUser&&v.voters[currentUser.uid]),poll});});
   dropNotesCache=arr.length?arr:loadLocalDropNotes();
   renderDropNotes();
  };
@@ -5173,17 +5276,24 @@ async function postDropNote(){
  const input=document.getElementById("dropNoteInput"),st=document.getElementById("dropNoteStatus");
  const val=(input&&input.value||"").trim();
  if(!val)return;
+ const o1El=document.getElementById("pollOpt1"),o2El=document.getElementById("pollOpt2");
+ const opt1=(o1El&&o1El.value||"").trim(),opt2=(o2El&&o2El.value||"").trim();
+ const pollObj=(opt1&&opt2)?{opt1,opt2,v1:0,v2:0,myChoice:0}:null;
  const handle=(currentUser&&!guestMode)?globalHandle():"CrispyTomato-99";
+ const clearPoll=()=>{if(o1El)o1El.value="";if(o2El)o2El.value="";const b=document.getElementById("dropPollBuilder");if(b)b.classList.add("hidden");const tb=document.getElementById("pollToggleBtn");if(tb)tb.textContent="📊 + Add 2-Option Poll";};
  if(!guestMode&&rtdb&&currentUser){
   try{
-   await rtdb.ref("globalChat/dropNotes").push({uid:currentUser.uid,handle,tag:selectedNoteTag,text:val,votes:1,voters:{[currentUser.uid]:true},createdAt:firebase.database.ServerValue.TIMESTAMP});
-   input.value="";if(st)st.textContent="Dropped! Visible for 24 hours.";return;
+   const payload={uid:currentUser.uid,handle,tag:selectedNoteTag,text:val,votes:1,voters:{[currentUser.uid]:true},createdAt:firebase.database.ServerValue.TIMESTAMP};
+   if(pollObj)payload.poll={opt1:pollObj.opt1,opt2:pollObj.opt2,v1:0,v2:0};
+   await rtdb.ref("globalChat/dropNotes").push(payload);
+   input.value="";clearPoll();if(st)st.textContent="Dropped! Visible for 24 hours.";return;
   }catch(e){}
  }
  const note={id:"dn_"+Date.now(),handle,tag:selectedNoteTag,text:val,createdAt:Date.now(),votes:1,voted:true};
+ if(pollObj)note.poll=pollObj;
  dropNotesCache=[note,...dropNotesCache];
  saveLocalDropNotes(dropNotesCache);
- input.value="";if(st)st.textContent=guestMode?"Dropped in Preview Mode (visible for 24h locally).":"Dropped locally (visible for 24h).";
+ input.value="";clearPoll();if(st)st.textContent=guestMode?"Dropped in Preview Mode (visible for 24h locally).":"Dropped locally (visible for 24h).";
  renderDropNotes();
 }
 async function toggleDropNoteVote(id){
@@ -6649,6 +6759,136 @@ window.addEventListener("load",()=>setTimeout(dismissIntroSplash,2450));
 setTimeout(dismissIntroSplash,3200);
 
 if("serviceWorker" in navigator&&/^https?:/i.test(window.location.protocol)){window.addEventListener("load",()=>{navigator.serviceWorker.register("/sw.js").catch(()=>{});});}
+
+// ---------- GIRLS-FRIENDLY & ENGAGEMENT PACK (PRIVACY CURTAIN, AVATARS, POLLS, VIBES, ICEBREAKERS, SKIP & BLOCK) ----------
+const AVATAR_STORAGE_KEY="100m_avatar_icon_v1";
+const VIBE_BADGES_STORAGE_KEY="100m_vibe_badges_v1";
+let myAvatarIcon="";
+let selectedSignalVibe="☕ Chai & Chill";
+try{myAvatarIcon=localStorage.getItem(AVATAR_STORAGE_KEY)||"";}catch(e){}
+
+function togglePrivacyCurtain(force){
+ const el=document.getElementById("privacyCurtain");if(!el)return;
+ const show=(typeof force==="boolean")?force:el.classList.contains("hidden");
+ el.classList.toggle("hidden",!show);
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")togglePrivacyCurtain(false);});
+
+function applyProfileAvatarUI(username){
+ const av=document.getElementById("profileAvatar");
+ const fallback=(String(username||document.getElementById("profileName")?.textContent||"U").trim().charAt(0)||"U").toUpperCase();
+ if(av)av.textContent=myAvatarIcon||fallback;
+ const radarAv=document.querySelector("#radar .avatar");
+ if(radarAv)radarAv.textContent=myAvatarIcon||"👤";
+ document.querySelectorAll("#avatarPicker .avatar-opt").forEach(btn=>{
+  btn.classList.toggle("active",(btn.dataset.avatar||"")===myAvatarIcon);
+ });
+}
+async function selectProfileAvatar(icon){
+ myAvatarIcon=String(icon||"");
+ try{localStorage.setItem(AVATAR_STORAGE_KEY,myAvatarIcon);}catch(e){}
+ applyProfileAvatarUI();
+ const msg=document.getElementById("profileMessage");
+ if(msg)msg.textContent=myAvatarIcon?("Avatar updated to "+myAvatarIcon):"Avatar reset to initial letter.";
+ if(!guestMode&&currentUser&&typeof db!=="undefined"&&db){
+  try{await db.collection("users").doc(currentUser.uid).set({avatarIcon:myAvatarIcon},{merge:true});}catch(e){}
+ }
+}
+
+function selectSignalVibe(btn){
+ selectedSignalVibe=btn.dataset.vibe||"☕ Chai & Chill";
+ document.querySelectorAll("#signalVibeRow .vibe-pill").forEach(b=>b.classList.toggle("active",b===btn));
+}
+async function sendSignalIcebreaker(text){
+ const input=document.getElementById("signalMessageInput");
+ if(!input)return;
+ input.value=text;
+ await sendSignalMessage();
+}
+async function skipAndBlockSignal(){
+ if(!signalPartnerUid){await nextSignalMatch();return;}
+ const uid=signalPartnerUid,h=signalPartnerHandle;
+ await blockAccount(uid,h);
+ await nextSignalMatch();
+}
+
+function loadVibeBadgeCounts(){
+ try{
+  const raw=localStorage.getItem(VIBE_BADGES_STORAGE_KEY);
+  if(raw){const o=JSON.parse(raw);if(o&&typeof o==="object")return o;}
+ }catch(e){}
+ return {"✨ Respectful":0,"🌿 Good Listener":0,"😄 Fun Vibe":0};
+}
+function renderProfileVibeBadges(){
+ const box=document.getElementById("profileVibeBadges");if(!box)return;
+ const counts=loadVibeBadgeCounts();
+ box.innerHTML="";
+ ["✨ Respectful","🌿 Good Listener","😄 Fun Vibe"].forEach(k=>{
+  const s=document.createElement("span");s.className="profile-vibe-chip";
+  s.textContent=k+" · "+Number(counts[k]||0);
+  box.appendChild(s);
+ });
+}
+async function sendVibeCompliment(badge){
+ const counts=loadVibeBadgeCounts();
+ counts[badge]=Number(counts[badge]||0)+1;
+ try{localStorage.setItem(VIBE_BADGES_STORAGE_KEY,JSON.stringify(counts));}catch(e){}
+ renderProfileVibeBadges();
+ const input=document.getElementById("signalMessageInput");
+ if(input&&signalState==="matched"){
+  input.value="Vibe Badge sent: "+badge+" 💫";
+  await sendSignalMessage();
+ }
+}
+
+function toggleDropPollBuilder(){
+ const b=document.getElementById("dropPollBuilder"),tb=document.getElementById("pollToggleBtn");
+ if(!b)return;
+ const isHidden=b.classList.toggle("hidden");
+ if(tb)tb.textContent=isHidden?"📊 + Add 2-Option Poll":"✕ Hide Poll Options";
+ if(!isHidden){const o1=document.getElementById("pollOpt1");if(o1)o1.focus();}
+}
+async function voteDropNotePoll(id,choice){
+ const item=dropNotesCache.find(x=>x.id===id);
+ if(!item||!item.poll)return;
+ if(!guestMode&&rtdb&&currentUser&&!String(id).startsWith("dn_")){
+  try{
+   const ref=rtdb.ref("globalChat/dropNotes/"+id+"/poll");
+   await ref.transaction(cur=>{
+    if(!cur)return cur;
+    cur.voters=cur.voters||{};
+    const prev=Number(cur.voters[currentUser.uid]||0);
+    if(prev===choice)return cur;
+    if(prev===1)cur.v1=Math.max(0,Number(cur.v1||1)-1);
+    if(prev===2)cur.v2=Math.max(0,Number(cur.v2||1)-1);
+    cur.voters[currentUser.uid]=choice;
+    if(choice===1)cur.v1=Number(cur.v1||0)+1;
+    if(choice===2)cur.v2=Number(cur.v2||0)+1;
+    return cur;
+   });
+   return;
+  }catch(e){}
+ }
+ const prev=Number(item.poll.myChoice||0);
+ if(prev===choice)return;
+ if(prev===1)item.poll.v1=Math.max(0,Number(item.poll.v1||1)-1);
+ if(prev===2)item.poll.v2=Math.max(0,Number(item.poll.v2||1)-1);
+ item.poll.myChoice=choice;
+ if(choice===1)item.poll.v1=Number(item.poll.v1||0)+1;
+ if(choice===2)item.poll.v2=Number(item.poll.v2||0)+1;
+ saveLocalDropNotes(dropNotesCache);
+ renderDropNotes();
+}
+applyProfileAvatarUI();
+renderProfileVibeBadges();
 </script>
+<div id="privacyCurtain" class="hidden" onclick="togglePrivacyCurtain(false)" role="dialog" aria-label="Privacy Screen">
+ <div class="privacy-curtain-card">
+  <div class="privacy-curtain-icon">🌿</div>
+  <h3>100m Notes · Screen Hidden</h3>
+  <p>Quick privacy cover is active so people nearby cannot see your chats or radar.</p>
+  <span class="privacy-curtain-pill">Tap anywhere to resume</span>
+ </div>
+</div>
 </body>
 </html>
