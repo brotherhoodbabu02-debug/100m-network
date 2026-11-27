@@ -2381,6 +2381,18 @@ body.dark-mode #privacyCurtain{background:rgba(24,31,25,.97)}
 body.light-mode .vibe-pill,body.light-mode .status-chip,body.light-mode .ice-chip,body.light-mode .banter-chip,body.light-mode .avatar-opt,body.light-mode .profile-vibe-chip{background:#EFECE3;border-color:rgba(46,58,47,0.16);color:#2E3A2F}
 body.light-mode .vibe-pill.active,body.light-mode .status-chip.active{background:#C96F4F;border-color:#C96F4F;color:#ffffff}
 body.light-mode .quest-item,body.light-mode .vibe-badge-strip,body.light-mode .arcade-flex-strip,body.light-mode .drop-poll-opt{background:#EFECE3;border-color:rgba(46,58,47,0.14);color:#2E3A2F}
+
+/* === LIVE TOAST POPUP, GAME OVER CARD & IN-GAME QUICK MSG === */
+#liveFloatToast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-16px);z-index:100000;max-width:90vw;width:max-content;min-width:220px;padding:11px 18px;border-radius:16px;background:rgba(46,58,47,.96);color:#F8F6EE;border:1.5px solid #C96F4F;box-shadow:0 12px 30px rgba(0,0,0,.35);font-size:13.5px;font-weight:800;text-align:center;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease}
+#liveFloatToast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.game-over-card{margin:8px 0 10px;padding:14px 12px;border-radius:16px;background:linear-gradient(135deg,rgba(201,111,79,.18),rgba(107,127,91,.18));border:1.5px solid #C96F4F;text-align:center}
+.game-over-card h4{margin:0 0 4px;font-size:17px;color:var(--text)}
+.game-over-card p{margin:0 0 10px;font-size:12.5px;color:var(--muted)}
+.game-over-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:7px}
+.game-over-actions button{width:auto;margin:0;padding:8px 13px;font-size:12.5px;border-radius:12px}
+.ingame-msg-row{display:flex;gap:6px;margin-top:6px;align-items:center}
+.ingame-msg-row input{flex:1;margin:0;padding:8px 11px;font-size:12.5px;border-radius:12px}
+.ingame-msg-row button{width:auto;margin:0;padding:8px 12px;font-size:12px;border-radius:12px}
 </style>
 </head>
 <body>
@@ -5534,7 +5546,7 @@ function listenDirectCallRoom(callId,isCaller){
  let answerApplied=false;
  directCallRoomListener=async snap=>{
   const data=snap.val();
-  if(!data||data.status==="ended"){endDirectCall(true);return;}
+  if(!data||data.status==="ended"){const pName=directCallPeerName||"Partner";endDirectCall(true);showLiveFloatToast("📞 Call ended ("+pName+")");return;}
   if(isCaller&&data.answer&&!answerApplied&&directCallPC){
    answerApplied=true;
    try{
@@ -5619,7 +5631,7 @@ let liveMp={active:false,peerUid:null,peerName:"",role:1,gameId:"",waiting:false
 function isRealMp(){return !!(liveMp.active&&!guestMode&&currentUser&&liveMp.peerUid);}
 function sendMpMove(gameId,payload){
  if(!isRealMp()||!rtdb)return;
- const code=("gmv_"+gameId+"_"+payload+"_"+Date.now().toString(36)).slice(0,78);
+ const code=("gmv_"+gameId+"_"+payload+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,4)).slice(0,78);
  rtdb.ref("directVoiceInbox/"+liveMp.peerUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
 }
 function cancelWaitingGameInvite(){
@@ -5630,15 +5642,38 @@ function cancelWaitingGameInvite(){
  liveMp={active:false,peerUid:null,peerName:"",role:1,gameId:"",waiting:false,waitingGame:""};
  miniGameTab="lobby";renderMiniGamesPanel();
 }
-function startRealMpGame(gameId,peerUid,peerName,role){
- liveMp={active:true,peerUid,peerName:peerName||"Partner",role,gameId,waiting:false,waitingGame:""};
+function getMpSeed(peerUid,roundNum){
+ const pair=[String(currentUser?.uid||"a"),String(peerUid||"b")].sort().join("|")+"|"+Number(roundNum||1);
+ let h=2166136261;
+ for(let i=0;i<pair.length;i++){h^=pair.charCodeAt(i);h=Math.imul(h,16777619);}
+ return Math.abs(h)>>>0;
+}
+function startRealMpGame(gameId,peerUid,peerName,role,roundNum){
+ const rNum=Number(roundNum||1);
+ liveMp={active:true,peerUid,peerName:peerName||"Partner",role,gameId,waiting:false,waitingGame:"",round:rNum};
+ const seed=getMpSeed(peerUid,rNum);
  // Reset selected game cleanly for real 2-player session (role 1 = You go first, role 2 = Opp goes first)
  if(gameId==="ttt"){tttBoard=Array(9).fill("");tttOver=false;tttWinLine=[];tttTurn=(role===1?"you":"opp");}
  else if(gameId==="ludo"){ludoReset();ludoState.turn=(role===1?"you":"opp");ludoState.msg=(role===1?"Your turn (Blue) — tap Blue Dice!":"Waiting for "+liveMp.peerName+" (Green) to roll…");}
  else if(gameId==="snl"){snlReset();snlState.turn=(role===1?"you":"opp");snlState.msg=(role===1?"Your turn — tap Blue Dice!":"Waiting for "+liveMp.peerName+" to roll…");}
  else if(gameId==="dots"){dotsReset();dotsState.turn=(role===1?1:2);dotsState.msg=(role===1?"Your turn (Blue) — tap any line!":"Waiting for "+liveMp.peerName+"…");}
- else if(gameId==="mem"){memReset();memState.turn=(role===1?"you":"opp");memState.msg=(role===1?"Your turn — flip 2 cards!":"Waiting for "+liveMp.peerName+"…");}
- else if(gameId==="wc"){wcReset();wcState.turn=(role===1?"you":"opp");wcState.msg=(role===1?"Your turn — type a word!":"Waiting for "+liveMp.peerName+" to type a word…");}
+ else if(gameId==="mem"){
+  memReset();
+  // Deterministic shared board shuffle so both phones see identical cards!
+  const deck=["🦊","🐼","🚀","⚡","🎸","🍕","🌈","💎","🦊","🐼","🚀","⚡","🎸","🍕","🌈","💎"];
+  let s=seed||1337;
+  for(let i=deck.length-1;i>0;i--){s=(Math.imul(s,1664525)+1013904223)>>>0;const j=s%(i+1);[deck[i],deck[j]]=[deck[j],deck[i]];}
+  memState.cards=deck;memState.turn=(role===1?"you":"opp");memState.msg=(role===1?"Your turn — flip 2 cards!":"Waiting for "+liveMp.peerName+"…");
+ }
+ else if(gameId==="wc"){
+  wcReset();
+  const starters=["apple","tiger","river","music","ocean","planet","rocket","mango"];
+  const pick=starters[seed%starters.length];
+  wcState.words=[{w:pick,by:"sys"}];wcState.used=new Set([pick]);
+  wcState.turn=(role===1?"you":"opp");
+  if(role!==1)stopWcTimer();
+  wcState.msg=(role===1?"Your turn — start with '"+pick.slice(-1).toUpperCase()+"'!":"Waiting for "+liveMp.peerName+" (word: "+pick+")…");
+ }
  else if(gameId==="chk"){chkReset();chkState.turn=(role===1?1:-1);chkState.msg=(role===1?"Your turn (🔵) — tap a piece!":"Waiting for "+liveMp.peerName+" (🔴)…");}
  if(!document.getElementById("miniGamesOverlay"))openMiniGames(signalState==="matched"?"signal":"private");
  miniGameTab=gameId;
@@ -5793,7 +5828,34 @@ function initDirectCallInbox(){
    handleIncomingMpMove(cid.split("_"));return;
   }
   if(cid.startsWith("cend_")){
-   if(directCallState!=="idle")endDirectCall(true);
+   if(directCallState!=="idle"){
+    endDirectCall(true);
+    showLiveFloatToast("📞 Call ended by "+fromName);
+    const s1=document.getElementById("signalStatusText"),s2=document.getElementById("privateChatStatus");
+    if(s1)s1.textContent="📞 Call ended by "+fromName+".";
+    if(s2)s2.textContent="📞 Call ended by "+fromName+".";
+   }
+   return;
+  }
+  if(cid.startsWith("gpop_")){
+   const enc=cid.slice(5).replace(/_[a-z0-9]{4,10}$/,"");
+   let txt="";
+   try{txt=decodeURIComponent(enc.replace(/~/g,"%"));}catch(e){txt=enc;}
+   if(txt){
+    playHopPop(2);
+    showLiveFloatToast("💬 "+fromName+": "+txt);
+    const tb=document.getElementById("inGameBanterToast");
+    if(tb){tb.innerHTML='<div class="banter-toast">💬 '+String(fromName).replace(/</g,"&lt;")+': '+String(txt).replace(/</g,"&lt;")+'</div>';setTimeout(()=>{if(tb)tb.innerHTML="";},3200);}
+   }
+   return;
+  }
+  if(cid.startsWith("grem_")){
+   const p=cid.split("_");
+   const gId=p[1]||liveMp.gameId||"ludo";
+   const rNum=Number(p[2]||2);
+   playMatchChime();
+   showLiveFloatToast("🔄 "+fromName+" started a Rematch!");
+   startRealMpGame(gId,inv.from,fromName,2,rNum);
    return;
   }
   if(directCallState!=="idle")return;
@@ -6824,7 +6886,7 @@ function renderMiniGamesPanel(){
    '<button type="button" class="secondary small fit" onclick="switchMiniGameTab(\'lobby\')">← Games</button>'+
    '<strong style="font-size:15px;text-align:center">'+(gameTitles[miniGameTab]||"100m Arcade")+'</strong>'+
    '<button type="button" class="modal-close-x fit" onclick="closeMiniGames()" aria-label="Close games"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'+
-  '</div>'+bodyHtml+
+  '</div>'+renderGameOverCardHtml()+bodyHtml+
    '<div id="inGameBanterToast"></div>'+
    '<div class="banter-bar" aria-label="Quick game reactions">'+
     '<button type="button" class="banter-chip" onclick="sendGameBanter(\'😂 Lucky Roll!\')">😂 Lucky Roll!</button>'+
@@ -6832,6 +6894,10 @@ function renderMiniGamesPanel(){
     '<button type="button" class="banter-chip" onclick="sendGameBanter(\'💀 RIP\')">💀 RIP</button>'+
     '<button type="button" class="banter-chip" onclick="sendGameBanter(\'🤝 GG!\')">🤝 GG!</button>'+
     '<button type="button" class="banter-chip" onclick="sendGameBanter(\'🔄 Rematch?\')">🔄 Rematch?</button>'+
+   '</div>'+
+   '<div class="ingame-msg-row">'+
+    '<input id="inGameQuickMsgInput" maxlength="40" placeholder="Quick popup message to opponent…" onkeydown="if(event.key===\'Enter\')sendInGameQuickMsg()">'+
+    '<button type="button" class="primary small" onclick="sendInGameQuickMsg()">Send</button>'+
    '</div>';
 }
 
@@ -7124,15 +7190,93 @@ function flexArcadeToGlobal(){
  const gInp=document.getElementById("globalMessageInput");
  if(gInp){gInp.value=msg;gInp.focus();}
 }
+let liveToastTimer=null;
+function showLiveFloatToast(msg){
+ const el=document.getElementById("liveFloatToast");if(!el)return;
+ el.textContent=String(msg||"");
+ el.classList.add("show");
+ if(liveToastTimer)clearTimeout(liveToastTimer);
+ liveToastTimer=setTimeout(()=>el.classList.remove("show"),3600);
+}
+function sendPopupToOpponent(txt){
+ const targetUid=liveMp.peerUid||(miniGameContext==="signal"?signalPartnerUid:activePrivateOtherUid);
+ if(!guestMode&&currentUser&&rtdb&&targetUid){
+  const safe=encodeURIComponent(String(txt||"").slice(0,36)).replace(/%/g,"~").replace(/[.#$\[\]\/]/g,"");
+  const code=("gpop_"+safe+"_"+Date.now().toString(36).slice(-5)).slice(0,78);
+  rtdb.ref("directVoiceInbox/"+targetUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+ }
+}
 function sendGameBanter(txt){
  const toastBox=document.getElementById("inGameBanterToast");
  if(toastBox){
   toastBox.innerHTML='<div class="banter-toast">You: '+String(txt).replace(/</g,"&lt;")+'</div>';
-  setTimeout(()=>{if(toastBox)toastBox.innerHTML="";},2400);
+  setTimeout(()=>{if(toastBox)toastBox.innerHTML="";},2600);
  }
- if(typeof sendMiniGameToChat==="function"&&((miniGameContext==="signal"&&signalPartnerUid)||(miniGameContext==="private"&&activePrivateOtherUid))){
-  try{sendMiniGameToChat("🎮 "+txt);}catch(e){}
+ sendPopupToOpponent(txt);
+}
+function sendInGameQuickMsg(){
+ const inp=document.getElementById("inGameQuickMsgInput");
+ const val=(inp&&inp.value||"").trim();
+ if(!val)return;
+ inp.value="";
+ sendGameBanter(val);
+}
+function getActiveGameOverState(){
+ if(miniGameTab==="ttt"&&tttOver){
+  const r=tttCheckWinner(tttBoard);
+  return {over:true,title:r&&r.w==="X"?"🎉 You Won Tic-Tac-Toe!":(r&&r.w==="O"?"😅 Opponent Won!":"🤝 It's a Draw!"),sub:"Ready for another round or want to switch games?"};
  }
+ if(miniGameTab==="ludo"&&ludoState.over){
+  return {over:true,title:ludoState.winner==="You"?"🎉 You Won Ludo!":"😅 "+(ludoState.winner||"Opponent")+" Won Ludo!",sub:"Great match! Play a rematch or try another game."};
+ }
+ if(miniGameTab==="snl"&&snlState.over){
+  return {over:true,title:snlState.winner==="You"?"🎉 You Won Snakes & Ladders!":"😅 Opponent Won!",sub:"Up for a quick rematch?"};
+ }
+ if(miniGameTab==="dots"&&dotsState.over){
+  return {over:true,title:dotsState.s1>dotsState.s2?"🎉 You Won Dots & Boxes!":(dotsState.s2>dotsState.s1?"😅 Opponent Won!":"🤝 It's a Draw!"),sub:"Final Score: You "+dotsState.s1+" – "+dotsState.s2+" Opp"};
+ }
+ if(miniGameTab==="mem"&&memState.matched&&memState.matched.length===16){
+  return {over:true,title:memState.sYou>memState.sOpp?"🎉 You Won Memory Flip!":(memState.sOpp>memState.sYou?"😅 Opponent Won!":"🤝 It's a Draw!"),sub:"Pairs: You "+memState.sYou+" – "+memState.sOpp+" Opp"};
+ }
+ if(miniGameTab==="wc"&&wcState.over){
+  return {over:true,title:"🏁 Word Chain Finished!",sub:"Streak: "+(wcState.score||0)+" words"};
+ }
+ if(miniGameTab==="chk"&&chkState.over){
+  return {over:true,title:"🏁 Checkers Finished!",sub:String(chkState.msg||"Great match!")};
+ }
+ return {over:false};
+}
+function renderGameOverCardHtml(){
+ const st=getActiveGameOverState();
+ if(!st.over)return "";
+ return '<div class="game-over-card">'+
+  '<h4>'+st.title+'</h4>'+
+  '<p>'+String(st.sub||"").replace(/</g,"&lt;")+'</p>'+
+  '<div class="game-over-actions">'+
+   '<button type="button" class="primary small" onclick="triggerGameRematch()">🔄 Rematch</button>'+
+   '<button type="button" class="secondary small" onclick="switchMiniGameTab(\'lobby\')">🎮 Try Another Game</button>'+
+   '<button type="button" class="danger small" onclick="closeMiniGames()">✕ Close</button>'+
+  '</div>'+
+ '</div>';
+}
+function triggerGameRematch(){
+ const gId=miniGameTab;
+ if(isRealMp()&&liveMp.peerUid&&rtdb&&currentUser){
+  const nextRound=Number(liveMp.round||1)+1;
+  const code=("grem_"+gId+"_"+nextRound+"_"+Date.now().toString(36).slice(-5)).slice(0,78);
+  rtdb.ref("directVoiceInbox/"+liveMp.peerUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+  showLiveFloatToast("🔄 Rematch started!");
+  startRealMpGame(gId,liveMp.peerUid,liveMp.peerName,1,nextRound);
+  return;
+ }
+ if(gId==="ttt")tttReset();
+ else if(gId==="ludo")ludoReset();
+ else if(gId==="snl")snlReset();
+ else if(gId==="dots")dotsReset();
+ else if(gId==="mem")memReset();
+ else if(gId==="wc")wcReset();
+ else if(gId==="chk")chkReset();
+ renderMiniGamesPanel();
 }
 renderDailyQuests();
 renderFreeForUI();
@@ -7146,5 +7290,6 @@ renderProfileArcadeStats();
   <span class="privacy-curtain-pill">Tap anywhere to resume</span>
  </div>
 </div>
+<div id="liveFloatToast" role="status" aria-live="polite"></div>
 </body>
 </html>
