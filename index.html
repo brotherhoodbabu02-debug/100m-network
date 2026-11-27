@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#09090b">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
@@ -2393,6 +2393,52 @@ body.light-mode .quest-item,body.light-mode .vibe-badge-strip,body.light-mode .a
 .ingame-msg-row{display:flex;gap:6px;margin-top:6px;align-items:center}
 .ingame-msg-row input{flex:1;margin:0;padding:8px 11px;font-size:12.5px;border-radius:12px}
 .ingame-msg-row button{width:auto;margin:0;padding:8px 12px;font-size:12px;border-radius:12px}
+
+/* === WHATSAPP-STYLE CHAT COMPOSER & ANDROID KEYBOARD EXPERIENCE === */
+.global-chat-input{display:flex;gap:8px;align-items:flex-end;margin-top:6px;flex-shrink:0}
+.global-chat-input textarea,#privateMessageInput,#nearbyRoomMessageInput{
+ box-sizing:border-box!important;
+ min-height:44px!important;height:44px;max-height:110px!important;
+ resize:none!important;border-radius:22px!important;
+ padding:11px 16px!important;font-size:14.5px!important;line-height:20px!important;
+ overflow-y:hidden!important;scrollbar-width:none!important;
+}
+.global-chat-input textarea::-webkit-scrollbar,#privateMessageInput::-webkit-scrollbar{display:none!important}
+.global-chat-input button.primary{
+ height:44px!important;min-width:68px;border-radius:22px!important;
+ padding:0 16px!important;margin:0!important;flex-shrink:0;
+ display:inline-flex;align-items:center;justify-content:center;
+}
+body.kb-open .bottom-nav{display:none!important}
+body.kb-open header{padding:6px 14px!important;min-height:46px!important}
+body.kb-open main{padding:4px 8px 6px!important}
+body.kb-open footer.note{display:none!important}
+body.kb-open #signalIcebreakers,
+body.kb-open #signalVibeBadges,
+body.kb-open #signalActiveView > .signal-actions,
+body.kb-open .chats-tabs,
+body.kb-open #chats > h2,
+body.kb-open #chats > p.sub,
+body.kb-open #signalCard > .signal-top,
+body.kb-open #globalchat > p.sub,
+body.kb-open .global-online-wrap{display:none!important}
+body.kb-open #signalCard,
+body.kb-open #globalchat{
+ margin:0!important;padding:10px!important;
+ height:calc(var(--vvh, 100dvh) - 62px)!important;
+ display:flex!important;flex-direction:column!important;
+}
+body.kb-open #signalActiveView,
+body.kb-open #globalchat > .global-chat-layout{
+ flex:1!important;min-height:0!important;margin-top:0!important;
+ display:flex!important;flex-direction:column!important;
+}
+body.kb-open .signal-messages,
+body.kb-open .global-chat-messages,
+body.kb-open #privateMessages{
+ flex:1!important;min-height:0!important;height:auto!important;max-height:none!important;
+ margin:6px 0!important;
+}
 </style>
 </head>
 <body>
@@ -2813,7 +2859,7 @@ body.light-mode .quest-item,body.light-mode .vibe-badge-strip,body.light-mode .a
      <button type="button" class="ice-chip" onclick="sendSignalIcebreaker('✨ What is your vibe today?')">✨ What is your vibe today?</button>
     </div>
     <div class="global-chat-input">
-     <textarea id="signalMessageInput" maxlength="500" placeholder="Message your random match..." oninput="handleGlobalTyping()"></textarea>
+     <textarea id="signalMessageInput" maxlength="500" placeholder="Message..." oninput="handleGlobalTyping()"></textarea>
      <button type="button" class="primary" style="width:auto;margin:0;padding:12px 16px" id="signalSendBtn" onclick="sendSignalMessage()">Send</button>
     </div>
     <div id="signalVibeBadges" class="vibe-badge-strip">
@@ -7281,6 +7327,81 @@ function triggerGameRematch(){
 renderDailyQuests();
 renderFreeForUI();
 renderProfileArcadeStats();
+
+// ---------- WHATSAPP-STYLE ANDROID KEYBOARD & AUTO-GROW COMPOSER ----------
+(function initWhatsAppChatFeel(){
+ const CHAT_INPUT_IDS=new Set(["signalMessageInput","globalMessageInput","privateMessageInput","nearbyRoomMessageInput","dropNoteInput"]);
+ let kbBlurTimer=null;
+ let baseH=window.innerHeight||800;
+
+ function scrollActiveChatBottom(){
+  ["signalMessages","globalChatMessages","privateMessages","nearbyMessages"].forEach(id=>{
+   const el=document.getElementById(id);
+   if(el&&el.offsetParent!==null)el.scrollTop=el.scrollHeight;
+  });
+ }
+ function updateViewportVar(){
+  const vh=(window.visualViewport&&window.visualViewport.height)||window.innerHeight;
+  document.documentElement.style.setProperty("--vvh",Math.round(vh)+"px");
+  if(vh>baseH)baseH=vh;
+  const focused=document.activeElement;
+  const isTextInput=focused&&(focused.tagName==="TEXTAREA"||(focused.tagName==="INPUT"&&focused.type!=="checkbox"&&focused.type!=="radio"));
+  const shrunk=(baseH-vh)>110;
+  document.body.classList.toggle("kb-open",Boolean(isTextInput||shrunk));
+  if(isTextInput){
+   setTimeout(()=>{
+    scrollActiveChatBottom();
+    try{focused.scrollIntoView({block:"nearest",behavior:"smooth"});}catch(e){}
+   },120);
+  }
+ }
+ document.addEventListener("focusin",e=>{
+  const t=e.target;
+  if(!t)return;
+  if(t.tagName==="TEXTAREA"||(t.tagName==="INPUT"&&t.type!=="checkbox"&&t.type!=="radio")){
+   if(kbBlurTimer){clearTimeout(kbBlurTimer);kbBlurTimer=null;}
+   document.body.classList.add("kb-open");
+   updateViewportVar();
+  }
+ });
+ document.addEventListener("focusout",()=>{
+  if(kbBlurTimer)clearTimeout(kbBlurTimer);
+  kbBlurTimer=setTimeout(()=>{
+   const focused=document.activeElement;
+   const stillInput=focused&&(focused.tagName==="TEXTAREA"||(focused.tagName==="INPUT"&&focused.type!=="checkbox"&&focused.type!=="radio"));
+   if(!stillInput)document.body.classList.remove("kb-open");
+   updateViewportVar();
+  },180);
+ });
+ // Auto-grow chat textareas cleanly like WhatsApp (44px -> max 110px)
+ document.addEventListener("input",e=>{
+  const t=e.target;
+  if(t&&t.tagName==="TEXTAREA"&&CHAT_INPUT_IDS.has(t.id)){
+   t.style.height="44px";
+   const h=Math.min(110,Math.max(44,t.scrollHeight));
+   t.style.height=h+"px";
+   t.style.overflowY=(t.scrollHeight>110)?"auto":"hidden";
+  }
+ });
+ // Reset textarea height after Send click
+ document.addEventListener("click",e=>{
+  const btn=e.target&&e.target.closest&&e.target.closest("button");
+  if(btn&&/send/i.test(btn.textContent||"")){
+   setTimeout(()=>{
+    CHAT_INPUT_IDS.forEach(id=>{
+     const el=document.getElementById(id);
+     if(el&&!el.value)el.style.height="44px";
+    });
+    scrollActiveChatBottom();
+   },40);
+  }
+ });
+ if(window.visualViewport){
+  window.visualViewport.addEventListener("resize",updateViewportVar);
+ }
+ window.addEventListener("resize",updateViewportVar);
+ updateViewportVar();
+})();
 </script>
 <div id="privacyCurtain" class="hidden" onclick="togglePrivacyCurtain(false)" role="dialog" aria-label="Privacy Screen">
  <div class="privacy-curtain-card">
