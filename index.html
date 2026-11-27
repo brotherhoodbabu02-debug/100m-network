@@ -2423,7 +2423,8 @@ body.kb-open #signalCard > .signal-top,
 body.kb-open #globalchat > p.sub,
 body.kb-open .global-online-wrap{display:none!important}
 body.kb-open #signalCard,
-body.kb-open #globalchat{
+body.kb-open #globalchat,
+body.kb-open #privateChatCol .card:last-of-type{
  margin:0!important;padding:10px!important;
  height:calc(var(--vvh, 100dvh) - 62px)!important;
  display:flex!important;flex-direction:column!important;
@@ -5833,6 +5834,7 @@ function handleIncomingMpMove(parts){
   if(w&&!wcState.used.has(w)){
    wcState.words.push({w,by:"opp"});wcState.used.add(w);wcState.turn="you";wcState.timer=15;playHopPop(2);
    wcState.msg=liveMp.peerName+" played '"+w+"' — start with '"+w.slice(-1).toUpperCase()+"'!";
+   if(typeof startWcTimer==="function")startWcTimer();
    renderMiniGamesPanel();
   }
  }else if(gId==="chk"){
@@ -5886,7 +5888,7 @@ function initDirectCallInbox(){
   if(cid.startsWith("gpop_")){
    const enc=cid.slice(5).replace(/_[a-z0-9]{4,10}$/,"");
    let txt="";
-   try{txt=decodeURIComponent(enc.replace(/~/g,"%"));}catch(e){txt=enc;}
+   try{txt=decodeURIComponent(enc.replace(/~/g,"%"));}catch(e){txt=enc.replace(/~[0-9A-Fa-f]{2}/g," ").trim();}
    if(txt){
     playHopPop(2);
     showLiveFloatToast("💬 "+fromName+": "+txt);
@@ -7247,8 +7249,9 @@ function showLiveFloatToast(msg){
 function sendPopupToOpponent(txt){
  const targetUid=liveMp.peerUid||(miniGameContext==="signal"?signalPartnerUid:activePrivateOtherUid);
  if(!guestMode&&currentUser&&rtdb&&targetUid){
-  const safe=encodeURIComponent(String(txt||"").slice(0,36)).replace(/%/g,"~").replace(/[.#$\[\]\/]/g,"");
-  const code=("gpop_"+safe+"_"+Date.now().toString(36).slice(-5)).slice(0,78);
+  let safe=encodeURIComponent(String(txt||"").slice(0,36)).replace(/%/g,"~").replace(/[.#$\[\]\/]/g,"");
+  if(safe.length>64){safe=safe.slice(0,64).replace(/~[0-9A-Fa-f]{0,1}$/,"");}
+  const code="gpop_"+safe+"_"+Date.now().toString(36).slice(-5);
   rtdb.ref("directVoiceInbox/"+targetUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
  }
 }
