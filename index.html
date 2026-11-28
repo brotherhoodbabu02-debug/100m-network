@@ -5833,7 +5833,7 @@ function handleIncomingMpMove(parts){
     if(memState.matched.length===16)memState.msg=memState.sYou>memState.sOpp?"🎉 You won Memory!":(memState.sOpp>memState.sYou?"😅 "+liveMp.peerName+" won Memory!":"🤝 Draw!");
     else memState.msg=liveMp.peerName+" matched! Their turn again.";
    }else{
-    memState.flipped=[];memState.turn="you";memState.msg="Your turn — flip 2 cards!";
+    memState.flipped=[];memState.lock=false;memState.turn="you";memState.msg="Your turn — flip 2 cards!";
    }
    renderMiniGamesPanel();
   },700);
@@ -5912,6 +5912,14 @@ function initDirectCallInbox(){
    playMatchChime();
    showLiveFloatToast("🔄 "+fromName+" started a Rematch!");
    startRealMpGame(gId,inv.from,fromName,2,rNum);
+   return;
+  }
+  if(cid.startsWith("gcls_")){
+   closeMiniGames(true);
+   showLiveFloatToast("🎮 "+fromName+" closed the game");
+   const s1=document.getElementById("signalStatusText"),s2=document.getElementById("privateChatStatus");
+   if(s1)s1.textContent="🎮 "+fromName+" closed the game.";
+   if(s2)s2.textContent="🎮 "+fromName+" closed the game.";
    return;
   }
   if(directCallState!=="idle")return;
@@ -6542,7 +6550,7 @@ function memFlip(idx){
    else memState.msg="Match found! Flip again!";
    renderMiniGamesPanel();
   }else{
-   memState.flipped=[];memState.turn="opp";memState.msg=isRealMp()?("No match — waiting for "+liveMp.peerName+"…"):"No match — Opponent's turn…";renderMiniGamesPanel();
+   memState.flipped=[];memState.turn="opp";if(isRealMp())memState.lock=false;memState.msg=isRealMp()?("No match — waiting for "+liveMp.peerName+"…"):"No match — Opponent's turn…";renderMiniGamesPanel();
    if(!isRealMp())setTimeout(memBotTurn,650);
   }
  },650);
@@ -6711,7 +6719,15 @@ function stopAllGameTimers(){
  ludoAnimating=false;ludoState.rolling=false;ludoHoppingKey="";
  snlState.rolling=false;snlState.animating=false;snlState.fx="";snlState.glideWho="";snlState.swallowWho="";snlState.shake=false;
 }
-function closeMiniGames(){stopAllGameTimers();const o=document.getElementById("miniGamesOverlay");if(o)o.remove();}
+function closeMiniGames(silent=false){
+ stopAllGameTimers();
+ if(!silent&&isRealMp()&&liveMp.peerUid&&rtdb&&currentUser){
+  const code=("gcls_"+(liveMp.gameId||"game")+"_"+Date.now().toString(36).slice(-5)).slice(0,78);
+  rtdb.ref("directVoiceInbox/"+liveMp.peerUid+"/"+code).set({callId:code,from:currentUser.uid,fromHandle:globalHandle(),createdAt:firebase.database.ServerValue.TIMESTAMP}).catch(()=>{});
+ }
+ liveMp={active:false,peerUid:null,peerName:"",role:1,gameId:"",waiting:false,waitingGame:"",round:1};
+ const o=document.getElementById("miniGamesOverlay");if(o)o.remove();
+}
 function switchMiniGameTab(tab){
  stopAllGameTimers();
  miniGameTab=tab;
