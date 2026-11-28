@@ -12,7 +12,7 @@
 <title>100m Network</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -2467,6 +2467,157 @@ body.light-mode .hiw-step{background:#EFECE3;border-color:rgba(46,58,47,.12)}
 body.light-mode .onboard-btn{background:#EFECE3}
 .onboard-btn strong{display:block;font-size:14px;color:var(--text)}
 .onboard-btn small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+
+/* === STAGE 1: 100M NETWORK PREMIUM MINIMALIST DESIGN SYSTEM === */
+:root{
+ --bg:#0B0F19;--surface:#111827;--elevated:#1E293B;--line:rgba(255,255,255,0.09);
+ --text:#F8FAFC;--muted:#94A3B8;--subtext:#94A3B8;
+ --brand:#F8FAFC;--accent:#3B82F6;--cyan:#3B82F6;
+}
+body,button,input,textarea,select,h1,h2,h3,h4,p,span,small{
+ font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif!important;
+}
+body.light-mode{
+ --bg:#F8FAFC;--surface:#FFFFFF;--elevated:#F1F5F9;--line:#E2E8F0;
+ --text:#0F172A;--muted:#64748B;--subtext:#64748B;
+ --brand:#0F172A;--accent:#2563EB;--cyan:#2563EB;
+ background:#F8FAFC!important;color:#0F172A!important;
+}
+body:not(.light-mode){background:#0B0F19!important;color:#F8FAFC!important}
+
+/* Header: ultra-clean frosted bar */
+header{
+ background:rgba(255,255,255,0.88)!important;
+ border-bottom:1px solid #E2E8F0!important;
+ box-shadow:none!important;backdrop-filter:blur(14px)!important;
+}
+body:not(.light-mode) header{
+ background:rgba(11,15,25,0.88)!important;
+ border-bottom:1px solid rgba(255,255,255,0.08)!important;
+}
+.brand-v2{color:#0F172A!important}
+body:not(.light-mode) .brand-v2{color:#F8FAFC!important}
+.brand-v2 .v2-emblem{color:#2563EB!important}
+
+/* Cards: flat crisp 1px borders, refined shadow, zero heavy clay/neon */
+.card,.tile,.home-greet-bar,.live-hour-card,.safety-pill-bar{
+ background:var(--surface)!important;
+ border:1px solid var(--line)!important;
+ border-radius:16px!important;
+ box-shadow:0 1px 3px rgba(15,23,42,0.05),0 1px 2px rgba(15,23,42,0.03)!important;
+}
+body:not(.light-mode) .card,body:not(.light-mode) .tile,body:not(.light-mode) .home-greet-bar{
+ box-shadow:0 1px 3px rgba(0,0,0,0.35)!important;
+}
+
+/* Primary & Secondary Buttons: strict 2-color + 1-accent discipline */
+button.primary,.hero-cta-primary{
+ background:#0F172A!important;color:#FFFFFF!important;
+ border:1px solid #0F172A!important;border-radius:12px!important;
+ box-shadow:0 1px 2px rgba(15,23,42,0.12)!important;
+ font-weight:600!important;transition:opacity .15s ease,transform .12s ease!important;
+}
+body:not(.light-mode) button.primary,body:not(.light-mode) .hero-cta-primary{
+ background:#2563EB!important;border-color:#2563EB!important;color:#FFFFFF!important;
+}
+button.primary:active,.hero-cta-primary:active{transform:scale(0.985)}
+button.secondary,.hero-cta-secondary,.guest-btn{
+ background:var(--elevated)!important;color:var(--text)!important;
+ border:1px solid var(--line)!important;border-radius:12px!important;
+ box-shadow:none!important;font-weight:600!important;
+}
+button.danger{
+ background:#FEF2F2!important;color:#DC2626!important;
+ border:1px solid #FECACA!important;border-radius:12px!important;box-shadow:none!important;
+}
+body:not(.light-mode) button.danger{
+ background:rgba(220,38,38,0.14)!important;color:#F87171!important;border-color:rgba(248,113,113,0.28)!important;
+}
+
+/* Active pills & tabs: single subtle Indigo-Blue accent (#2563EB) */
+.vibe-pill.active,.status-chip.active,.note-tag-btn.active,.chats-tab.active{
+ background:#2563EB!important;color:#FFFFFF!important;border-color:#2563EB!important;box-shadow:none!important;
+}
+.vibe-pill,.status-chip,.note-tag-btn,.ice-chip,.banter-chip,.avatar-opt,.profile-vibe-chip,.quest-item,.hiw-step{
+ background:var(--elevated)!important;color:var(--text)!important;
+ border:1px solid var(--line)!important;box-shadow:none!important;
+}
+.hiw-num,.streak-pill{background:#EFF6FF!important;color:#2563EB!important;border-color:#BFDBFE!important}
+body:not(.light-mode) .hiw-num,body:not(.light-mode) .streak-pill{background:rgba(37,99,235,0.18)!important;color:#93C5FD!important;border-color:rgba(59,130,246,0.3)!important}
+.quest-bar-fill{background:#2563EB!important}
+
+/* Home 6-Section Clean Grid */
+.bento-6{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin:12px 0!important}
+.bento-6 .bento-tile{
+ background:var(--surface)!important;color:var(--text)!important;
+ border:1px solid var(--line)!important;border-radius:16px!important;
+ padding:14px 12px!important;min-height:92px!important;
+ display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:space-between!important;
+ text-align:left!important;box-shadow:0 1px 2px rgba(15,23,42,0.04)!important;
+ transition:border-color .16s ease,transform .12s ease!important;
+}
+.bento-6 .bento-tile:active{transform:scale(0.98);border-color:#2563EB!important}
+.bento-6 .bento-icon{
+ width:34px!important;height:34px!important;border-radius:10px!important;
+ background:var(--elevated)!important;border:1px solid var(--line)!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ font-size:17px!important;margin-bottom:8px!important;box-shadow:none!important;
+}
+.bento-6 .bento-title{font-size:14px!important;font-weight:700!important;color:var(--text)!important;display:block}
+.bento-6 .bento-sub{font-size:11.5px!important;color:var(--muted)!important;display:block;margin-top:2px}
+
+/* Dedicated Arcade Page Grid */
+.arcade-hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.arcade-hub-card{
+ display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;
+ padding:14px 12px;border-radius:14px;background:var(--elevated);
+ border:1px solid var(--line);color:var(--text);cursor:pointer;margin:0;width:100%;
+ transition:border-color .15s ease,transform .12s ease;
+}
+.arcade-hub-card:active{transform:scale(0.98);border-color:#2563EB}
+.arcade-hub-card .ah-ico{font-size:22px;margin-bottom:4px}
+.arcade-hub-card strong{font-size:13.5px;font-weight:700;color:var(--text)}
+.arcade-hub-card small{font-size:11.5px;color:var(--muted)}
+
+/* Minimalist Flat Bottom Nav: Home | Radar | Chats | Arcade | Profile */
+.bottom-nav{
+ left:0!important;right:0!important;bottom:0!important;transform:none!important;
+ width:100%!important;max-width:100%!important;border-radius:0!important;
+ background:rgba(255,255,255,0.94)!important;
+ border-top:1px solid #E2E8F0!important;border-left:none!important;border-right:none!important;border-bottom:none!important;
+ box-shadow:0 -2px 12px rgba(15,23,42,0.04)!important;
+ padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))!important;
+ display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:2px!important;
+}
+body:not(.light-mode) .bottom-nav{
+ background:rgba(11,15,25,0.94)!important;
+ border-top:1px solid rgba(255,255,255,0.09)!important;
+}
+.bottom-nav button{
+ height:48px!important;border-radius:10px!important;color:var(--muted)!important;
+ background:transparent!important;box-shadow:none!important;padding:4px 2px!important;
+ display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:2px!important;
+}
+.bottom-nav button.active{color:#2563EB!important;background:rgba(37,99,235,0.08)!important}
+.bottom-nav button.active::after{display:none!important}
+.bottom-nav button svg{width:20px!important;height:20px!important;stroke:currentColor!important}
+.bottom-nav button small{font-size:10.5px!important;font-weight:600!important}
+#liveFloatToast{background:#0F172A!important;color:#F8FAFC!important;border:1px solid #2563EB!important}
+
+/* === STAGE 2 & 3: TRENDS, ACHIEVEMENTS & NETWORK STATUS BANNER === */
+.trends-card{padding:12px 14px!important}
+.trends-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.trends-chips{display:flex;flex-wrap:wrap;gap:6px}
+.trend-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;background:var(--elevated);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;margin:0;width:auto}
+.trend-chip b{color:var(--accent)}
+.ach-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}
+.ach-card{display:flex;align-items:center;gap:9px;padding:10px;border-radius:12px;background:var(--elevated);border:1px solid var(--line);opacity:.55;transition:opacity .2s ease,border-color .2s ease}
+.ach-card.unlocked{opacity:1;border-color:#2563EB}
+.ach-ico{width:32px;height:32px;border-radius:9px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ach-card strong{display:block;font-size:12px;color:var(--text);line-height:1.2}
+.ach-card small{display:block;font-size:10.5px;color:var(--muted);margin-top:1px}
+#netStatusBanner{position:fixed;top:0;left:0;right:0;z-index:100001;padding:7px 14px;background:#0F172A;color:#F8FAFC;font-size:12px;font-weight:700;text-align:center;border-bottom:1px solid #2563EB;transform:translateY(-100%);transition:transform .22s ease}
+#netStatusBanner.show{transform:translateY(0)}
 </style>
 <script type="text/javascript">
 (function(c,l,a,r,i,t,y){
@@ -2566,8 +2717,8 @@ body.light-mode .onboard-btn{background:#EFECE3}
 <section id="authPage" role="main" class="auth-page">
  <div class="auth-title">
   <div class="brand-v2 hero-sz centered" aria-label="100m network"><span class="v2-emblem"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="41" stroke="currentColor" stroke-width="6.5"/><circle cx="50" cy="50" r="24" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="50" r="8.5" fill="currentColor"/><g class="brand-orbit"><circle cx="79" cy="21" r="6" fill="currentColor"/><circle cx="15" cy="71" r="6" fill="currentColor"/></g></svg></span><span class="v2-text"><span class="v2-top">100m</span><span class="v2-bot">network</span></span></div>
-  <h1 class="hero-headline">Anonymous ~100m chat, voice &amp; 2P games.</h1>
-  <p class="hero-tagline">Privacy-first real-time community. Zero GPS stored · 24h auto-delete · Safe handles only.</p>
+  <h1 class="hero-headline">Connect Beyond Boundaries.</h1>
+  <p class="hero-tagline">A minimalist global anonymous network for ~100m radar, live voice rooms, instant signal chats, and 2-player games. Zero GPS stored.</p>
   <div class="hero-cta-row">
    <button type="button" class="hero-cta-primary" onclick="focusAuthForm()">Join Now</button>
    <button type="button" class="hero-cta-secondary" onclick="enterGuestPreview()">Explore Preview</button>
@@ -2666,22 +2817,30 @@ body.light-mode .onboard-btn{background:#EFECE3}
   <div class="fit" style="display:flex;gap:6px"><button type="button" class="secondary small fit" onclick="openEditHandleModal()" title="Customize anonymous handle">✏️ Edit</button><button type="button" class="secondary small fit" onclick="shuffleAnonymousHandle()" title="Shuffle safe handle">🎲</button></div>
  </div>
 
- <div class="bento-grid">
-  <button type="button" class="bento-tile t-signal" onclick="go('chats');switchChatTab('signal')">
+ <div class="bento-grid bento-6">
+  <button type="button" class="bento-tile" onclick="go('chats');switchChatTab('signal')">
    <div class="bento-icon">⚡</div>
-   <div><span class="bento-title">Global Signal</span><span class="bento-sub">1-on-1 Random Match</span></div>
+   <div><span class="bento-title">Global Signal</span><span class="bento-sub">Instant 1-on-1 match</span></div>
   </button>
-  <button type="button" class="bento-tile t-radar" onclick="go('radar')">
+  <button type="button" class="bento-tile" onclick="go('radar')">
    <div class="bento-icon">📡</div>
-   <div><span class="bento-title">~100m Radar</span><span class="bento-sub">Nearby Privacy Zone</span></div>
+   <div><span class="bento-title">100m Radar</span><span class="bento-sub">Nearby privacy zone</span></div>
   </button>
-  <button type="button" class="bento-tile t-voice" onclick="go('walkie')">
+  <button type="button" class="bento-tile" onclick="go('chats');switchChatTab('global')">
+   <div class="bento-icon">💬</div>
+   <div><span class="bento-title">Global Chat</span><span class="bento-sub">24h community room</span></div>
+  </button>
+  <button type="button" class="bento-tile" onclick="go('walkie')">
    <div class="bento-icon">🎙️</div>
-   <div><span class="bento-title">Live Voice</span><span class="bento-sub">Hands-Free Audio</span></div>
+   <div><span class="bento-title">Live Voice Rooms</span><span class="bento-sub">3 hands-free rooms</span></div>
   </button>
-  <button type="button" class="bento-tile t-arcade" onclick="go('chats');switchChatTab('signal');openMiniGames('signal')">
+  <button type="button" class="bento-tile" onclick="document.getElementById('dropNotesCard')?.scrollIntoView({behavior:'smooth'})">
+   <div class="bento-icon">📌</div>
+   <div><span class="bento-title">24h Drop Notes</span><span class="bento-sub">Notes &amp; mini-polls</span></div>
+  </button>
+  <button type="button" class="bento-tile" onclick="go('arcade')">
    <div class="bento-icon">🎮</div>
-   <div><span class="bento-title">2P Arcade</span><span class="bento-sub">7 Classic Games</span></div>
+   <div><span class="bento-title">2 Player Arcade</span><span class="bento-sub">7 multiplayer games</span></div>
   </button>
  </div>
 
@@ -2709,6 +2868,14 @@ body.light-mode .onboard-btn{background:#EFECE3}
   </div>
   <div class="quest-bar-bg"><div id="questBarFill" class="quest-bar-fill"></div></div>
   <div id="dailyQuestList" class="quest-list"></div>
+ </div>
+
+ <div class="card trends-card" id="communityTrendsCard">
+  <div class="trends-head">
+   <strong style="font-size:13.5px;color:var(--text)">📈 Global Community Trends</strong>
+   <span id="trendsSummaryMeta" class="comment-note" style="margin:0">Live 24h pulse</span>
+  </div>
+  <div id="communityTrendsList" class="trends-chips"></div>
  </div>
 
  <div class="card" id="dropNotesCard">
@@ -2846,7 +3013,16 @@ body.light-mode .onboard-btn{background:#EFECE3}
    </div>
 
    <div id="signalIdleView" style="margin-top:14px">
-    <p class="comment-note" style="margin:0 0 6px;font-weight:700">Pick your vibe (optional):</p>
+    <p class="comment-note" style="margin:0 0 6px;font-weight:700">Preferred language:</p>
+    <div id="signalLangRow" class="vibe-pill-row" role="group" aria-label="Preferred Language">
+     <button type="button" class="vibe-pill active" data-lang="Any" onclick="selectSignalLang(this)">🌐 Any</button>
+     <button type="button" class="vibe-pill" data-lang="English" onclick="selectSignalLang(this)">English</button>
+     <button type="button" class="vibe-pill" data-lang="Telugu" onclick="selectSignalLang(this)">తెలుగు</button>
+     <button type="button" class="vibe-pill" data-lang="Hindi" onclick="selectSignalLang(this)">हिन्दी</button>
+     <button type="button" class="vibe-pill" data-lang="Tamil" onclick="selectSignalLang(this)">தமிழ்</button>
+     <button type="button" class="vibe-pill" data-lang="Spanish" onclick="selectSignalLang(this)">Español</button>
+    </div>
+    <p class="comment-note" style="margin:4px 0 6px;font-weight:700">Interest / vibe:</p>
     <div id="signalVibeRow" class="vibe-pill-row" role="group" aria-label="Signal Vibe">
      <button type="button" class="vibe-pill active" data-vibe="☕ Chai &amp; Chill" onclick="selectSignalVibe(this)">☕ Chai &amp; Chill</button>
      <button type="button" class="vibe-pill" data-vibe="🎧 Music" onclick="selectSignalVibe(this)">🎧 Music</button>
@@ -2964,6 +3140,33 @@ body.light-mode .onboard-btn{background:#EFECE3}
  </div>
 </section>
 
+<section class="page" id="arcade">
+ <h2>2 Player Arcade</h2>
+ <p class="sub">Play 7 real-time games solo or invite your Signal / Private Chat partner for live 2-player matches.</p>
+ <div class="card">
+  <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:10px">
+   <div>
+    <h3 style="margin:0;font-size:16px">Game Lobby</h3>
+    <p class="sub" style="margin:2px 0 0;font-size:12.5px">Tap any game to start immediately.</p>
+   </div>
+   <button type="button" class="secondary small fit" onclick="go('walkie')">🎙️ Voice Rooms</button>
+  </div>
+  <div class="arcade-hub-grid">
+   <button type="button" class="arcade-hub-card" onclick="launchFromArcadePage('ludo')"><span class="ah-ico">🎲</span><strong>Ludo 15×15</strong><small>Classic 2P board</small></button>
+   <button type="button" class="arcade-hub-card" onclick="launchFromArcadePage('snl')"><span class="ah-ico">🐍</span><strong>Snakes &amp; Ladders</strong><small>10×10 animated</small></button>
+   <button type="button" class="arcade-hub-card" onclick="launchFromArcadePage('dots')"><span class="ah-ico">✏️</span><strong>Dots &amp; Boxes</strong><small>8×8 strategy</small></button>
+   <button type="button" class="arcade-hub-card" onclick="launchFromArcadePage('chk')"><span class="ah-ico">⚫</span><strong>Checkers</strong><small>8×8 classic</small></button>
+   <button type="button" class="arcade-hub-card" onclick="launchFromArcadePage('ttt')"><span class="ah-ico">⭕</span><strong>Tic-Tac-Toe</strong><small>Quick duel</small></button>
+   <button type="button" class="arcade-hub-card" onclick="launchFromArcadePage('mem')"><span class="ah-ico">🃏</span><strong>Memory Flip</strong><small>4×4 pairs</small></button>
+   <button type="button" class="arcade-hub-card" onclick="launchFromArcadePage('wc')"><span class="ah-ico">🔤</span><strong>Word Chain</strong><small>15s timer</small></button>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+   <button type="button" class="primary small" style="margin:0" onclick="openMiniGames('signal')">Open Full Arcade Lobby</button>
+   <button type="button" class="secondary small" onclick="go('chats');switchChatTab('signal')">⚡ Find 2P Partner</button>
+  </div>
+ </div>
+</section>
+
 <section class="page" id="profile">
  <h2>Your Profile</h2><p class="sub">Your identity on 100m.</p>
  <div class="card"><div class="avatar" id="profileAvatar">U</div>
@@ -2984,6 +3187,10 @@ body.light-mode .onboard-btn{background:#EFECE3}
  <div class="profile-row"><div class="profile-label">INTERESTS</div><div class="profile-value" id="profileInterests">Not added</div></div>
  <div class="profile-row"><div class="profile-label">VIBE BADGES SHARED</div><div id="profileVibeBadges" class="profile-vibe-chips"><span class="profile-vibe-chip">✨ Respectful · 0</span><span class="profile-vibe-chip">🌿 Good Listener · 0</span><span class="profile-vibe-chip">😄 Fun Vibe · 0</span></div></div>
  <div class="profile-row"><div class="profile-label">ARCADE RANK &amp; STREAK</div><div id="profileArcadeStats" class="profile-vibe-chips"><span class="profile-vibe-chip">🏅 Rookie</span><span class="profile-vibe-chip">🔥 Streak · 0</span><span class="profile-vibe-chip">🏆 Wins · 0</span></div></div>
+ <div class="profile-row">
+  <div class="row" style="align-items:center;justify-content:space-between"><div class="profile-label" style="margin:0">ACHIEVEMENTS</div><span id="achProgressLabel" class="comment-note" style="margin:0">0/6 unlocked</span></div>
+  <div id="profileAchievements" class="ach-grid"></div>
+ </div>
  <button class="primary" id="editProfileButton" onclick="openEditProfile()">✎ Edit Profile</button>
  <div class="tile" style="margin-top:16px"><h3>Blocked Accounts</h3><p class="sub">Accounts you block appear here. You can unblock them whenever you choose.</p><div id="blockedAccountsList" class="empty">Sign in to view blocked accounts.</div><p id="blockStatus" class="message muted"></p><button class="secondary small" type="button" onclick="loadBlockedAccounts()">Refresh list</button></div>
  <button class="secondary" style="width:100%;margin-top:10px" onclick="go('safety')">Safety &amp; Report</button>
@@ -3004,8 +3211,8 @@ body.light-mode .onboard-btn{background:#EFECE3}
 <nav class="bottom-nav" aria-label="Main navigation">
  <button type="button" class="active" data-page="home" onclick="go('home',this)" aria-label="Home"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><small>Home</small></button>
  <button type="button" data-page="radar" onclick="go('radar',this)" aria-label="Radar"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l6-6"/></svg></span><small>Radar</small></button>
- <button type="button" class="nav-mic" data-page="walkie" onclick="go('walkie',this)" aria-label="Walkie-Talkie"><span class="nav-mic-icon"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><small>Talk</small></button>
  <button type="button" data-page="chats" onclick="go('chats',this)" aria-label="Chats"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-6.4A8 8 0 1 1 21 12z"/></svg></span><small>Chats</small></button>
+ <button type="button" data-page="arcade" onclick="go('arcade',this)" aria-label="Arcade"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="4"/><path d="M8 10v4M6 12h4M15.5 11.5h.01M18 12.5h.01"/></svg></span><small>Arcade</small></button>
  <button type="button" data-page="profile" onclick="go('profile',this)" aria-label="Profile"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><small>Profile</small></button>
 </nav></div>
 
@@ -4831,7 +5038,7 @@ async function joinLiveVoiceCall(){
   updateLiveVoiceControlsUI();
   startVoiceLevelMeter(stream);
   startNearbyVoiceRoom();
-  setPttStatus("Connected! You are live — speak freely or tap mic to mute.",false);
+  setPttStatus("Connected! You are live — speak freely or tap mic to mute.",false);if(typeof unlockAchievement==="function")unlockAchievement("voice_pioneer");
  }catch(e){
   if(e.name==="NotAllowedError"||e.name==="PermissionDeniedError")setPttStatus("Microphone permission denied. Allow mic in browser settings.");
   else if(e.name==="NotFoundError")setPttStatus("No microphone found on this device.");
@@ -5063,7 +5270,7 @@ async function startSignalMatch(){
    signalRoomId="demo_sig";signalPartnerUid=match.uid;signalPartnerHandle=match.handle;
    const nameEl=document.getElementById("signalPartnerName"),noteEl=document.getElementById("signalRoomNote");
    if(nameEl)nameEl.textContent="Connected to "+match.handle;
-   if(noteEl)noteEl.textContent="Preview 1-on-1 · Vibe: "+selectedSignalVibe;
+   if(noteEl)noteEl.textContent="Preview 1-on-1 · "+selectedSignalLang+" · "+selectedSignalVibe;if(typeof unlockAchievement==="function")unlockAchievement("first_signal");
    demoSignalMsgs=[{id:"ds0",uid:match.uid,handle:match.handle,text:"Hey! Signal locked. Say hi or tap Next to test matching!",createdAt:Date.now()}];
    setSignalUI("matched","");playMatchChime();demoRenderSignalMsgs();
   },1200);
@@ -5147,7 +5354,7 @@ async function enterSignalRoom(roomId,partnerUid,partnerHandle){
  signalRoomId=roomId;signalPartnerUid=partnerUid;signalPartnerHandle=partnerHandle;signalMatchingBusy=false;
  const nameEl=document.getElementById("signalPartnerName"),noteEl=document.getElementById("signalRoomNote"),box=document.getElementById("signalMessages");
  if(nameEl)nameEl.textContent="Connected to "+partnerHandle;
- if(noteEl)noteEl.textContent="Global 1-on-1 · Vibe: "+selectedSignalVibe;
+ if(noteEl)noteEl.textContent="Global 1-on-1 · "+selectedSignalLang+" · "+selectedSignalVibe;if(typeof unlockAchievement==="function")unlockAchievement("first_signal");
  if(box){box.innerHTML="";const em=document.createElement("div");em.className="empty";em.textContent="Signal locked with "+partnerHandle+"! Say hello.";box.appendChild(em);}
  setSignalUI("matched","");
  const myOnlineRef=rtdb.ref("globalChat/signalRooms/"+roomId+"/online/"+currentUser.uid);
@@ -5398,6 +5605,7 @@ function renderDropNotes(){
  const cutoff=Date.now()-24*60*60*1000;
  const list=dropNotesCache.filter(n=>Number(n.createdAt)>=cutoff).sort((a,b)=>Number(b.createdAt)-Number(a.createdAt));
  if(cnt)cnt.textContent=list.length+" note"+(list.length===1?"":"s");
+ if(typeof renderCommunityTrends==="function")renderCommunityTrends(list);
  box.innerHTML="";
  if(!list.length){box.innerHTML='<div class="empty">No 24h notes yet. Be the first to drop a note!</div>';return;}
  list.forEach(n=>{
@@ -5455,7 +5663,7 @@ async function postDropNote(){
  const input=document.getElementById("dropNoteInput"),st=document.getElementById("dropNoteStatus");
  const val=(input&&input.value||"").trim();
  if(!val)return;
- completeDailyQuest("note");
+ completeDailyQuest("note");if(typeof unlockAchievement==="function")unlockAchievement("trendsetter");
  const o1El=document.getElementById("pollOpt1"),o2El=document.getElementById("pollOpt2");
  const opt1=(o1El&&o1El.value||"").trim(),opt2=(o2El&&o2El.value||"").trim();
  const pollObj=(opt1&&opt2)?{opt1,opt2,v1:0,v2:0,myChoice:0}:null;
@@ -6753,7 +6961,7 @@ function shareCurrentGameScore(){
  closeMiniGames();
 }
 function openMiniGames(ctx){
- completeDailyQuest("game");
+ completeDailyQuest("game");if(typeof unlockAchievement==="function")unlockAchievement("arcade_player");
  miniGameContext=ctx||"signal";
  miniGameTab="lobby";
  if(dotsState.h.length!==DOTS_N)dotsReset();
@@ -7138,6 +7346,7 @@ async function sendVibeCompliment(badge){
  renderProfileVibeBadges();
  const input=document.getElementById("signalMessageInput");
  if(input&&signalState==="matched"){
+  if(typeof unlockAchievement==="function")unlockAchievement("kind_soul");
   input.value="Vibe Badge sent: "+badge+" 💫";
   await sendSignalMessage();
  }
@@ -7621,6 +7830,105 @@ function finishOnboarding(dest){
  else if(dest==="voice")go("walkie");
  else go("home");
 }
+
+// ---------- STAGE 1: DEDICATED ARCADE PAGE LAUNCHER ----------
+function launchFromArcadePage(gameId){
+ openMiniGames(signalState==="matched"?"signal":"private");
+ sendGameInviteAndOpen(gameId);
+}
+
+// ---------- STAGE 2 & 3: LANGUAGE MATCHING, TRENDS, ACHIEVEMENTS & NETWORK RESILIENCE ----------
+let selectedSignalLang="Any";
+const ACH_STORAGE_KEY="100m_achievements_v1";
+const ACH_CATALOG=[
+ {id:"first_signal",icon:"⚡",title:"First Signal",desc:"Match 1-on-1 globally"},
+ {id:"voice_pioneer",icon:"🎙️",title:"Voice Pioneer",desc:"Join a Live Voice Room"},
+ {id:"arcade_player",icon:"🎮",title:"Arcade Player",desc:"Launch a 2P Arcade game"},
+ {id:"trendsetter",icon:"📌",title:"Trendsetter",desc:"Post a 24h Note or Poll"},
+ {id:"kind_soul",icon:"✨",title:"Kind Soul",desc:"Send a Polite Vibe Badge"},
+ {id:"streak_keeper",icon:"🔥",title:"Streak Keeper",desc:"Complete all 3 Daily Quests"}
+];
+
+function selectSignalLang(btn){
+ selectedSignalLang=btn.dataset.lang||"Any";
+ document.querySelectorAll("#signalLangRow .vibe-pill").forEach(b=>b.classList.toggle("active",b===btn));
+}
+function renderCommunityTrends(list){
+ const box=document.getElementById("communityTrendsList"),meta=document.getElementById("trendsSummaryMeta");
+ if(!box)return;
+ const items=Array.isArray(list)?list:[];
+ const tagCounts={};let pollCount=0,totalVotes=0;
+ items.forEach(n=>{
+  const t=String(n.tag||"Thought");
+  tagCounts[t]=(tagCounts[t]||0)+1;
+  totalVotes+=Number(n.votes||0);
+  if(n.poll&&n.poll.opt1&&n.poll.opt2){pollCount++;totalVotes+=Number(n.poll.v1||0)+Number(n.poll.v2||0);}
+ });
+ if(meta)meta.textContent=items.length+" notes · "+pollCount+" polls · "+totalVotes+" votes";
+ const sorted=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+ if(!sorted.length){box.innerHTML='<span class="comment-note" style="margin:0">Drop the first note to start a trend!</span>';return;}
+ box.innerHTML="";
+ sorted.forEach(([tag,c])=>{
+  const b=document.createElement("button");b.type="button";b.className="trend-chip";
+  const lbl=document.createTextNode("#"+String(tag)+" ");
+  const num=document.createElement("b");num.textContent=String(c);
+  b.append(lbl,num);
+  b.onclick=()=>jumpToTrendTag(String(tag));
+  box.appendChild(b);
+ });
+}
+function jumpToTrendTag(tag){
+ const btn=document.querySelector('.note-tag-btn[data-note-tag="'+tag+'"]');
+ if(btn)selectNoteTag(btn);
+ const card=document.getElementById("dropNotesCard");
+ if(card)card.scrollIntoView({behavior:"smooth"});
+}
+
+function loadUnlockedAchievements(){
+ try{const raw=localStorage.getItem(ACH_STORAGE_KEY);const arr=raw?JSON.parse(raw):[];return new Set(Array.isArray(arr)?arr:[]);}catch(e){return new Set();}
+}
+function unlockAchievement(id){
+ const set=loadUnlockedAchievements();
+ if(set.has(id))return;
+ set.add(id);
+ try{localStorage.setItem(ACH_STORAGE_KEY,JSON.stringify(Array.from(set)));}catch(e){}
+ const item=ACH_CATALOG.find(a=>a.id===id);
+ if(item&&typeof showLiveFloatToast==="function")showLiveFloatToast("🏅 Unlocked: "+item.icon+" "+item.title);
+ renderProfileAchievements();
+}
+function renderProfileAchievements(){
+ const grid=document.getElementById("profileAchievements"),lbl=document.getElementById("achProgressLabel");
+ if(!grid)return;
+ const q=loadQuestState();
+ if(q.game&&q.note&&q.chat)unlockAchievement("streak_keeper");
+ const unlocked=loadUnlockedAchievements();
+ if(lbl)lbl.textContent=unlocked.size+"/"+ACH_CATALOG.length+" unlocked";
+ grid.innerHTML=ACH_CATALOG.map(a=>{
+  const ok=unlocked.has(a.id);
+  return '<div class="ach-card'+(ok?' unlocked':'')+'"><div class="ach-ico">'+a.icon+'</div><div><strong>'+a.title+(ok?' ✓':'')+'</strong><small>'+a.desc+'</small></div></div>';
+ }).join("");
+}
+
+// Stage 3: Live Offline / Reconnecting Banner (Browser + Firebase RTDB .info/connected)
+(function initNetworkBanner(){
+ const banner=document.getElementById("netStatusBanner");
+ if(!banner)return;
+ const setOffline=(isOff)=>{
+  banner.classList.toggle("show",!!isOff);
+  if(!isOff&&navigator.onLine&&typeof showLiveFloatToast==="function"&&banner.dataset.wasOff==="1"){
+   banner.dataset.wasOff="0";
+   showLiveFloatToast("🟢 Reconnected to 100M Network");
+  }else if(isOff){
+   banner.dataset.wasOff="1";
+  }
+ };
+ window.addEventListener("offline",()=>setOffline(true));
+ window.addEventListener("online",()=>setOffline(false));
+ if(!navigator.onLine)setOffline(true);
+})();
+
+renderProfileAchievements();
+if(Array.isArray(dropNotesCache)&&dropNotesCache.length)renderCommunityTrends(dropNotesCache);
 </script>
 <div id="privacyCurtain" class="hidden" onclick="togglePrivacyCurtain(false)" role="dialog" aria-label="Privacy Screen">
  <div class="privacy-curtain-card">
@@ -7653,5 +7961,6 @@ function finishOnboarding(dest){
   <button type="button" class="secondary small" style="width:100%" onclick="finishOnboarding('home')">Go to Home instead</button>
  </div>
 </div>
+<div id="netStatusBanner" role="status" aria-live="polite">⚠️ Connection lost — reconnecting to 100M Network…</div>
 </body>
 </html>
