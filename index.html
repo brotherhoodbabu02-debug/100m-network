@@ -3789,7 +3789,7 @@ function showProfileActionMenu(uid,handle){
  const panel=document.createElement("div");panel.className="profile-action-panel";
  const title=document.createElement("h3");title.textContent=handle||"100m member";
  const chat=document.createElement("button");chat.type="button";chat.className="primary";chat.textContent="Chat";
- chat.onclick=async()=>{overlay.remove();await openPrivateChatByUid(uid)};
+ chat.onclick=async()=>{overlay.remove();await sendPrivateChatInvite(uid,handle,"chat")};
  const block=document.createElement("button");block.type="button";block.className="danger";block.textContent="Block Account";
  block.onclick=async()=>{overlay.remove();await blockAccount(uid,handle)};
  overlay.style.zIndex="1400";const cancel=document.createElement("button");cancel.type="button";cancel.className="secondary";cancel.textContent="Cancel";cancel.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();overlay.remove();});
@@ -5218,8 +5218,7 @@ async function nextSignalMatch(){
 }
 async function promoteSignalToPrivate(){
  if(!signalPartnerUid)return;
- const uid=signalPartnerUid;
- await openPrivateChatByUid(uid);
+ await sendPrivateChatInvite(signalPartnerUid,signalPartnerHandle||"Match","private");
 }
 function reportSignalPartner(){
  if(!signalPartnerUid)return;
@@ -5920,6 +5919,24 @@ function initDirectCallInbox(){
    const s1=document.getElementById("signalStatusText"),s2=document.getElementById("privateChatStatus");
    if(s1)s1.textContent="🎮 "+fromName+" closed the game.";
    if(s2)s2.textContent="🎮 "+fromName+" closed the game.";
+   return;
+  }
+  if(cid.startsWith("cinv_")){
+   const mode=cid.split("_")[1]||"private";
+   showIncomingChatInvitePopup(inv.from,fromName,mode);
+   return;
+  }
+  if(cid.startsWith("cacc_")){
+   playMatchChime();
+   showLiveFloatToast("💬 "+fromName+" accepted your chat invite!");
+   openPrivateChatByUid(inv.from);
+   return;
+  }
+  if(cid.startsWith("cdec_")){
+   showLiveFloatToast("💬 "+fromName+" declined your chat invite");
+   const s1=document.getElementById("signalStatusText"),s2=document.getElementById("privateChatStatus");
+   if(s1)s1.textContent="💬 "+fromName+" declined your private chat invite.";
+   if(s2)s2.textContent="💬 "+fromName+" declined your chat invite.";
    return;
   }
   if(directCallState!=="idle")return;
@@ -7429,6 +7446,73 @@ renderProfileArcadeStats();
  window.addEventListener("resize",updateViewportVar);
  updateViewportVar();
 })();
+
+// ---------- PRIVATE CHAT CONSENT INVITE (ACCEPT / DECLINE POPUP) ----------
+let pendingChatInvite=null;
+async function sendPrivateChatInvite(targetUid,targetHandle,mode){
+ const name=String(targetHandle||"Member");
+ const isPriv=(mode==="private");
+ if(guestMode){
+  showLiveFloatToast("💬 Inviting "+name+(isPriv?" to private chat…":" to chat…"));
+  setTimeout(()=>{
+   if(!guestMode)return;
+   showLiveFloatToast("💬 "+name+" accepted your chat invite!");
+   openPrivateChatByUid(targetUid);
+  },900);
+  return;
+ }
+ if(!currentUser||!rtdb||!targetUid)return;
+ const code=("cinv_"+(isPriv?"private":"chat")+"_"+Date.now().toString(36).slice(-5)).slice(0,78);
+ try{
+  await rtdb.ref("directVoiceInbox/"+targetUid+"/"+code).set({
+   callId:code,
+   from:currentUser.uid,
+   fromHandle:globalHandle(),
+   createdAt:firebase.database.ServerValue.TIMESTAMP
+  });
+  const msg="💬 Inviting "+name+(isPriv?" to private chat":" to chat")+"… waiting for accept";
+  showLiveFloatToast(msg);
+  const s1=document.getElementById("signalStatusText"),s2=document.getElementById("privateChatStatus");
+  if(s1)s1.textContent=msg;
+  if(s2)s2.textContent=msg;
+ }catch(e){
+  showLiveFloatToast("Could not send chat invite: "+(e&&e.message?e.message:"error"));
+ }
+}
+function showIncomingChatInvitePopup(fromUid,fromHandle,mode){
+ closeIncomingPopup();playMatchChime();
+ pendingChatInvite={fromUid,fromHandle,mode};
+ const isPriv=(mode==="private");
+ const overlay=document.createElement("div");
+ overlay.id="incomingActionOverlay";
+ overlay.className="profile-action-overlay";
+ overlay.style.zIndex="1500";
+ overlay.innerHTML='<div class="incoming-modal-card">'+
+  '<div class="incoming-ring-av game">💬</div>'+
+  '<h3 style="font-size:20px;margin:0">'+String(fromHandle||"Explorer").replace(/</g,"&lt;")+'</h3>'+
+  '<p class="sub" style="margin:6px 0 0">'+(isPriv?'is inviting you to a <strong>private chat</strong>':'is inviting you to a <strong>chat</strong>')+'</p>'+
+  '<div class="incoming-btn-row">'+
+   '<button type="button" class="decline-pill" onclick="respondChatInvite(false)">✕ Decline</button>'+
+   '<button type="button" class="accept-pill" onclick="respondChatInvite(true)">💬 Accept</button>'+
+  '</div></div>';
+ document.body.appendChild(overlay);
+}
+async function respondChatInvite(accepted){
+ const inv=pendingChatInvite;pendingChatInvite=null;closeIncomingPopup();
+ if(!inv||!inv.fromUid)return;
+ if(!guestMode&&currentUser&&rtdb){
+  const code=((accepted?"cacc_":"cdec_")+Date.now().toString(36).slice(-5)).slice(0,78);
+  rtdb.ref("directVoiceInbox/"+inv.fromUid+"/"+code).set({
+   callId:code,
+   from:currentUser.uid,
+   fromHandle:globalHandle(),
+   createdAt:firebase.database.ServerValue.TIMESTAMP
+  }).catch(()=>{});
+ }
+ if(accepted){
+  await openPrivateChatByUid(inv.fromUid);
+ }
+}
 </script>
 <div id="privacyCurtain" class="hidden" onclick="togglePrivacyCurtain(false)" role="dialog" aria-label="Privacy Screen">
  <div class="privacy-curtain-card">
