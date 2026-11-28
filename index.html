@@ -2441,6 +2441,32 @@ body.kb-open #privateMessages{
  flex:1!important;min-height:0!important;height:auto!important;max-height:none!important;
  margin:6px 0!important;
 }
+
+/* === CLEAN PROFESSIONAL LANDING, HOW IT WORKS & FIRST-TIME ONBOARDING === */
+body.light-mode{background:#F8F6EE!important;background-image:none!important}
+.hero-headline{font-size:clamp(22px,5.2vw,30px);font-weight:800;letter-spacing:-.025em;line-height:1.22;margin:14px auto 8px;max-width:460px;color:var(--text)}
+.hero-tagline{font-size:14px;color:var(--muted);margin:0 auto 16px;max-width:420px;line-height:1.5}
+.hero-cta-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 auto 14px;max-width:460px}
+.hero-cta-primary{background:#C96F4F!important;color:#fff!important;border:none!important;border-radius:14px!important;padding:11px 20px!important;font-weight:800!important;font-size:14px!important;cursor:pointer;width:auto!important;margin:0!important;box-shadow:0 8px 18px rgba(201,111,79,.26)}
+.hero-cta-secondary{background:var(--surface)!important;color:var(--text)!important;border:1.5px solid var(--line,rgba(46,58,47,.18))!important;border-radius:14px!important;padding:11px 16px!important;font-weight:700!important;font-size:13.5px!important;cursor:pointer;width:auto!important;margin:0!important}
+.hero-cta-ghost{background:transparent!important;color:var(--muted)!important;border:1px solid var(--line,rgba(46,58,47,.16))!important;border-radius:14px!important;padding:10px 14px!important;font-weight:700!important;font-size:13px!important;cursor:pointer;width:auto!important;margin:0!important}
+.hiw-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.hiw-step{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:14px;background:var(--elevated,rgba(127,127,127,.08));border:1px solid var(--line,rgba(46,58,47,.12))}
+body.light-mode .hiw-step{background:#EFECE3;border-color:rgba(46,58,47,.12)}
+.hiw-num{width:30px;height:30px;border-radius:10px;background:#C96F4F;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hiw-step h4{margin:0 0 2px;font-size:14px;color:var(--text)}
+.hiw-step p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.45}
+
+#onboardingOverlay{position:fixed;inset:0;z-index:99995;background:rgba(20,25,21,.68);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:18px}
+#onboardingOverlay.hidden{display:none!important}
+.onboard-card{max-width:380px;width:100%;padding:22px 18px;border-radius:22px;background:var(--surface);border:1px solid var(--line,rgba(46,58,47,.15));box-shadow:0 20px 50px rgba(0,0,0,.32);text-align:center}
+.onboard-card h3{margin:0 0 6px;font-size:20px;color:var(--text)}
+.onboard-card p{margin:0 0 14px;font-size:13px;color:var(--muted);line-height:1.45}
+.onboard-choices{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.onboard-btn{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line,rgba(46,58,47,.14));background:var(--elevated,rgba(127,127,127,.08));color:var(--text);cursor:pointer;margin:0}
+body.light-mode .onboard-btn{background:#EFECE3}
+.onboard-btn strong{display:block;font-size:14px;color:var(--text)}
+.onboard-btn small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
 </style>
 <script type="text/javascript">
 (function(c,l,a,r,i,t,y){
@@ -2540,11 +2566,14 @@ body.kb-open #privateMessages{
 <section id="authPage" role="main" class="auth-page">
  <div class="auth-title">
   <div class="brand-v2 hero-sz centered" aria-label="100m network"><span class="v2-emblem"><svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="41" stroke="currentColor" stroke-width="6.5"/><circle cx="50" cy="50" r="24" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="50" r="8.5" fill="currentColor"/><g class="brand-orbit"><circle cx="79" cy="21" r="6" fill="currentColor"/><circle cx="15" cy="71" r="6" fill="currentColor"/></g></svg></span><span class="v2-text"><span class="v2-top">100m</span><span class="v2-bot">network</span></span></div>
-  <p>Meet people. Share ideas. Build connections.</p>
-  <div class="auth-badges">
-   <span class="auth-badge">PRIVACY-FIRST</span>
-   <span class="auth-badge">NO GPS STORED</span>
-   <span class="auth-badge">24H AUTO-DELETE</span>
+  <h1 class="hero-headline">Anonymous ~100m chat, voice &amp; 2P games.</h1>
+  <p class="hero-tagline">Privacy-first real-time community. Zero GPS stored · 24h auto-delete · Safe handles only.</p>
+  <div class="hero-cta-row">
+   <button type="button" class="hero-cta-primary" onclick="focusAuthForm()">Join Now</button>
+   <button type="button" class="hero-cta-secondary" onclick="enterGuestPreview()">Explore Preview</button>
+   <button type="button" class="hero-cta-ghost" onclick="openInfoModal('safety')">🛡️ Safety &amp; Privacy</button>
+  </div>
+  <div class="auth-badges" style="margin-top:4px">
    <span id="authLiveHourPill" class="auth-badge live-pill">● LIVE HOUR · 8 PM IST</span>
   </div>
  </div>
@@ -2583,36 +2612,29 @@ body.kb-open #privateMessages{
    <p class="sub" id="usernameNote" style="text-align:center">Use a username instead of sharing your full name.</p>
   </div>
   <div class="card features-card">
-   <div class="features-eyebrow">WHAT'S INSIDE 100M</div>
-   <h3 style="font-size:20px">Real-time anonymous channels — zero noise</h3>
-   <p class="sub" style="margin:6px 0 0">See what you unlock inside 100m Network before creating an account.</p>
-   <div class="feature-list">
-    <div class="feature-item">
-     <div class="feature-icon">📡</div>
+   <div class="features-eyebrow">HOW IT WORKS</div>
+   <h3 style="font-size:19px;margin:2px 0 0">Start in 3 simple steps</h3>
+   <p class="sub" style="margin:4px 0 0">Clean, anonymous, and built for trust.</p>
+   <div class="hiw-list">
+    <div class="hiw-step">
+     <div class="hiw-num">01</div>
      <div>
-      <h4>~100m Privacy Radar</h4>
-      <p>Discover opted-in members in your ~100m zone using on-device zone hashing. Exact GPS and distance are never stored.</p>
+      <h4>Join or Explore Preview</h4>
+      <p>Create a free account with a safe handle, or tap <strong>Explore Preview</strong> to test everything without signing up.</p>
      </div>
     </div>
-    <div class="feature-item">
-     <div class="feature-icon">⚡</div>
+    <div class="hiw-step">
+     <div class="hiw-num">02</div>
      <div>
-      <h4>Global Signal Match</h4>
-      <p>Instant anonymous 1-on-1 chat with anyone online worldwide. Tap Next anytime — sessions auto-clear when ended.</p>
+      <h4>Pick Your Space</h4>
+      <p>Turn on <strong>~100m Privacy Radar</strong>, match 1-on-1 via <strong>Signal Match</strong>, or join a <strong>Live Voice Room</strong>.</p>
      </div>
     </div>
-    <div class="feature-item">
-     <div class="feature-icon">🎙️</div>
+    <div class="hiw-step">
+     <div class="hiw-num">03</div>
      <div>
-      <h4>Live Voice Room</h4>
-      <p>Hands-free real-time WebRTC audio for up to 8 speakers with echo cancellation and one-tap mute.</p>
-     </div>
-    </div>
-    <div class="feature-item">
-     <div class="feature-icon">💬</div>
-     <div>
-      <h4>Global &amp; Private Chats</h4>
-      <p>Join the 24-hour auto-deleting community room or start private 1-on-1 chats with your shareable 100m Chat ID.</p>
+      <h4>Chat, Call &amp; Play Together</h4>
+      <p>Consent-based private chat invites, voice calls, 24h polls, and 7 live 2-player games — all with instant Block &amp; Report.</p>
      </div>
     </div>
    </div>
@@ -4497,7 +4519,7 @@ async function stopGlobalChat(silent=false){
 }
 
 function handleSignedIn(user){
- currentUser=user;guestMode=false;const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();initDropNotes();initDirectCallInbox();
+ currentUser=user;guestMode=false;const gb=document.getElementById("guestBanner");if(gb)gb.classList.add("hidden");document.getElementById("authPage").style.display="none";document.getElementById("app").style.display="block";loadUserProfile(user);loadBlockedAccounts();initDropNotes();initDirectCallInbox();maybeShowOnboarding();
 }
 function cleanupSession(){
  if(directCallInboxRef&&directCallInboxListener){directCallInboxRef.off("child_added",directCallInboxListener);directCallInboxRef=null;directCallInboxListener=null;}
@@ -7578,6 +7600,27 @@ async function selectVoiceRoom(roomNum){
  }
  showLiveFloatToast("🎙️ Switched to Voice Room "+currentVoiceRoom);
 }
+
+// ---------- CLEAN LANDING FOCUS & FIRST-TIME ONBOARDING ----------
+const ONBOARD_KEY="100m_onboarded_v1";
+function focusAuthForm(){
+ const inp=document.getElementById("displayName")||document.getElementById("email");
+ if(inp){inp.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>inp.focus(),280);}
+}
+function maybeShowOnboarding(){
+ try{if(localStorage.getItem(ONBOARD_KEY)==="1")return;}catch(e){}
+ const el=document.getElementById("onboardingOverlay");
+ if(el)el.classList.remove("hidden");
+}
+function finishOnboarding(dest){
+ try{localStorage.setItem(ONBOARD_KEY,"1");}catch(e){}
+ const el=document.getElementById("onboardingOverlay");
+ if(el)el.classList.add("hidden");
+ if(dest==="radar")go("radar");
+ else if(dest==="signal"){go("chats");switchChatTab("signal");}
+ else if(dest==="voice")go("walkie");
+ else go("home");
+}
 </script>
 <div id="privacyCurtain" class="hidden" onclick="togglePrivacyCurtain(false)" role="dialog" aria-label="Privacy Screen">
  <div class="privacy-curtain-card">
@@ -7588,5 +7631,27 @@ async function selectVoiceRoom(roomNum){
  </div>
 </div>
 <div id="liveFloatToast" role="status" aria-live="polite"></div>
+<div id="onboardingOverlay" class="hidden" role="dialog" aria-label="Welcome Onboarding">
+ <div class="onboard-card">
+  <div style="font-size:34px;margin-bottom:6px">👋</div>
+  <h3>Welcome to 100m Network</h3>
+  <p>Pick one place to start — you can switch tabs anytime.</p>
+  <div class="onboard-choices">
+   <button type="button" class="onboard-btn" onclick="finishOnboarding('radar')">
+    <span style="font-size:22px">📡</span>
+    <div><strong>Try ~100m Privacy Radar</strong><small>See opted-in members nearby (zero GPS stored)</small></div>
+   </button>
+   <button type="button" class="onboard-btn" onclick="finishOnboarding('signal')">
+    <span style="font-size:22px">⚡</span>
+    <div><strong>Start Global Signal Match</strong><small>Instant 1-on-1 anonymous chat, calls &amp; games</small></div>
+   </button>
+   <button type="button" class="onboard-btn" onclick="finishOnboarding('voice')">
+    <span style="font-size:22px">🎙️</span>
+    <div><strong>Join a Live Voice Room</strong><small>Hands-free audio in Room 1, 2, or 3</small></div>
+   </button>
+  </div>
+  <button type="button" class="secondary small" style="width:100%" onclick="finishOnboarding('home')">Go to Home instead</button>
+ </div>
+</div>
 </body>
 </html>
